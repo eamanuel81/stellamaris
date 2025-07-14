@@ -3,8 +3,8 @@
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator } from "@/components/ui"
-import { PlusCircle, Clock, User } from "lucide-react"
+import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
+import { PlusCircle, Clock, User, ChevronDown } from "lucide-react"
 import { employees, tasks, assignments } from "@/lib/data"
 import { cn } from "@/lib/utils"
 
@@ -137,6 +137,97 @@ const WeekView = () => {
     )
 }
 
+const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
+    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
+
+    const handleEmployeeSelect = (employeeId: string) => {
+        setSelectedEmployees(prev =>
+            prev.includes(employeeId)
+                ? prev.filter(id => id !== employeeId)
+                : [...prev, employeeId]
+        );
+    }
+    
+    return (
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Asignar una nueva tarea</DialogTitle>
+                <DialogDescription>
+                    Seleccione la tarea, el empleado y el horario.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="task">Tarea</Label>
+                    <Select>
+                        <SelectTrigger id="task">
+                            <SelectValue placeholder="Seleccione una tarea" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {tasks.map(task => (
+                                <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Empleados</Label>
+                   <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex justify-between items-center">
+                                <span className="truncate">
+                                    {selectedEmployees.length === 0 && "Seleccione empleados"}
+                                    {selectedEmployees.length > 0 && `${selectedEmployees.length} seleccionados`}
+                                </span>
+                                <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                            <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {employees.map(emp => (
+                                <DropdownMenuCheckboxItem
+                                    key={emp.id}
+                                    checked={selectedEmployees.includes(emp.id)}
+                                    onSelect={(e) => e.preventDefault()}
+                                    onCheckedChange={() => handleEmployeeSelect(emp.id)}
+                                >
+                                    {emp.name} {emp.lastName}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedEmployees.map(id => {
+                            const emp = getEmployeeById(id);
+                            return emp ? <Badge key={id} variant="secondary">{emp.name} {emp.lastName}</Badge> : null;
+                        })}
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="startTime">Hora de Inicio</Label>
+                        <Input id="startTime" type="time" defaultValue="09:00" />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="endTime">Hora de Fin</Label>
+                        <Input id="endTime" type="time" defaultValue="11:00" />
+                    </div>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="date">Fecha</Label>
+                    <Input id="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                <Button type="submit" onClick={() => setOpen(false)}>Asignar</Button>
+            </DialogFooter>
+        </DialogContent>
+    )
+}
+
+
 export default function SchedulePage() {
   const [open, setOpen] = React.useState(false)
 
@@ -159,62 +250,7 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Asignar una nueva tarea</DialogTitle>
-                <DialogDescription>
-                  Seleccione la tarea, el empleado y el horario.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="task">Tarea</Label>
-                  <Select>
-                    <SelectTrigger id="task">
-                      <SelectValue placeholder="Seleccione una tarea" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tasks.map(task => (
-                        <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="employee">Empleado</Label>
-                  <Select>
-                    <SelectTrigger id="employee">
-                      <SelectValue placeholder="Seleccione un empleado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {employees.map(emp => (
-                        <SelectItem key={emp.id} value={emp.id} disabled={!emp.canDrive && tasks.find(t=>t.id === 't2')?.requiresDriving}>
-                          {emp.name} {emp.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="startTime">Hora de Inicio</Label>
-                    <Input id="startTime" type="time" defaultValue="09:00" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="endTime">Hora de Fin</Label>
-                    <Input id="endTime" type="time" defaultValue="11:00" />
-                  </div>
-                </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="date">Fecha</Label>
-                    <Input id="date" type="date" defaultValue={new Date().toISOString().split('T')[0]}/>
-                 </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" onClick={() => setOpen(false)}>Asignar</Button>
-              </DialogFooter>
-            </DialogContent>
+            <AssignTaskDialogContent setOpen={setOpen} />
           </Dialog>
         </header>
         
