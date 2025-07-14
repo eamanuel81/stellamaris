@@ -167,7 +167,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, allAssignments }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignments: Omit<Assignment, 'id' | 'status'>) => void; assignmentToEdit: Assignment[] | null; allAssignments: Assignment[]; }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, allAssignments }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; allAssignments: Assignment[]; }) => {
     const isEditMode = !!assignmentToEdit;
     const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
 
@@ -231,13 +231,12 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
 
         const newAssignmentData = {
             taskId: selectedTaskId,
-            employeeId: '', // Will be set in the map
             startTime: startDate,
             endTime: endDate,
         };
         
         if (isEditMode && assignmentToEdit) {
-            onUpdateTask(assignmentToEdit, newAssignmentData);
+            onUpdateTask(assignmentToEdit, newAssignmentData, selectedEmployees);
         } else {
             const newAssignments = selectedEmployees.map(employeeId => {
                 return {
@@ -349,12 +348,7 @@ export default function SchedulePage() {
     setAssignments(prev => [...prev, ...newAssignments]);
   }
 
- const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>) => {
-    // Get the employee IDs from the form
-    const newEmployeeIds = (document.querySelectorAll('[role="menuitemcheckbox"][aria-checked="true"]') as NodeListOf<HTMLDivElement>)
-        .map(el => employees.find(emp => el.textContent?.includes(`${emp.name} ${emp.lastName}`))?.id)
-        .filter((id): id is string => !!id);
-
+ const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => {
     setAssignments(prev => {
         // Remove all assignments that were part of the original group
         const originalIds = new Set(originalAssignments.map(a => a.id));
@@ -411,7 +405,7 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={()=>{}} assignmentToEdit={null} allAssignments={assignments} />
+            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} allAssignments={assignments} />
           </Dialog>
         </header>
 
@@ -438,5 +432,3 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
-
-    
