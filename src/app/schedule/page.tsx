@@ -162,8 +162,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask }: { setOpen: (open: bo
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
         
-        const assignmentDate = new Date(date);
-        assignmentDate.setUTCHours(0,0,0,0);
+        const assignmentDate = new Date(date + 'T00:00:00'); // Use T00:00:00 to avoid timezone issues
 
         const newAssignments = selectedEmployees.map(employeeId => {
             const startDate = new Date(assignmentDate.getTime());
