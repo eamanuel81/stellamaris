@@ -5,7 +5,7 @@ import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
 import { PlusCircle, Clock, User, ChevronDown, Car } from "lucide-react"
-import { employees, tasks, assignments } from "@/lib/data"
+import { employees, tasks, assignments as initialAssignments, Assignment } from "@/lib/data"
 import { cn } from "@/lib/utils"
 
 const generateTimeSlots = () => {
@@ -65,7 +65,7 @@ const DayView = () => {
     )
 }
 
-const WeekView = () => {
+const WeekView = ({ assignments }: { assignments: Assignment[] }) => {
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
@@ -137,8 +137,12 @@ const WeekView = () => {
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void }) => {
+    const [selectedTaskId, setSelectedTaskId] = React.useState<string>("");
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
+    const [startTime, setStartTime] = React.useState("09:00");
+    const [endTime, setEndTime] = React.useState("11:00");
+    const [date, setDate] = React.useState(new Date().toISOString().split('T')[0]);
 
     const handleEmployeeSelect = (employeeId: string) => {
         setSelectedEmployees(prev =>
@@ -148,6 +152,40 @@ const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void
         );
     }
     
+    const handleSubmit = () => {
+        if (!selectedTaskId || selectedEmployees.length === 0) {
+            // Basic validation
+            alert("Por favor seleccione una tarea y al menos un empleado.");
+            return;
+        }
+
+        const [startHour, startMinute] = startTime.split(':').map(Number);
+        const [endHour, endMinute] = endTime.split(':').map(Number);
+        
+        const assignmentDate = new Date(date);
+        assignmentDate.setUTCHours(0,0,0,0);
+
+        const newAssignments = selectedEmployees.map(employeeId => {
+            const startDate = new Date(assignmentDate.getTime());
+            startDate.setHours(startHour, startMinute);
+            
+            const endDate = new Date(assignmentDate.getTime());
+            endDate.setHours(endHour, endMinute);
+            
+            return {
+                id: `a${Date.now()}${Math.random()}`, // simple unique id
+                taskId: selectedTaskId,
+                employeeId: employeeId,
+                startTime: startDate,
+                endTime: endDate,
+                status: 'assigned' as const
+            };
+        });
+
+        onAssignTask(newAssignments);
+        setOpen(false);
+    }
+
     return (
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -159,7 +197,7 @@ const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                     <Label htmlFor="task">Tarea</Label>
-                    <Select>
+                    <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
                         <SelectTrigger id="task">
                             <SelectValue placeholder="Seleccione una tarea" />
                         </SelectTrigger>
@@ -210,21 +248,21 @@ const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void
                 <div className="grid grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="startTime">Hora de Inicio</Label>
-                        <Input id="startTime" type="time" defaultValue="09:00" />
+                        <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="endTime">Hora de Fin</Label>
-                        <Input id="endTime" type="time" defaultValue="11:00" />
+                        <Input id="endTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
                     </div>
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="date">Fecha</Label>
-                    <Input id="date" type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+                    <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
                 </div>
             </div>
             <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" onClick={() => setOpen(false)}>Asignar</Button>
+                <Button type="submit" onClick={handleSubmit}>Asignar</Button>
             </DialogFooter>
         </DialogContent>
     )
@@ -233,6 +271,11 @@ const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void
 
 export default function SchedulePage() {
   const [open, setOpen] = React.useState(false)
+  const [assignments, setAssignments] = React.useState<Assignment[]>(initialAssignments)
+
+  const handleAssignTask = (newAssignments: Assignment[]) => {
+    setAssignments(prev => [...prev, ...newAssignments]);
+  }
 
   return (
     <AppLayout>
@@ -253,7 +296,7 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setOpen} />
+            <AssignTaskDialogContent setOpen={setOpen} onAssignTask={handleAssignTask} />
           </Dialog>
         </header>
         
@@ -268,7 +311,7 @@ export default function SchedulePage() {
                 <DayView />
             </TabsContent>
             <TabsContent value="week" className="mt-4">
-                <WeekView />
+                <WeekView assignments={assignments} />
             </TabsContent>
         </Tabs>
 
@@ -276,3 +319,5 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
