@@ -65,7 +65,7 @@ const DayView = () => {
     )
 }
 
-const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTaskClick: (assignment: Assignment) => void }) => {
+const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
@@ -77,7 +77,13 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
     // Group assignments by task and time
     const groupAssignments = (day: Date) => {
         const dayAssignments = assignments
-            .filter(a => a.startTime.toDateString() === day.toDateString())
+            .filter(a => {
+                const assignmentDate = new Date(a.startTime);
+                assignmentDate.setHours(0,0,0,0);
+                const compareDate = new Date(day);
+                compareDate.setHours(0,0,0,0);
+                return assignmentDate.getTime() === compareDate.getTime();
+            })
             .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
 
         const grouped = new Map<string, Assignment[]>();
@@ -122,7 +128,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                                         <Tooltip key={firstAssignment.id}>
                                             <TooltipTrigger asChild>
                                                 <Card 
-                                                    onClick={() => onTaskClick(firstAssignment)}
+                                                    onClick={() => onTaskClick(assignmentGroup)}
                                                     className="p-2 bg-primary/10 cursor-pointer hover:bg-primary/20"
                                                 >
                                                     <p className="font-bold text-xs truncate">{task.title}</p>
@@ -161,39 +167,41 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, allAssignments }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (updatedAssignment: Assignment) => void; assignmentToEdit: Assignment | null; allAssignments: Assignment[]; }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, allAssignments }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignments: Omit<Assignment, 'id' | 'status'>) => void; assignmentToEdit: Assignment[] | null; allAssignments: Assignment[]; }) => {
     const isEditMode = !!assignmentToEdit;
-    const [selectedTaskId, setSelectedTaskId] = React.useState<string>("");
-    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
-    const [startTime, setStartTime] = React.useState("09:00");
-    const [endTime, setEndTime] = React.useState("11:00");
-    const [date, setDate] = React.useState(new Date().toISOString().split('T')[0]);
+    const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
+
+    const [selectedTaskId, setSelectedTaskId] = React.useState<string>(firstAssignment?.taskId || "");
+    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode ? assignmentToEdit.map(a => a.employeeId) : []);
+    const [startTime, setStartTime] = React.useState(firstAssignment?.startTime.toTimeString().substring(0,5) || "09:00");
+    const [endTime, setEndTime] = React.useState(firstAssignment?.endTime.toTimeString().substring(0,5) || "11:00");
+    
+    const formatDateForInput = (date: Date) => {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    const [date, setDate] = React.useState(firstAssignment ? formatDateForInput(firstAssignment.startTime) : formatDateForInput(new Date()));
 
     React.useEffect(() => {
         if (isEditMode && assignmentToEdit) {
-            const relatedAssignments = allAssignments.filter(
-                a => a.taskId === assignmentToEdit.taskId && a.startTime.getTime() === assignmentToEdit.startTime.getTime()
-            );
-            const employeeIds = relatedAssignments.map(a => a.employeeId);
-            
-            setSelectedTaskId(assignmentToEdit.taskId);
-            setSelectedEmployees(employeeIds);
-            setStartTime(assignmentToEdit.startTime.toTimeString().substring(0,5));
-            setEndTime(assignmentToEdit.endTime.toTimeString().substring(0,5));
-            // Format date to YYYY-MM-DD for the input
-            const yyyy = assignmentToEdit.startTime.getFullYear();
-            const mm = String(assignmentToEdit.startTime.getMonth() + 1).padStart(2, '0');
-            const dd = String(assignmentToEdit.startTime.getDate()).padStart(2, '0');
-            setDate(`${yyyy}-${mm}-${dd}`);
+            const first = assignmentToEdit[0];
+            setSelectedTaskId(first.taskId);
+            setSelectedEmployees(assignmentToEdit.map(a => a.employeeId));
+            setStartTime(first.startTime.toTimeString().substring(0,5));
+            setEndTime(first.endTime.toTimeString().substring(0,5));
+            setDate(formatDateForInput(first.startTime));
         } else {
              // Reset form for new assignment
             setSelectedTaskId("");
             setSelectedEmployees([]);
             setStartTime("09:00");
             setEndTime("11:00");
-            setDate(new Date().toISOString().split('T')[0]);
+            setDate(formatDateForInput(new Date()));
         }
-    }, [assignmentToEdit, isEditMode, allAssignments]);
+    }, [assignmentToEdit, isEditMode]);
 
 
     const handleEmployeeSelect = (employeeId: string) => {
@@ -206,7 +214,6 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
     
     const handleSubmit = () => {
         if (!selectedTaskId || selectedEmployees.length === 0) {
-            // Basic validation
             alert("Por favor seleccione una tarea y al menos un empleado.");
             return;
         }
@@ -216,38 +223,23 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
         
         const assignmentDate = new Date(date + 'T00:00:00'); // Use T00:00:00 to avoid timezone issues
 
+        const startDate = new Date(assignmentDate.getTime());
+        startDate.setHours(startHour, startMinute, 0, 0);
+        
+        const endDate = new Date(assignmentDate.getTime());
+        endDate.setHours(endHour, endMinute, 0, 0);
+
+        const newAssignmentData = {
+            taskId: selectedTaskId,
+            employeeId: '', // Will be set in the map
+            startTime: startDate,
+            endTime: endDate,
+        };
+        
         if (isEditMode && assignmentToEdit) {
-            const originalStartTime = assignmentToEdit.startTime.getTime();
-            
-            // Delete old assignments for this task group
-            onAssignTask([]); // special call to trigger delete
-
-            const newAssignments = selectedEmployees.map(employeeId => {
-                 const startDate = new Date(assignmentDate.getTime());
-                startDate.setHours(startHour, startMinute);
-                
-                const endDate = new Date(assignmentDate.getTime());
-                endDate.setHours(endHour, endMinute);
-                
-                return {
-                    id: `a${Date.now()}${Math.random()}`,
-                    taskId: selectedTaskId,
-                    employeeId: employeeId,
-                    startTime: startDate,
-                    endTime: endDate,
-                    status: 'assigned' as const
-                };
-            });
-            onUpdateTask({ ...assignmentToEdit, employeeId: selectedEmployees[0]}); // A bit of a hack to trigger the update logic
-
+            onUpdateTask(assignmentToEdit, newAssignmentData);
         } else {
             const newAssignments = selectedEmployees.map(employeeId => {
-                const startDate = new Date(assignmentDate.getTime());
-                startDate.setHours(startHour, startMinute);
-                
-                const endDate = new Date(assignmentDate.getTime());
-                endDate.setHours(endHour, endMinute);
-                
                 return {
                     id: `a${Date.now()}${Math.random()}`, // simple unique id
                     taskId: selectedTaskId,
@@ -293,7 +285,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                                 <span className="truncate">
                                     {selectedEmployees.length === 0 && "Seleccione empleados"}
                                     {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
-                                    {selectedEmployees.length > 1 && `${selectedEmployees.length} seleccionados`}
+                                    {selectedEmployees.length > 1 && `${selectedEmployees.length} empleados seleccionados`}
                                 </span>
                                 <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
@@ -351,52 +343,43 @@ export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [assignments, setAssignments] = React.useState<Assignment[]>(initialAssignments)
-  const [editingAssignment, setEditingAssignment] = React.useState<Assignment | null>(null);
+  const [editingAssignmentGroup, setEditingAssignmentGroup] = React.useState<Assignment[] | null>(null);
 
   const handleAssignTask = (newAssignments: Assignment[]) => {
     setAssignments(prev => [...prev, ...newAssignments]);
   }
 
- const handleUpdateTask = (updatedAssignment: Assignment) => {
-    // This is now more complex. We need to find all related assignments and update them.
-    // For simplicity with the current data model, we'll remove old ones and add new ones.
-    const originalStartTime = editingAssignment?.startTime.getTime();
-    const originalTaskId = editingAssignment?.taskId;
+ const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>) => {
+    // Get the employee IDs from the form
+    const newEmployeeIds = (document.querySelectorAll('[role="menuitemcheckbox"][aria-checked="true"]') as NodeListOf<HTMLDivElement>)
+        .map(el => employees.find(emp => el.textContent?.includes(`${emp.name} ${emp.lastName}`))?.id)
+        .filter((id): id is string => !!id);
 
     setAssignments(prev => {
         // Remove all assignments that were part of the original group
-        const filtered = prev.filter(a => !(a.taskId === originalTaskId && a.startTime.getTime() === originalStartTime));
+        const originalIds = new Set(originalAssignments.map(a => a.id));
+        const filtered = prev.filter(a => !originalIds.has(a.id));
 
-        // Create the updated assignments
-        const [startHour, startMinute] = updatedAssignment.startTime.toTimeString().substring(0,5).split(':').map(Number);
-        const [endHour, endMinute] = updatedAssignment.endTime.toTimeString().substring(0,5).split(':').map(Number);
-        const assignmentDate = new Date(updatedAssignment.startTime.toISOString().split('T')[0] + 'T00:00:00');
-
-        const newAssignments = updatedAssignment.employeeId.split(',').map(employeeId => { // employeeId is now a comma-separated string from the hack
-            const startDate = new Date(assignmentDate.getTime());
-            startDate.setHours(startHour, startMinute);
-            
-            const endDate = new Date(assignmentDate.getTime());
-            endDate.setHours(endHour, endMinute);
-
+        // Create the updated assignments for each selected employee
+        const newAssignments = newEmployeeIds.map(employeeId => {
             return {
                 id: `a${Date.now()}${Math.random()}`,
-                taskId: updatedAssignment.taskId,
+                taskId: newAssignmentData.taskId,
                 employeeId: employeeId,
-                startTime: startDate,
-                endTime: endDate,
+                startTime: newAssignmentData.startTime,
+                endTime: newAssignmentData.endTime,
                 status: 'assigned' as const
-            }
+            };
         });
 
         return [...filtered, ...newAssignments];
     });
 
-    setEditingAssignment(null);
+    setEditingAssignmentGroup(null);
 }
 
-  const handleTaskClick = (assignment: Assignment) => {
-    setEditingAssignment(assignment);
+  const handleTaskClick = (assignmentGroup: Assignment[]) => {
+    setEditingAssignmentGroup(assignmentGroup);
     setIsEditOpen(true);
   }
 
@@ -405,7 +388,7 @@ export default function SchedulePage() {
     setIsEditOpen(false);
     // Give time for dialog to close before resetting state
     setTimeout(() => {
-       setEditingAssignment(null);
+       setEditingAssignmentGroup(null);
     }, 200);
   }
 
@@ -423,17 +406,17 @@ export default function SchedulePage() {
           </div>
            <Dialog open={isCreateOpen} onOpenChange={open => open ? setIsCreateOpen(true) : handleCloseDialogs()}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingAssignment(null); setIsCreateOpen(true); }}>
+              <Button onClick={() => { setEditingAssignmentGroup(null); setIsCreateOpen(true); }}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={() => {}} assignmentToEdit={null} allAssignments={assignments} />
+            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={()=>{}} assignmentToEdit={null} allAssignments={assignments} />
           </Dialog>
         </header>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignment} allAssignments={assignments} />
+            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignmentGroup} allAssignments={assignments} />
         </Dialog>
         
         <Tabs defaultValue="week" className="w-full">
@@ -455,3 +438,5 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
