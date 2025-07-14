@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -111,9 +112,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton icon={<Settings />} tooltip={{ children: "Configuración" }}>
-                Configuración
-              </SidebarMenuButton>
+              <Link href="/settings">
+                <SidebarMenuButton icon={<Settings />} tooltip={{ children: "Configuración" }} isActive={pathname === '/settings'}>
+                  Configuración
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
@@ -150,8 +153,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>Mi Perfil</DropdownMenuItem>
-                  <DropdownMenuItem>Configuración</DropdownMenuItem>
+                  <Link href="/settings"><DropdownMenuItem>Mi Perfil</DropdownMenuItem></Link>
+                  <Link href="/settings"><DropdownMenuItem>Configuración</DropdownMenuItem></Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
