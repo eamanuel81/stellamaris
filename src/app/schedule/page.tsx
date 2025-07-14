@@ -3,8 +3,8 @@
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card } from "@/components/ui"
-import { PlusCircle } from "lucide-react"
+import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui"
+import { PlusCircle, Clock, User } from "lucide-react"
 import { employees, tasks, assignments } from "@/lib/data"
 import { cn } from "@/lib/utils"
 
@@ -75,38 +75,65 @@ const WeekView = () => {
     });
 
     return (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="grid grid-cols-7 border-b">
-                {weekDays.map(day => (
-                    <div key={day.toISOString()} className="p-2 text-center border-r last:border-r-0">
-                        <p className="font-semibold text-sm">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</p>
-                        <p className="text-xs text-muted-foreground">{day.toLocaleDateString('es-ES', { day: '2-digit' })}</p>
-                    </div>
-                ))}
+        <TooltipProvider>
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="grid grid-cols-7 border-b">
+                    {weekDays.map(day => (
+                        <div key={day.toISOString()} className="p-2 text-center border-r last:border-r-0">
+                            <p className="font-semibold text-sm">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</p>
+                            <p className="text-xs text-muted-foreground">{day.toLocaleDateString('es-ES', { day: '2-digit' })}</p>
+                        </div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-7 h-[600px] overflow-y-auto">
+                    {weekDays.map(day => (
+                        <div key={day.toISOString()} className="border-r last:border-r-0 p-2 space-y-2">
+                            {assignments
+                                .filter(a => a.startTime.toDateString() === day.toDateString())
+                                .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
+                                .map(assignment => {
+                                    const task = getTaskById(assignment.taskId);
+                                    const employee = getEmployeeById(assignment.employeeId);
+                                    if (!task || !employee) return null;
+
+                                    const startTime = assignment.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                    const endTime = assignment.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                                    return (
+                                        <Tooltip key={assignment.id}>
+                                            <TooltipTrigger asChild>
+                                                <Card className="p-2 bg-primary/10 cursor-pointer hover:bg-primary/20">
+                                                    <p className="font-bold text-xs truncate">{task.title}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{employee.name} {employee.lastName}</p>
+                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>{startTime} - {endTime}</span>
+                                                    </div>
+                                                </Card>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="max-w-xs">
+                                                <div className="space-y-2 p-2">
+                                                    <h4 className="font-bold">{task.title}</h4>
+                                                    <p className="text-sm text-muted-foreground">{task.description}</p>
+                                                    <Separator />
+                                                    <div className="flex items-center gap-2 text-sm">
+                                                        <User className="h-4 w-4" />
+                                                        <span>{employee.name} {employee.lastName}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm">
+                                                        <Clock className="h-4 w-4" />
+                                                        <span>{startTime} a {endTime} ({task.duration} min)</span>
+                                                    </div>
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    )
+                                })}
+                        </div>
+                    ))}
+                </div>
             </div>
-            <div className="grid grid-cols-7 h-[600px] overflow-y-auto">
-                {weekDays.map(day => (
-                    <div key={day.toISOString()} className="border-r last:border-r-0 p-2 space-y-2">
-                        {assignments
-                            .filter(a => a.startTime.toDateString() === day.toDateString())
-                            .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
-                            .map(assignment => {
-                                const task = getTaskById(assignment.taskId);
-                                const employee = getEmployeeById(assignment.employeeId);
-                                return (
-                                    <Card key={assignment.id} className="p-2 bg-primary/10">
-                                        <p className="font-bold text-xs">{task?.title}</p>
-                                        <p className="text-xs text-muted-foreground">{employee?.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {assignment.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                    </Card>
-                                )
-                            })}
-                    </div>
-                ))}
-            </div>
-        </div>
+        </TooltipProvider>
     )
 }
 
@@ -191,7 +218,7 @@ export default function SchedulePage() {
           </Dialog>
         </header>
         
-        <Tabs defaultValue="day" className="w-full">
+        <Tabs defaultValue="week" className="w-full">
             <div className="flex justify-end">
                 <TabsList>
                     <TabsTrigger value="day">Hoy</TabsTrigger>
