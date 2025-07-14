@@ -21,47 +21,113 @@ const generateTimeSlots = () => {
 const getTaskById = (id: string) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
 
-const DayView = () => {
+
+const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
+    const grouped = new Map<string, Assignment[]>();
+
+    assignmentsToGroup.forEach(assignment => {
+        const key = `${assignment.taskId}-${assignment.startTime.getTime()}`;
+        if (!grouped.has(key)) {
+            grouped.set(key, []);
+        }
+        grouped.get(key)!.push(assignment);
+    });
+    
+    return Array.from(grouped.values());
+}
+
+const DayView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const timeSlots = generateTimeSlots()
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayAssignments = assignments.filter(a => {
+        const assignmentDate = new Date(a.startTime);
+        assignmentDate.setHours(0, 0, 0, 0);
+        return assignmentDate.getTime() === today.getTime();
+    }).sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+
+    const groupedAssignments = groupAssignmentsByTimeAndTask(todayAssignments);
+
+    const getTaskPosition = (startTime: Date) => {
+        const startHour = 6;
+        const hours = startTime.getHours() + startTime.getMinutes() / 60;
+        const topPosition = (hours - startHour) * 48; // 48px per hour (h-12)
+        return Math.max(0, topPosition);
+    }
+
+    const getTaskHeight = (startTime: Date, endTime: Date) => {
+        const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+        const height = (durationMinutes / 60) * 48; // 48px per hour
+        return Math.max(1, height - 2); // Subtract 2px for a small gap
+    }
+
     return (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="p-4 border-b">
-                <h3 className="font-semibold">Horario de Hoy</h3>
-                <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            </div>
-            <div className="relative h-[600px] overflow-y-auto">
-                <div className="grid">
-                {timeSlots.map((time) => (
-                    <div key={time} className="grid grid-cols-[auto_1fr] items-start">
-                    <div className="sticky top-0 -mt-2 text-right">
-                        <span className="relative top-2 pr-4 text-xs text-muted-foreground">{time}</span>
-                    </div>
-                    <div className="border-l border-border pl-4">
-                        <div className="h-12 border-b border-dashed">
-                            {/* Example Tasks */}
-                            {time === "09:00" && (
-                            <div className="relative -top-1 h-[6rem] z-10">
-                                <div className="absolute w-[calc(100%-1rem)] rounded-lg bg-primary/20 p-2 border border-primary/50">
-                                <p className="font-bold text-sm text-primary-foreground">Bajada de Lancha</p>
-                                <p className="text-xs text-primary-foreground/80">Carlos Rodriguez</p>
+        <TooltipProvider>
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="p-4 border-b">
+                    <h3 className="font-semibold">Horario de Hoy</h3>
+                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+                <div className="relative h-[600px] overflow-y-auto">
+                    <div className="grid">
+                        {timeSlots.map((time) => (
+                            <div key={time} className="grid grid-cols-[auto_1fr] items-start">
+                                <div className="sticky top-0 -mt-2 text-right">
+                                    <span className="relative top-2 pr-4 text-xs text-muted-foreground">{time}</span>
+                                </div>
+                                <div className="border-l border-border pl-4">
+                                    <div className="h-12 border-b border-dashed"></div>
                                 </div>
                             </div>
-                            )}
-                            {time === "11:00" && (
-                            <div className="relative -top-1 h-[4rem] z-10">
-                                <div className="absolute w-[calc(100%-1rem)] rounded-lg bg-accent/20 p-2 border border-accent/50">
-                                <p className="font-bold text-sm text-accent-foreground">Revisión de Motor</p>
-                                <p className="text-xs text-accent-foreground/80">Maria Gomez</p>
-                                </div>
-                            </div>
-                            )}
-                        </div>
+                        ))}
                     </div>
+                    <div className="absolute top-0 left-[50px] right-0 bottom-0">
+                         {groupedAssignments.map((assignmentGroup, index) => {
+                            const firstAssignment = assignmentGroup[0];
+                            const task = getTaskById(firstAssignment.taskId);
+                            if (!task) return null;
+
+                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
+                            const startTime = firstAssignment.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const endTime = firstAssignment.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const top = getTaskPosition(firstAssignment.startTime);
+                            const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
+                            
+                            return (
+                                <Tooltip key={`${firstAssignment.id}-${index}`}>
+                                    <TooltipTrigger asChild>
+                                        <div
+                                            onClick={() => onTaskClick(assignmentGroup)}
+                                            className="absolute w-[calc(100%-1rem)] rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10"
+                                            style={{ top: `${top}px`, height: `${height}px` }}
+                                        >
+                                            <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
+                                            <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                        </div>
+                                    </TooltipTrigger>
+                                     <TooltipContent className="max-w-xs">
+                                        <div className="space-y-2 p-2">
+                                            <h4 className="font-bold">{task.title}</h4>
+                                            <p className="text-sm text-muted-foreground">{task.description}</p>
+                                            <Separator />
+                                            <div className="flex items-start gap-2 text-sm">
+                                                <User className="h-4 w-4 mt-0.5 shrink-0" />
+                                                <span>{assignedEmployees.map(e => `${e.name} ${e.lastName}`).join(', ')}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <Clock className="h-4 w-4 shrink-0" />
+                                                <span>{startTime} a {endTime} ({task.duration} min)</span>
+                                            </div>
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            )
+                         })}
                     </div>
-                ))}
                 </div>
             </div>
-        </div>
+        </TooltipProvider>
     )
 }
 
@@ -74,8 +140,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
         return day;
     });
 
-    // Group assignments by task and time
-    const groupAssignments = (day: Date) => {
+    const groupAssignmentsForDay = (day: Date) => {
         const dayAssignments = assignments
             .filter(a => {
                 const assignmentDate = new Date(a.startTime);
@@ -85,18 +150,8 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                 return assignmentDate.getTime() === compareDate.getTime();
             })
             .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
-
-        const grouped = new Map<string, Assignment[]>();
-
-        dayAssignments.forEach(assignment => {
-            const key = `${assignment.taskId}-${assignment.startTime.getTime()}`;
-            if (!grouped.has(key)) {
-                grouped.set(key, []);
-            }
-            grouped.get(key)!.push(assignment);
-        });
         
-        return Array.from(grouped.values());
+        return groupAssignmentsByTimeAndTask(dayAssignments);
     }
 
     return (
@@ -113,8 +168,8 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                 <div className="grid grid-cols-7 h-[600px] overflow-y-auto">
                     {weekDays.map(day => (
                         <div key={day.toISOString()} className="border-r last:border-r-0 p-2 space-y-2">
-                            {groupAssignments(day)
-                                .map(assignmentGroup => {
+                            {groupAssignmentsForDay(day)
+                                .map((assignmentGroup, index) => {
                                     const firstAssignment = assignmentGroup[0];
                                     const task = getTaskById(firstAssignment.taskId);
                                     if (!task) return null;
@@ -125,7 +180,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                                     const endTime = firstAssignment.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                                     return (
-                                        <Tooltip key={firstAssignment.id}>
+                                        <Tooltip key={`${firstAssignment.id}-${index}`}>
                                             <TooltipTrigger asChild>
                                                 <Card 
                                                     onClick={() => onTaskClick(assignmentGroup)}
@@ -147,11 +202,11 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                                                     <p className="text-sm text-muted-foreground">{task.description}</p>
                                                     <Separator />
                                                     <div className="flex items-start gap-2 text-sm">
-                                                        <User className="h-4 w-4 mt-0.5" />
+                                                        <User className="h-4 w-4 mt-0.5 shrink-0" />
                                                         <span>{assignedEmployees.map(e => `${e.name} ${e.lastName}`).join(', ')}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-sm">
-                                                        <Clock className="h-4 w-4" />
+                                                        <Clock className="h-4 w-4 shrink-0" />
                                                         <span>{startTime} a {endTime} ({task.duration} min)</span>
                                                     </div>
                                                 </div>
@@ -167,7 +222,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, allAssignments }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; allAssignments: Assignment[]; }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; }) => {
     const isEditMode = !!assignmentToEdit;
     const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
 
@@ -280,7 +335,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                   <Label>Empleado(s)</Label>
                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="flex justify-between items-center">
+                            <Button variant="outline" className="flex justify-between items-center font-normal">
                                 <span className="truncate">
                                     {selectedEmployees.length === 0 && "Seleccione empleados"}
                                     {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
@@ -299,8 +354,8 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                                     onSelect={(e) => e.preventDefault()}
                                     onCheckedChange={() => handleEmployeeSelect(emp.id)}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        {emp.name} {emp.lastName}
+                                    <div className="flex items-center justify-between w-full">
+                                        <span>{emp.name} {emp.lastName}</span>
                                         {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
                                     </div>
                                 </DropdownMenuCheckboxItem>
@@ -405,12 +460,12 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} allAssignments={assignments} />
+            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} />
           </Dialog>
         </header>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignmentGroup} allAssignments={assignments} />
+            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignmentGroup} />
         </Dialog>
         
         <Tabs defaultValue="week" className="w-full">
@@ -421,7 +476,7 @@ export default function SchedulePage() {
                 </TabsList>
             </div>
             <TabsContent value="day" className="mt-4">
-                <DayView />
+                <DayView assignments={assignments} onTaskClick={handleTaskClick} />
             </TabsContent>
             <TabsContent value="week" className="mt-4">
                 <WeekView assignments={assignments} onTaskClick={handleTaskClick} />
@@ -432,3 +487,5 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
