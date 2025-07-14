@@ -4,7 +4,7 @@
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
-import { PlusCircle, Clock, User, ChevronDown } from "lucide-react"
+import { PlusCircle, Clock, User, ChevronDown, Car } from "lucide-react"
 import { employees, tasks, assignments } from "@/lib/data"
 import { cn } from "@/lib/utils"
 
@@ -192,7 +192,10 @@ const AssignTaskDialogContent = ({ setOpen }: { setOpen: (open: boolean) => void
                                     onSelect={(e) => e.preventDefault()}
                                     onCheckedChange={() => handleEmployeeSelect(emp.id)}
                                 >
-                                    {emp.name} {emp.lastName}
+                                    <div className="flex items-center gap-2">
+                                        {emp.name} {emp.lastName}
+                                        {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
+                                    </div>
                                 </DropdownMenuCheckboxItem>
                             ))}
                         </DropdownMenuContent>
