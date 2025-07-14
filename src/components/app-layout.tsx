@@ -4,11 +4,9 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
-  Anchor,
   Avatar,
   AvatarFallback,
   AvatarImage,
-  Bell,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +27,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui"
 import {
+  Bell,
   CalendarClock,
   ClipboardList,
   ClipboardCheck,
