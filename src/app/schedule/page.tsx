@@ -291,20 +291,18 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
         return day;
     });
 
-    const groupAssignmentsForDay = (day: Date) => {
-        const dayAssignments = assignments
-            .filter(a => {
-                const assignmentDate = new Date(a.startTime);
-                assignmentDate.setHours(0,0,0,0);
-                const compareDate = new Date(day);
-                compareDate.setHours(0,0,0,0);
-                return assignmentDate.getTime() === compareDate.getTime();
-            })
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-        
-        return groupAssignmentsByTimeAndTask(dayAssignments);
-    }
-    
+    const timeSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+    const getTaskPosition = (startTime: Date) => {
+        const hours = startTime.getHours() + startTime.getMinutes() / 60;
+        return hours * 48; // 48px per hour
+    };
+
+    const getTaskHeight = (startTime: Date, endTime: Date) => {
+        const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+        return (durationMinutes / 60) * 48 - 2; // 48px per hour, -2 for gap
+    };
+
     const calculateExtrasTotal = (assignment: Assignment, task: Task | undefined) => {
         if (!task || !task.extras || !assignment.selectedExtras) return 0;
         return assignment.selectedExtras.reduce((total, selected) => {
@@ -312,103 +310,123 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
             return total + (extraDetails?.price || 0) * selected.quantity;
         }, 0);
     }
-
+    
     return (
         <TooltipProvider>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div className="grid grid-cols-7 border-b">
-                    {weekDays.map(day => (
-                        <div key={day.toISOString()} className="p-2 text-center border-r last:border-r-0">
-                            <p className="font-semibold text-sm">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</p>
-                            <p className="text-xs text-muted-foreground">{day.toLocaleDateString('es-ES', { day: '2-digit' })}</p>
-                        </div>
-                    ))}
+                <div className="grid grid-cols-[60px_1fr] sticky top-0 z-20 bg-card">
+                    <div className="border-r border-b p-2"></div>
+                    <div className="grid grid-cols-7 border-b">
+                        {weekDays.map(day => (
+                            <div key={day.toISOString()} className="p-2 text-center border-r last:border-r-0">
+                                <p className="font-semibold text-sm">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</p>
+                                <p className="text-xs text-muted-foreground">{day.toLocaleDateString('es-ES', { day: '2-digit' })}</p>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-                <div className="grid grid-cols-7 h-[600px] overflow-y-auto">
-                    {weekDays.map(day => (
-                        <div key={day.toISOString()} className="border-r last:border-r-0 p-2 space-y-2">
-                            {groupAssignmentsForDay(day)
-                                .map((assignmentGroup, index) => {
-                                    const firstAssignment = assignmentGroup[0];
-                                    const task = getTaskById(firstAssignment.taskId, tasks);
-                                    if (!task) return null;
-
-                                    const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-                                    const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                                    const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
-                                    const extrasTotal = calculateExtrasTotal(firstAssignment, task);
-
-                                    const startTime = new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                    const endTime = new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                                    return (
-                                        <Tooltip key={`${firstAssignment.id}-${index}`}>
-                                            <TooltipTrigger asChild>
-                                                <Card 
-                                                    onClick={() => onTaskClick(assignmentGroup)}
-                                                    className="p-2 bg-primary/10 cursor-pointer hover:bg-primary/20 space-y-1"
-                                                >
-                                                    <p className="font-bold text-xs truncate">{task.title}</p>
-                                                    <p className="text-xs text-muted-foreground truncate">
-                                                        {assignedEmployees.map(e => e.name).join(', ')}
-                                                    </p>
-                                                    {boats.length > 0 && (
-                                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                            <Ship className="h-3 w-3" />
-                                                            <span className="truncate">{boats.map(b => b.name).join(', ')}</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                        <div className="flex items-center gap-1">
-                                                            <Clock className="h-3 w-3" />
-                                                            <span>{startTime}</span>
-                                                        </div>
-                                                         {extrasTotal > 0 && (
-                                                            <DollarSign className="h-3 w-3 text-green-600" />
-                                                        )}
-                                                    </div>
-                                                </Card>
-                                            </TooltipTrigger>
-                                            <TooltipContent className="max-w-xs">
-                                                 <div className="space-y-2 p-2">
-                                                    <h4 className="font-bold">{task.title}</h4>
-                                                    <p className="text-sm text-muted-foreground">{task.description}</p>
-                                                    <Separator />
-                                                    {client && (
-                                                        <div className="flex items-start gap-2 text-sm">
-                                                            <User className="h-4 w-4 mt-0.5 shrink-0" />
-                                                            <span>{client.firstName} {client.lastName}</span>
-                                                        </div>
-                                                    )}
-                                                    {boats.length > 0 && (
-                                                        <div className="flex items-start gap-2 text-sm">
-                                                            <Ship className="h-4 w-4 mt-0.5 shrink-0" />
-                                                            <span>{boats.map(b => b.name).join(', ')}</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex items-start gap-2 text-sm">
-                                                        <User className="h-4 w-4 mt-0.5 shrink-0" />
-                                                        <span>{assignedEmployees.map(e => `${e.name} ${e.lastName}`).join(', ')}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-sm">
-                                                        <Clock className="h-4 w-4 shrink-0" />
-                                                        <span>{startTime} a {endTime} ({task.duration} min)</span>
-                                                    </div>
-                                                    {extrasTotal > 0 && (
-                                                        <div className="flex items-center gap-2 text-sm font-medium text-green-600">
-                                                            <DollarSign className="h-4 w-4 shrink-0" />
-                                                            <span>
-                                                                Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    )
-                                })}
+                <div className="relative h-[600px] overflow-y-auto">
+                    <div className="grid grid-cols-[60px_1fr]">
+                        {/* Time column */}
+                        <div className="relative">
+                            {timeSlots.map(time => (
+                                <div key={time} className="h-12 flex items-start justify-end pr-2 border-r">
+                                    <span className="relative -top-2 text-xs text-muted-foreground">{time}</span>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                        {/* Days columns */}
+                        <div className="grid grid-cols-7 relative">
+                            {weekDays.map((day, dayIndex) => (
+                                <div key={day.toISOString()} className="relative border-r last:border-r-0">
+                                    {timeSlots.map(time => (
+                                        <div key={time} className="h-12 border-b border-dashed"></div>
+                                    ))}
+                                    {groupAssignmentsByTimeAndTask(assignments
+                                        .filter(a => {
+                                            const assignmentDate = new Date(a.startTime);
+                                            assignmentDate.setHours(0,0,0,0);
+                                            const compareDate = new Date(day);
+                                            compareDate.setHours(0,0,0,0);
+                                            return assignmentDate.getTime() === compareDate.getTime();
+                                        }))
+                                        .map((assignmentGroup, index) => {
+                                            const firstAssignment = assignmentGroup[0];
+                                            const task = getTaskById(firstAssignment.taskId, tasks);
+                                            if (!task) return null;
+
+                                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
+                                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
+                                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
+                                            const extrasTotal = calculateExtrasTotal(firstAssignment, task);
+                                            const startTime = new Date(firstAssignment.startTime);
+                                            const endTime = new Date(firstAssignment.endTime);
+
+                                            return (
+                                                <Tooltip key={`${firstAssignment.id}-${index}`}>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={() => onTaskClick(assignmentGroup)}
+                                                            className="absolute w-[calc(100%-4px)] rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between"
+                                                            style={{
+                                                                top: `${getTaskPosition(startTime)}px`,
+                                                                height: `${getTaskHeight(startTime, endTime)}px`,
+                                                                left: '2px',
+                                                            }}
+                                                        >
+                                                            <div>
+                                                                <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
+                                                                <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
+                                                                {extrasTotal > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
+                                                            </div>
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="max-w-xs">
+                                                        <div className="space-y-2 p-2">
+                                                            <h4 className="font-bold">{task.title}</h4>
+                                                            <p className="text-sm text-muted-foreground">{task.description}</p>
+                                                            <Separator />
+                                                            {client && (
+                                                                <div className="flex items-start gap-2 text-sm">
+                                                                    <User className="h-4 w-4 mt-0.5 shrink-0" />
+                                                                    <span>{client.firstName} {client.lastName}</span>
+                                                                </div>
+                                                            )}
+                                                            {boats.length > 0 && (
+                                                                <div className="flex items-start gap-2 text-sm">
+                                                                    <Ship className="h-4 w-4 mt-0.5 shrink-0" />
+                                                                    <span>{boats.map(b => b.name).join(', ')}</span>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex items-start gap-2 text-sm">
+                                                                <User className="h-4 w-4 mt-0.5 shrink-0" />
+                                                                <span>{assignedEmployees.map(e => `${e.name} ${e.lastName}`).join(', ')}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-sm">
+                                                                <Clock className="h-4 w-4 shrink-0" />
+                                                                <span>{startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} a {endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({task.duration} min)</span>
+                                                            </div>
+                                                            {extrasTotal > 0 && (
+                                                                <div className="flex items-center gap-2 text-sm font-medium text-green-600">
+                                                                    <DollarSign className="h-4 w-4 shrink-0" />
+                                                                    <span>
+                                                                        Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )
+                                        })
+                                    }
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </TooltipProvider>
