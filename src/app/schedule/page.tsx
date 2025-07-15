@@ -782,7 +782,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="startTime">Hora de Inicio</Label>
-                                <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} disabled={!selectedTaskId} />
+                                <Input id="startTime" type="time" value={startTime} onChange={e => {setStartTime(e.target.value); setIsEndTimeManual(false);}} disabled={!selectedTaskId} />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="endTime">Hora de Fin (auto)</Label>
@@ -1020,7 +1020,7 @@ export default function SchedulePage() {
               Asignar Tareas
             </h1>
             <p className="text-muted-foreground">
-              Configure el calendario laboral y asigne tareas a los empleados.
+              Calendario de Asignacion de Tareas a Empleados
             </p>
           </div>
            <Dialog open={isCreateOpen} onOpenChange={open => open ? setIsCreateOpen(true) : handleCloseDialogs()}>
@@ -1057,9 +1057,3 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
-
-    
-
-    
-
-    
