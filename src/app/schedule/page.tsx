@@ -45,21 +45,21 @@ const DayView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTa
         const assignmentDate = new Date(a.startTime);
         assignmentDate.setHours(0, 0, 0, 0);
         return assignmentDate.getTime() === today.getTime();
-    }).sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
     const groupedAssignments = groupAssignmentsByTimeAndTask(todayAssignments);
 
     const getTaskPosition = (startTime: Date) => {
         const startHour = 6;
-        const hours = startTime.getHours() + startTime.getMinutes() / 60;
+        const hours = new Date(startTime).getHours() + new Date(startTime).getMinutes() / 60;
         const topPosition = (hours - startHour) * 48; // 48px per hour (h-12)
         return Math.max(0, topPosition);
     }
 
     const getTaskHeight = (startTime: Date, endTime: Date) => {
-        const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+        const durationMinutes = (new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60);
         const height = (durationMinutes / 60) * 48; // 48px per hour
-        return Math.max(1, height - 2); // Subtract 2px for a small gap
+        return Math.max(24, height - 2); // Subtract 2px for a small gap, min height 24px
     }
 
     return (
@@ -82,15 +82,15 @@ const DayView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTa
                             </div>
                         ))}
                     </div>
-                    <div className="absolute top-0 left-[50px] right-0 bottom-0">
+                    <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
                          {groupedAssignments.map((assignmentGroup, index) => {
                             const firstAssignment = assignmentGroup[0];
                             const task = getTaskById(firstAssignment.taskId);
                             if (!task) return null;
 
                             const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
-                            const startTime = firstAssignment.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            const endTime = firstAssignment.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const startTime = new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const endTime = new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             const top = getTaskPosition(firstAssignment.startTime);
                             const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
                             
@@ -149,7 +149,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                 compareDate.setHours(0,0,0,0);
                 return assignmentDate.getTime() === compareDate.getTime();
             })
-            .sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
         
         return groupAssignmentsByTimeAndTask(dayAssignments);
     }
@@ -176,8 +176,8 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
 
                                     const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
 
-                                    const startTime = firstAssignment.startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                    const endTime = firstAssignment.endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                    const startTime = new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                    const endTime = new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                                     return (
                                         <Tooltip key={`${firstAssignment.id}-${index}`}>
@@ -228,13 +228,14 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
 
     const [selectedTaskId, setSelectedTaskId] = React.useState<string>(firstAssignment?.taskId || "");
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode ? assignmentToEdit.map(a => a.employeeId) : []);
-    const [startTime, setStartTime] = React.useState(firstAssignment?.startTime.toTimeString().substring(0,5) || "09:00");
-    const [endTime, setEndTime] = React.useState(firstAssignment?.endTime.toTimeString().substring(0,5) || "11:00");
+    const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
+    const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "11:00");
     
     const formatDateForInput = (date: Date) => {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
+        const d = new Date(date);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
         return `${yyyy}-${mm}-${dd}`;
     }
 
@@ -245,9 +246,9 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
             const first = assignmentToEdit[0];
             setSelectedTaskId(first.taskId);
             setSelectedEmployees(assignmentToEdit.map(a => a.employeeId));
-            setStartTime(first.startTime.toTimeString().substring(0,5));
-            setEndTime(first.endTime.toTimeString().substring(0,5));
-            setDate(formatDateForInput(first.startTime));
+            setStartTime(new Date(first.startTime).toTimeString().substring(0,5));
+            setEndTime(new Date(first.endTime).toTimeString().substring(0,5));
+            setDate(formatDateForInput(new Date(first.startTime)));
         } else {
              // Reset form for new assignment
             setSelectedTaskId("");
@@ -396,8 +397,30 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
 export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
-  const [assignments, setAssignments] = React.useState<Assignment[]>(initialAssignments)
+  const [assignments, setAssignments] = React.useState<Assignment[]>([])
   const [editingAssignmentGroup, setEditingAssignmentGroup] = React.useState<Assignment[] | null>(null);
+
+  React.useEffect(() => {
+    try {
+      const savedAssignments = localStorage.getItem('assignments');
+      if (savedAssignments) {
+        setAssignments(JSON.parse(savedAssignments));
+      } else {
+        setAssignments(initialAssignments);
+      }
+    } catch (error) {
+      console.error("Failed to load assignments from localStorage", error);
+      setAssignments(initialAssignments);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+       localStorage.setItem('assignments', JSON.stringify(assignments));
+    } catch (error) {
+       console.error("Failed to save assignments to localStorage", error);
+    }
+  }, [assignments]);
 
   const handleAssignTask = (newAssignments: Assignment[]) => {
     setAssignments(prev => [...prev, ...newAssignments]);

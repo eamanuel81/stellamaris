@@ -1,8 +1,6 @@
 "use client"
 
 import {
-  Alert,
-  AlertDescription,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -12,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-  AlertTitle,
   Button,
+  Card,
   Checkbox,
   Dialog,
   DialogContent,
@@ -175,7 +173,4 @@ export default function TasksPage() {
   )
 }
 
-// Dummy Card component to resolve compilation error
-const Card = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className={className} {...props} />
-)
+    
