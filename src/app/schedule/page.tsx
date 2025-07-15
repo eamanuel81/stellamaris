@@ -3,7 +3,7 @@
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, Checkbox } from "@/components/ui"
 import { PlusCircle, Clock, User, ChevronDown, Car, Trash2, Ship, DollarSign } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, TaskExtra } from "@/lib/data"
 import { cn } from "@/lib/utils"
@@ -425,9 +425,10 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>(firstAssignment?.boatIds || []);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>(firstAssignment?.selectedExtras || []);
     const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
-    const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "11:00");
+    const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "10:00");
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
     const [isCreateClientOpen, setIsCreateClientOpen] = React.useState(false);
+    const [isEndTimeManual, setIsEndTimeManual] = React.useState(false);
     
     const formatDateForInput = (date: Date) => {
         const d = new Date(date);
@@ -452,6 +453,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             setStartTime(new Date(first.startTime).toTimeString().substring(0,5));
             setEndTime(new Date(first.endTime).toTimeString().substring(0,5));
             setDate(formatDateForInput(new Date(first.startTime)));
+            setIsEndTimeManual(false); // Reset on edit
         } else {
              // Reset form for new assignment
             setSelectedTaskId("");
@@ -469,15 +471,16 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
                 setEndTime("10:00");
             }
             setDate(formatDateForInput(new Date()));
+            setIsEndTimeManual(false);
         }
     }, [assignmentToEdit, isEditMode, tasks]);
 
      React.useEffect(() => {
-        if (selectedTask && startTime && date) {
+        if (!isEndTimeManual && selectedTask && startTime && date) {
             const taskDuration = selectedTask.duration;
-            const [startHour, startMinute] = startTime.split(':').map(Number);
             
             const startDate = new Date(`${date}T${startTime}`);
+            if (isNaN(startDate.getTime())) return;
             
             const endDate = new Date(startDate.getTime() + taskDuration * 60000);
 
@@ -486,7 +489,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             
             setEndTime(`${endHour}:${endMinute}`);
         }
-    }, [selectedTask, startTime, date]);
+    }, [selectedTask, startTime, date, isEndTimeManual]);
 
     const handleTaskSelectChange = (taskId: string) => {
         setSelectedTaskId(taskId);
@@ -771,7 +774,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
                                 })}
                             </div>
                         </div>
-
+                        
                         <div className="grid gap-2">
                             <Label htmlFor="date">Fecha</Label>
                             <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
@@ -783,8 +786,19 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="endTime">Hora de Fin (auto)</Label>
-                                <Input id="endTime" type="time" value={endTime} readOnly disabled />
+                                <Input id="endTime" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={!isEndTimeManual} />
                             </div>
+                        </div>
+                         <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="manualEndTime" 
+                                checked={isEndTimeManual} 
+                                onCheckedChange={(checked) => setIsEndTimeManual(Boolean(checked))}
+                                disabled={!selectedTaskId}
+                            />
+                            <Label htmlFor="manualEndTime" className="text-sm font-normal text-muted-foreground">
+                                Editar hora de fin manualmente
+                            </Label>
                         </div>
                     </div>
                 </TabsContent>
