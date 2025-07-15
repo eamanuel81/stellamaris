@@ -61,6 +61,7 @@ export type Client = {
   id: string;
   firstName: string;
   lastName: string;
+  dni: string;
   email: string;
   phone: string;
   internalNote: string;
@@ -96,11 +97,12 @@ export const clients: Client[] = [
     id: 'c1', 
     firstName: 'Ricardo', 
     lastName: 'Fort', 
+    dni: '22333444',
     email: 'elcomandante@fort.com', 
     phone: '1122334455', 
     internalNote: 'Paga en dólares. Fanático del chocolate.', 
     boats: [
-      { id: 'b1', name: 'El Fort-Farré', hullType: 'Crucero', engine: 'Volvo Penta', registrationNumber: 'ABC-123' },
+      { id: 'b1', name: 'El Fort-Farré', hullType: 'Tracker open 420 mts', engine: 'Datos del Motor', registrationNumber: 'ABC-123' },
       { id: 'b2', name: 'Miami', hullType: 'Lancha', engine: 'Mercury', registrationNumber: 'DEF-456' }
     ],
     responsibles: [],
@@ -110,6 +112,7 @@ export const clients: Client[] = [
     id: 'c2', 
     firstName: 'Susana', 
     lastName: 'Gimenez', 
+    dni: '11222333',
     email: 'su@gimenez.com', 
     phone: '1166778899', 
     internalNote: 'Llama seguido. Preguntar por el perro.', 

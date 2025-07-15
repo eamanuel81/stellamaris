@@ -32,6 +32,7 @@ export const ClientDialog = ({
     const isEditMode = !!clientToEdit;
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
+    const [dni, setDni] = React.useState('');
     const [email, setEmail] = React.useState('');
     const [phone, setPhone] = React.useState('');
     const [internalNote, setInternalNote] = React.useState('');
@@ -42,6 +43,7 @@ export const ClientDialog = ({
         if (isEditMode && clientToEdit) {
             setFirstName(clientToEdit.firstName);
             setLastName(clientToEdit.lastName);
+            setDni(clientToEdit.dni);
             setEmail(clientToEdit.email);
             setPhone(clientToEdit.phone);
             setInternalNote(clientToEdit.internalNote);
@@ -50,6 +52,7 @@ export const ClientDialog = ({
         } else {
             setFirstName('');
             setLastName('');
+            setDni('');
             setEmail('');
             setPhone('');
             setInternalNote('');
@@ -107,6 +110,7 @@ export const ClientDialog = ({
             id: isEditMode && clientToEdit ? clientToEdit.id : `c${Date.now()}`,
             firstName,
             lastName,
+            dni,
             email,
             phone,
             internalNote,
@@ -143,15 +147,19 @@ export const ClientDialog = ({
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="juan@example.com" />
+                             <div className="grid gap-2">
+                                <Label htmlFor="dni">DNI</Label>
+                                <Input id="dni" value={dni} onChange={e => setDni(e.target.value)} placeholder="12345678" />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="phone">Celular</Label>
                                 <Input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="1122334455" />
                             </div>
                         </div>
+                         <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="juan@example.com" />
+                            </div>
                         <div className="grid gap-2">
                             <Label htmlFor="internalNote">Nota Interna</Label>
                             <Textarea id="internalNote" value={internalNote} onChange={e => setInternalNote(e.target.value)} placeholder="Información relevante sobre el cliente..." />
@@ -179,11 +187,11 @@ export const ClientDialog = ({
                                  <div className="grid grid-cols-2 gap-4">
                                      <div className="grid gap-2">
                                         <Label htmlFor={`boat-hull-${index}`}>Tipo de Casco</Label>
-                                        <Input id={`boat-hull-${index}`} value={boat.hullType} onChange={(e) => handleBoatChange(index, 'hullType', e.target.value)} placeholder="Lancha, Crucero, etc." />
+                                        <Input id={`boat-hull-${index}`} value={boat.hullType} onChange={(e) => handleBoatChange(index, 'hullType', e.target.value)} placeholder="Tracker open 420 mts" />
                                      </div>
                                       <div className="grid gap-2">
                                         <Label htmlFor={`boat-engine-${index}`}>Motor</Label>
-                                        <Input id={`boat-engine-${index}`} value={boat.engine} onChange={(e) => handleBoatChange(index, 'engine', e.target.value)} placeholder="Marca y modelo del motor" />
+                                        <Input id={`boat-engine-${index}`} value={boat.engine} onChange={(e) => handleBoatChange(index, 'engine', e.target.value)} placeholder="Datos del Motor" />
                                      </div>
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={() => handleRemoveBoat(index)} className="absolute top-2 right-2">
