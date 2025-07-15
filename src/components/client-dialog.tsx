@@ -209,7 +209,7 @@ export const ClientDialog = ({
 
                      {/* Responsibles Section */}
                      <div className="space-y-4">
-                         <h4 className="font-semibold text-lg">Responsables (no clientes)</h4>
+                         <h4 className="font-semibold text-lg">Otros Responsables</h4>
                         {responsibles.map((resp, index) => (
                              <div key={resp.id} className="p-4 border rounded-lg space-y-4 relative">
                                 <h5 className="font-medium">Responsable #{index+1}</h5>
