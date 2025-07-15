@@ -12,6 +12,12 @@ export type Employee = {
   avatarUrl: string;
 };
 
+export type TaskExtra = {
+    id: string;
+    name: string;
+    price: number;
+}
+
 export type Task = {
   id: string;
   title: string;
@@ -20,6 +26,7 @@ export type Task = {
   requiresDriving: boolean;
   type?: string;
   qualifiedEmployeeIds?: string[]; // Array of employee IDs
+  extras?: TaskExtra[];
 };
 
 export type Assignment = {
