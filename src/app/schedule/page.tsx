@@ -460,15 +460,38 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             setSelectedBoatIds([]);
             setSelectedExtras([]);
             setStartTime("09:00");
-            setEndTime("11:00");
+            const initialTask = getTaskById("", tasks);
+            if (initialTask) {
+                const duration = initialTask.duration;
+                const newEndTime = new Date(new Date().setHours(9,0) + duration * 60000);
+                setEndTime(newEndTime.toTimeString().substring(0,5));
+            } else {
+                setEndTime("10:00");
+            }
             setDate(formatDateForInput(new Date()));
         }
-    }, [assignmentToEdit, isEditMode, open]); // Depend on open to reset
+    }, [assignmentToEdit, isEditMode, tasks]);
+
+     React.useEffect(() => {
+        if (selectedTask && startTime && date) {
+            const taskDuration = selectedTask.duration;
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            
+            const startDate = new Date(`${date}T${startTime}`);
+            
+            const endDate = new Date(startDate.getTime() + taskDuration * 60000);
+
+            const endHour = String(endDate.getHours()).padStart(2, '0');
+            const endMinute = String(endDate.getMinutes()).padStart(2, '0');
+            
+            setEndTime(`${endHour}:${endMinute}`);
+        }
+    }, [selectedTask, startTime, date]);
 
     const handleTaskSelectChange = (taskId: string) => {
         setSelectedTaskId(taskId);
-        setSelectedEmployees([]); // Reset employees when task changes
-        setSelectedExtras([]); // Reset extras
+        setSelectedEmployees([]); 
+        setSelectedExtras([]); 
     };
 
     const handleEmployeeSelect = (employeeId: string) => {
@@ -481,7 +504,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
 
     const handleClientSelectChange = (clientId: string) => {
         setSelectedClientId(clientId === "none" ? undefined : clientId);
-        setSelectedBoatIds([]); // Reset boats when client changes
+        setSelectedBoatIds([]); 
     };
 
     const handleBoatSelect = (boatId: string) => {
@@ -528,7 +551,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
         
-        const assignmentDate = new Date(date + 'T00:00:00'); // Use T00:00:00 to avoid timezone issues
+        const assignmentDate = new Date(date + 'T00:00:00'); 
 
         const startDate = new Date(assignmentDate.getTime());
         startDate.setHours(startHour, startMinute, 0, 0);
@@ -550,7 +573,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
         } else {
             const newAssignments = selectedEmployees.map(employeeId => {
                 return {
-                    id: `a${Date.now()}${Math.random()}`, // simple unique id
+                    id: `a${Date.now()}${Math.random()}`,
                     ...newAssignmentData,
                     employeeId: employeeId,
                     status: 'assigned' as const
@@ -571,14 +594,14 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
 
     const handleTaskCreated = (newTask: Task) => {
         onTaskCreated(newTask);
-        setSelectedTaskId(newTask.id); // auto-select the new task
-        setIsCreateTaskOpen(false); // Close the creation dialog
+        setSelectedTaskId(newTask.id); 
+        setIsCreateTaskOpen(false); 
     }
 
     const handleClientCreated = (newClient: Client) => {
         onClientCreated(newClient);
-        setSelectedClientId(newClient.id); // auto-select the new client
-        setIsCreateClientOpen(false); // Close the creation dialog
+        setSelectedClientId(newClient.id); 
+        setIsCreateClientOpen(false); 
     }
 
     const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
@@ -748,19 +771,20 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
                                 })}
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="startTime">Hora de Inicio</Label>
-                                <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="endTime">Hora de Fin</Label>
-                                <Input id="endTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
-                            </div>
-                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="date">Fecha</Label>
                             <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="startTime">Hora de Inicio</Label>
+                                <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} disabled={!selectedTaskId} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="endTime">Hora de Fin (auto)</Label>
+                                <Input id="endTime" type="time" value={endTime} readOnly disabled />
+                            </div>
                         </div>
                     </div>
                 </TabsContent>
@@ -1019,6 +1043,8 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
 
     
 
