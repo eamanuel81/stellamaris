@@ -37,6 +37,13 @@ import {
   Textarea,
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui"
 import { AppLayout } from "@/components/app-layout"
 import { Car, ChevronDown, MoreHorizontal, PlusCircle, Search } from "lucide-react"
@@ -214,6 +221,7 @@ export default function TasksPage() {
         } else {
             setTasks(prev => [...prev, taskData]);
         }
+        setTaskToEdit(null);
     }
     
     const handleDeleteTask = (taskId: string) => {
@@ -271,73 +279,108 @@ export default function TasksPage() {
         </div>
 
         <Card className="overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead>Descripción</TableHead>
-                <TableHead className="text-center">Duración</TableHead>
-                <TableHead className="text-center">Requiere Conducir</TableHead>
-                <TableHead>
-                  <span className="sr-only">Acciones</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell className="font-medium">{task.title}</TableCell>
-                  <TableCell className="max-w-sm truncate text-muted-foreground">{task.description}</TableCell>
-                  <TableCell className="text-center">{task.duration} min</TableCell>
-                  <TableCell className="text-center">
-                    {task.requiresDriving && (
-                      <Badge variant="outline" className="border-amber-500 bg-amber-50 text-amber-700">
-                        <Car className="mr-2 h-4 w-4" />
-                        Sí
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEditClick(task)}>Editar</DropdownMenuItem>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                    Eliminar
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Esto eliminará permanentemente el tipo de tarea.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteTask(task.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          <TooltipProvider>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Descripción</TableHead>
+                    <TableHead>Empleados Cualificados</TableHead>
+                    <TableHead className="text-center">Duración</TableHead>
+                    <TableHead className="text-center">Requiere Conducir</TableHead>
+                    <TableHead>
+                    <span className="sr-only">Acciones</span>
+                    </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                {filteredTasks.map((task) => {
+                    const qualifiedEmployees = task.qualifiedEmployeeIds?.map(id => employees.find(e => e.id === id)).filter(Boolean) as typeof employees;
+                    
+                    return (
+                        <TableRow key={task.id}>
+                        <TableCell className="font-medium">{task.title}</TableCell>
+                        <TableCell className="max-w-xs truncate text-muted-foreground">{task.description}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center -space-x-2">
+                            {qualifiedEmployees?.slice(0, 3).map(emp => (
+                                <Tooltip key={emp.id}>
+                                <TooltipTrigger asChild>
+                                    <Avatar className="h-6 w-6 border-2 border-card">
+                                    <AvatarImage src={emp.avatarUrl} alt={emp.name} />
+                                    <AvatarFallback>{emp.name[0]}{emp.lastName[0]}</AvatarFallback>
+                                    </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {emp.name} {emp.lastName}
+                                </TooltipContent>
+                                </Tooltip>
+                            ))}
+                            {qualifiedEmployees && qualifiedEmployees.length > 3 && (
+                                <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground">
+                                    +{qualifiedEmployees.length - 3}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {qualifiedEmployees.slice(3).map(e => e.name).join(', ')}
+                                </TooltipContent>
+                                </Tooltip>
+                            )}
+                            </div>
+                        </TableCell>
+                        <TableCell className="text-center">{task.duration} min</TableCell>
+                        <TableCell className="text-center">
+                            {task.requiresDriving && (
+                            <Badge variant="outline" className="border-amber-500 bg-amber-50 text-amber-700">
+                                <Car className="mr-2 h-4 w-4" />
+                                Sí
+                            </Badge>
+                            )}
+                        </TableCell>
+                        <TableCell>
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Abrir menú</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEditClick(task)}>Editar</DropdownMenuItem>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                            Eliminar
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Esta acción no se puede deshacer. Esto eliminará permanentemente el tipo de tarea.
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDeleteTask(task.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                        </TableRow>
+                    )
+                })}
+                </TableBody>
+            </Table>
+          </TooltipProvider>
         </Card>
       </div>
     </AppLayout>
   )
 }
-
     
