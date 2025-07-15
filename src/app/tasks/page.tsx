@@ -118,7 +118,8 @@ const TaskDialog = ({
     const handleExtraChange = (index: number, field: 'name' | 'price', value: string | number) => {
         const newExtras = [...extras];
         if (field === 'price') {
-            newExtras[index][field] = Number(value);
+             const price = Number(value);
+            newExtras[index][field] = isNaN(price) ? 0 : price;
         } else {
             newExtras[index][field] = String(value);
         }
@@ -128,6 +129,11 @@ const TaskDialog = ({
     const handleRemoveExtra = (index: number) => {
         setExtras(prev => prev.filter((_, i) => i !== index));
     }
+
+    const totalExtras = React.useMemo(() => {
+        return extras.reduce((sum, extra) => sum + (extra.price || 0), 0);
+    }, [extras]);
+
 
     const handleSubmit = () => {
         if (!title || !description || !duration) {
@@ -247,13 +253,16 @@ const TaskDialog = ({
                                             value={extra.name}
                                             onChange={(e) => handleExtraChange(index, 'name', e.target.value)}
                                         />
-                                        <Input 
-                                            type="number" 
-                                            placeholder="Precio" 
-                                            className="w-28"
-                                            value={extra.price}
-                                            onChange={(e) => handleExtraChange(index, 'price', e.target.value)}
-                                        />
+                                        <div className="relative">
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm">AR$</span>
+                                            <Input 
+                                                type="number" 
+                                                placeholder="Precio (opcional)" 
+                                                className="w-40 pl-10"
+                                                value={extra.price || ''}
+                                                onChange={(e) => handleExtraChange(index, 'price', e.target.value)}
+                                            />
+                                        </div>
                                         <Button variant="ghost" size="icon" onClick={() => handleRemoveExtra(index)}>
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
@@ -264,6 +273,16 @@ const TaskDialog = ({
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Agregar Extra
                             </Button>
+                            {extras.length > 0 && (
+                                <div className="mt-4 pt-4 border-t">
+                                    <div className="flex justify-between items-center font-semibold">
+                                        <span>Total de Extras:</span>
+                                        <span>
+                                            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(totalExtras)}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </TabsContent>
                 </Tabs>
@@ -381,7 +400,7 @@ export default function TasksPage() {
                         <TableCell className="max-w-xs truncate text-muted-foreground">{task.description}</TableCell>
                         <TableCell>
                             <div className="flex items-center -space-x-2">
-                            {qualifiedEmployees?.slice(0, 3).map(emp => (
+                            {qualifiedEmployees && qualifiedEmployees.length > 0 ? qualifiedEmployees?.slice(0, 3).map(emp => (
                                 <Tooltip key={emp.id}>
                                 <TooltipTrigger asChild>
                                     <Avatar className="h-6 w-6 border-2 border-card">
@@ -393,7 +412,9 @@ export default function TasksPage() {
                                     {emp.name} {emp.lastName}
                                 </TooltipContent>
                                 </Tooltip>
-                            ))}
+                            )) : (
+                                <span className="text-xs text-muted-foreground italic">Todos</span>
+                            )}
                             {qualifiedEmployees && qualifiedEmployees.length > 3 && (
                                 <Tooltip>
                                 <TooltipTrigger asChild>
