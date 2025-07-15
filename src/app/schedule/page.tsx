@@ -73,6 +73,106 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
         }, 0);
     }
 
+    // Process assignments to add layout properties for overlaps
+    const processedAssignments = React.useMemo(() => {
+        const assignmentsWithLayout = groupedAssignments.map(group => ({
+            group,
+            startTime: new Date(group[0].startTime),
+            endTime: new Date(group[0].endTime),
+            overlaps: [] as any[],
+            columns: 0,
+            column: 0
+        }));
+
+        for (let i = 0; i < assignmentsWithLayout.length; i++) {
+            for (let j = i + 1; j < assignmentsWithLayout.length; j++) {
+                const a = assignmentsWithLayout[i];
+                const b = assignmentsWithLayout[j];
+                if (a.startTime < b.endTime && a.endTime > b.startTime) {
+                    a.overlaps.push(b);
+                    b.overlaps.push(a);
+                }
+            }
+        }
+        
+        const findColumns = (assignment: any) => {
+             let maxColumns = 0;
+            const connected = [assignment];
+            const processed = new Set();
+
+            while(connected.length > 0) {
+                const current = connected.shift();
+                if(processed.has(current)) continue;
+                processed.add(current);
+
+                const currentColumns = [current];
+                 for (const other of processed) {
+                    if (current.startTime < other.endTime && current.endTime > other.startTime) {
+                        if (!currentColumns.find(c => c === other)) {
+                            currentColumns.push(other);
+                        }
+                    }
+                }
+                maxColumns = Math.max(maxColumns, currentColumns.length)
+
+                for (const overlap of current.overlaps) {
+                    if (!processed.has(overlap)) {
+                        connected.push(overlap);
+                    }
+                }
+            }
+            return maxColumns || 1;
+        }
+
+        const placed = new Set();
+        assignmentsWithLayout.forEach(assignment => {
+            if(placed.has(assignment)) return;
+
+            const connected = [assignment];
+            const cluster = new Set([assignment]);
+            while(connected.length > 0) {
+                const current = connected.shift();
+                if(!current) continue;
+                current.overlaps.forEach(o => {
+                    if(!cluster.has(o)) {
+                        cluster.add(o);
+                        connected.push(o);
+                    }
+                });
+            }
+            
+            const sortedCluster = Array.from(cluster).sort((a,b) => a.startTime.getTime() - b.startTime.getTime());
+            
+            sortedCluster.forEach(a => {
+                const columns: any[] = [];
+                for(let i = 0; i < sortedCluster.length; i++) {
+                    columns.push([]);
+                }
+                
+                sortedCluster.forEach(item => {
+                    let placedInColumn = false;
+                    for(let i = 0; i < columns.length; i++) {
+                        const lastInColumn = columns[i][columns[i].length - 1];
+                        if(!lastInColumn || item.startTime >= lastInColumn.endTime) {
+                            columns[i].push(item);
+                            item.column = i;
+                            placedInColumn = true;
+                            break;
+                        }
+                    }
+                });
+
+                const totalColumns = columns.filter(c => c.length > 0).length;
+                 sortedCluster.forEach(item => item.columns = totalColumns);
+
+            });
+
+             cluster.forEach(item => placed.add(item));
+        });
+
+        return assignmentsWithLayout;
+
+    }, [groupedAssignments]);
 
     return (
         <TooltipProvider>
@@ -89,13 +189,14 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                     <span className="relative top-2 pr-4 text-xs text-muted-foreground">{time}</span>
                                 </div>
                                 <div className="border-l border-border pl-4">
-                                    <div className="h-12 border-b border-dashed"></div>
+                                    <div className="h-12 border-dashed border-b"></div>
                                 </div>
                             </div>
                         ))}
                     </div>
                     <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
-                         {groupedAssignments.map((assignmentGroup, index) => {
+                         {processedAssignments.map((processed, index) => {
+                            const assignmentGroup = processed.group;
                             const firstAssignment = assignmentGroup[0];
                             const task = getTaskById(firstAssignment.taskId, tasks);
                             if (!task) return null;
@@ -109,14 +210,22 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                             const endTime = new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                             const top = getTaskPosition(firstAssignment.startTime);
                             const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
+
+                            const width = 100 / processed.columns;
+                            const left = width * processed.column;
                             
                             return (
                                 <Tooltip key={`${firstAssignment.id}-${index}`}>
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={() => onTaskClick(assignmentGroup)}
-                                            className="absolute w-[calc(100%-1rem)] rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between"
-                                            style={{ top: `${top}px`, height: `${height}px` }}
+                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between"
+                                            style={{ 
+                                                top: `${top}px`, 
+                                                height: `${height}px`,
+                                                width: `calc(${width}% - 4px)`,
+                                                left: `${left}%`
+                                            }}
                                         >
                                             <div>
                                                 <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
@@ -354,7 +463,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             setEndTime("11:00");
             setDate(formatDateForInput(new Date()));
         }
-    }, [assignmentToEdit, isEditMode, setOpen]); // Depend on setOpen to reset
+    }, [assignmentToEdit, isEditMode, open]); // Depend on open to reset
 
     const handleTaskSelectChange = (taskId: string) => {
         setSelectedTaskId(taskId);
@@ -791,44 +900,39 @@ export default function SchedulePage() {
   }, [loadInitialData]);
 
 
-  React.useEffect(() => {
+  const updateAndStoreAssignments = (newAssignments: Assignment[]) => {
+    setAssignments(newAssignments);
     try {
-       localStorage.setItem('assignments', JSON.stringify(assignments));
+       localStorage.setItem('assignments', JSON.stringify(newAssignments));
     } catch (error) {
        console.error("Failed to save assignments to localStorage", error);
     }
-  }, [assignments]);
-
+  }
 
   const handleAssignTask = (newAssignments: Assignment[]) => {
-    setAssignments(prev => [...prev, ...newAssignments]);
+    updateAndStoreAssignments([...assignments, ...newAssignments]);
   }
 
  const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => {
-    setAssignments(prev => {
-        const originalIds = new Set(originalAssignments.map(a => a.id));
-        const filtered = prev.filter(a => !originalIds.has(a.id));
+    const originalIds = new Set(originalAssignments.map(a => a.id));
+    const filtered = assignments.filter(a => !originalIds.has(a.id));
 
-        const newAssignments = newEmployeeIds.map(employeeId => {
-            return {
-                id: `a${Date.now()}${Math.random()}`,
-                ...newAssignmentData,
-                employeeId: employeeId,
-                status: 'assigned' as const
-            };
-        });
-
-        return [...filtered, ...newAssignments];
+    const updatedAssignments = newEmployeeIds.map(employeeId => {
+        return {
+            id: `a${Date.now()}${Math.random()}`,
+            ...newAssignmentData,
+            employeeId: employeeId,
+            status: 'assigned' as const
+        };
     });
-
+    
+    updateAndStoreAssignments([...filtered, ...updatedAssignments]);
     setEditingAssignmentGroup(null);
 }
 
   const handleDeleteAssignment = (assignmentsToDelete: Assignment[]) => {
-      setAssignments(prev => {
-          const idsToDelete = new Set(assignmentsToDelete.map(a => a.id));
-          return prev.filter(a => !idsToDelete.has(a.id));
-      });
+      const idsToDelete = new Set(assignmentsToDelete.map(a => a.id));
+      updateAndStoreAssignments(assignments.filter(a => !idsToDelete.has(a.id)));
       setEditingAssignmentGroup(null);
   }
 
@@ -915,5 +1019,7 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
 
     
