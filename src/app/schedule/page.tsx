@@ -3,8 +3,8 @@
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
-import { PlusCircle, Clock, User, ChevronDown, Car } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
+import { PlusCircle, Clock, User, ChevronDown, Car, Trash2 } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
@@ -223,7 +223,7 @@ const WeekView = ({ assignments, tasks, onTaskClick }: { assignments: Assignment
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, tasks, onTaskCreated }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; onTaskCreated: (task: Task) => void; }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDeleteTask, assignmentToEdit, tasks, onTaskCreated }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; onDeleteTask: (assignmentsToDelete: Assignment[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; onTaskCreated: (task: Task) => void; }) => {
     const isEditMode = !!assignmentToEdit;
     const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
 
@@ -316,6 +316,13 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
         setOpen(false);
     }
     
+    const handleDelete = () => {
+        if(assignmentToEdit) {
+            onDeleteTask(assignmentToEdit);
+            setOpen(false);
+        }
+    }
+
     const handleTaskCreated = (newTask: Task) => {
         onTaskCreated(newTask);
         setSelectedTaskId(newTask.id); // auto-select the new task
@@ -427,9 +434,35 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                     <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
                 </div>
             </div>
-            <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Asignar'}</Button>
+            <DialogFooter className="sm:justify-between">
+                <div>
+                     {isEditMode && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button type="button" variant="destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Esta acción no se puede deshacer. Esto eliminará permanentemente la asignación de esta tarea.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                </div>
+                <div className="flex gap-2 justify-end">
+                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                    <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Asignar'}</Button>
+                </div>
             </DialogFooter>
         </DialogContent>
     )
@@ -520,6 +553,14 @@ export default function SchedulePage() {
     setEditingAssignmentGroup(null);
 }
 
+  const handleDeleteAssignment = (assignmentsToDelete: Assignment[]) => {
+      setAssignments(prev => {
+          const idsToDelete = new Set(assignmentsToDelete.map(a => a.id));
+          return prev.filter(a => !idsToDelete.has(a.id));
+      });
+      setEditingAssignmentGroup(null);
+  }
+
   const handleTaskClick = (assignmentGroup: Assignment[]) => {
     setEditingAssignmentGroup(assignmentGroup);
     setIsEditOpen(true);
@@ -564,12 +605,12 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} tasks={tasks} onTaskCreated={handleTaskCreated} />
+            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteAssignment} assignmentToEdit={null} tasks={tasks} onTaskCreated={handleTaskCreated} />
           </Dialog>
         </header>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignmentGroup} tasks={tasks} onTaskCreated={handleTaskCreated} />
+            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteAssignment} assignmentToEdit={editingAssignmentGroup} tasks={tasks} onTaskCreated={handleTaskCreated} />
         </Dialog>
         
         <Tabs defaultValue="week" className="w-full">
