@@ -4,7 +4,7 @@
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui"
-import { PlusCircle, Clock, User, Ship, DollarSign } from "lucide-react"
+import { PlusCircle, Clock, User, Ship, DollarSign, Users } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee } from "@/lib/data"
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
 import { AssignmentDetailDialog } from "@/components/assignment-detail-dialog"
@@ -134,7 +134,12 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
                     <span>{boats.map(b => b.name).join(', ')}</span>
                 </div>
             )}
-            <p className="text-muted-foreground">{assignedEmployees.map(e => e.name).join(', ')}</p>
+            {assignedEmployees.length > 0 && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Users className="h-4 w-4 shrink-0" />
+                    <span>{assignedEmployees.map(e => e.name).join(', ')}</span>
+                </div>
+            )}
             {extrasTotal > 0 && (
                  <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
                     <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
@@ -563,4 +568,5 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
 
