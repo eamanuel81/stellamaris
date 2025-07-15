@@ -505,6 +505,13 @@ export default function SchedulePage() {
     }
   }
 
+  const onDeleteInEdit = () => {
+    if (selectedAssignmentGroup) {
+      handleDeleteAssignment(selectedAssignmentGroup);
+    }
+    handleCloseDialogs();
+  }
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -529,7 +536,7 @@ export default function SchedulePage() {
         </header>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialog setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={selectedAssignmentGroup} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} />
+            <AssignTaskDialog setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={selectedAssignmentGroup} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} onDelete={onDeleteInEdit} />
         </Dialog>
 
         <Dialog open={isDetailOpen} onOpenChange={open => open ? setIsDetailOpen(true) : handleCloseDialogs()}>
@@ -569,4 +576,4 @@ export default function SchedulePage() {
   )
 }
 
-
+    

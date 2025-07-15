@@ -11,18 +11,9 @@ import {
     Button,
     Separator,
     Badge,
-    AlertDialog,
-    AlertDialogTrigger,
-    AlertDialogContent,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogCancel,
-    AlertDialogAction
 } from "@/components/ui";
 import { Assignment, Task, Client, Employee } from "@/lib/data";
-import { Clock, User, Ship, DollarSign, Edit, Trash2 } from "lucide-react";
+import { Clock, User, Ship, DollarSign, Edit, Users } from "lucide-react";
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id);
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
@@ -143,27 +134,7 @@ export const AssignmentDetailDialog = ({
                 )}
             </div>
 
-            <DialogFooter className="sm:justify-between pt-4 border-t">
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Esto eliminará permanentemente la asignación de esta tarea.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={onDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+            <DialogFooter className="justify-end pt-4 border-t">
                 <div className="flex gap-2">
                     <Button variant="outline" onClick={() => setOpen(false)}>Cerrar</Button>
                     <Button onClick={onEdit}>
@@ -175,3 +146,5 @@ export const AssignmentDetailDialog = ({
         </DialogContent>
     )
 }
+
+    
