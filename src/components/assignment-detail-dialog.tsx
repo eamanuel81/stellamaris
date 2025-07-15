@@ -81,8 +81,18 @@ export const AssignmentDetailDialog = ({
 
                 <Separator />
                 
+                <div className="grid gap-2">
+                    <h4 className="font-semibold text-sm">Personal Asignado</h4>
+                     <div className="flex flex-wrap gap-2">
+                        {assignedEmployees.map(emp => (
+                            <Badge key={emp.id} variant="secondary">{emp.name} {emp.lastName}</Badge>
+                        ))}
+                    </div>
+                </div>
+
                 {client && (
                     <>
+                        <Separator />
                         <div className="grid gap-2">
                             <h4 className="font-semibold text-sm">Cliente</h4>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -96,12 +106,12 @@ export const AssignmentDetailDialog = ({
                                 </div>
                             )}
                         </div>
-                        <Separator />
                     </>
                 )}
 
                 {client && client.responsibles && client.responsibles.length > 0 && (
                      <>
+                        <Separator />
                         <div className="grid gap-2">
                             <h4 className="font-semibold text-sm">Otros Responsables</h4>
                             <div className="space-y-2">
@@ -117,19 +127,9 @@ export const AssignmentDetailDialog = ({
                             ))}
                             </div>
                         </div>
-                        <Separator />
                     </>
                 )}
 
-
-                <div className="grid gap-2">
-                    <h4 className="font-semibold text-sm">Personal Asignado</h4>
-                     <div className="flex flex-wrap gap-2">
-                        {assignedEmployees.map(emp => (
-                            <Badge key={emp.id} variant="secondary">{emp.name} {emp.lastName}</Badge>
-                        ))}
-                    </div>
-                </div>
 
                 {firstAssignment.selectedExtras && firstAssignment.selectedExtras.length > 0 && (
                      <>
@@ -168,5 +168,3 @@ export const AssignmentDetailDialog = ({
         </DialogContent>
     )
 }
-
-    
