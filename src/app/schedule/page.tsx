@@ -5,8 +5,9 @@ import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
 import { PlusCircle, Clock, User, ChevronDown, Car } from "lucide-react"
-import { employees, tasks, assignments as initialAssignments, Assignment } from "@/lib/data"
+import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task } from "@/lib/data"
 import { cn } from "@/lib/utils"
+import { TaskDialog } from "@/components/task-dialog"
 
 const generateTimeSlots = () => {
   const slots = []
@@ -18,7 +19,7 @@ const generateTimeSlots = () => {
   return slots
 }
 
-const getTaskById = (id: string) => tasks.find(t => t.id === id)
+const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
 
 
@@ -36,7 +37,7 @@ const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
     return Array.from(grouped.values());
 }
 
-const DayView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const DayView = ({ assignments, tasks, onTaskClick }: { assignments: Assignment[], tasks: Task[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const timeSlots = generateTimeSlots()
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -85,7 +86,7 @@ const DayView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTa
                     <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
                          {groupedAssignments.map((assignmentGroup, index) => {
                             const firstAssignment = assignmentGroup[0];
-                            const task = getTaskById(firstAssignment.taskId);
+                            const task = getTaskById(firstAssignment.taskId, tasks);
                             if (!task) return null;
 
                             const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
@@ -131,7 +132,7 @@ const DayView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTa
     )
 }
 
-const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const WeekView = ({ assignments, tasks, onTaskClick }: { assignments: Assignment[], tasks: Task[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
@@ -171,7 +172,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
                             {groupAssignmentsForDay(day)
                                 .map((assignmentGroup, index) => {
                                     const firstAssignment = assignmentGroup[0];
-                                    const task = getTaskById(firstAssignment.taskId);
+                                    const task = getTaskById(firstAssignment.taskId, tasks);
                                     if (!task) return null;
 
                                     const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
@@ -222,7 +223,7 @@ const WeekView = ({ assignments, onTaskClick }: { assignments: Assignment[], onT
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, tasks, onTaskCreated }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; onTaskCreated: (task: Task) => void; }) => {
     const isEditMode = !!assignmentToEdit;
     const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
 
@@ -230,6 +231,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode ? assignmentToEdit.map(a => a.employeeId) : []);
     const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
     const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "11:00");
+    const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
     
     const formatDateForInput = (date: Date) => {
         const d = new Date(date);
@@ -281,7 +283,8 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
         
-        const assignmentDate = new Date(date + 'T00:00:00'); // Use T00:00:00 to avoid timezone issues
+        const assignmentDate = new Date(date);
+        assignmentDate.setUTCHours(0, 0, 0, 0);
 
         const startDate = new Date(assignmentDate.getTime());
         startDate.setHours(startHour, startMinute, 0, 0);
@@ -314,8 +317,13 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
         setOpen(false);
     }
     
-    const selectedTask = getTaskById(selectedTaskId);
-    const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds
+    const handleTaskCreated = (newTask: Task) => {
+        onTaskCreated(newTask);
+        setSelectedTaskId(newTask.id); // auto-select the new task
+    }
+
+    const selectedTask = getTaskById(selectedTaskId, tasks);
+    const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
         ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
         : employees;
 
@@ -331,16 +339,38 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                     <Label htmlFor="task">Tarea</Label>
-                    <Select value={selectedTaskId} onValueChange={handleTaskSelectChange}>
-                        <SelectTrigger id="task">
-                            <SelectValue placeholder="Seleccione una tarea" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {tasks.map(task => (
-                                <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                        <Select value={selectedTaskId} onValueChange={handleTaskSelectChange}>
+                            <SelectTrigger id="task">
+                                <SelectValue placeholder="Seleccione una tarea" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {tasks.map(task => (
+                                    <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="icon">
+                                                <PlusCircle className="h-4 w-4" />
+                                            </Button>
+                                        </DialogTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Crear nueva tarea</TooltipContent>
+                                </Tooltip>
+                             </TooltipProvider>
+                            <TaskDialog
+                                open={isCreateTaskOpen}
+                                setOpen={setIsCreateTaskOpen}
+                                onTaskSave={handleTaskCreated}
+                                taskToEdit={null}
+                            />
+                        </Dialog>
+                    </div>
                 </div>
                 <div className="grid gap-2">
                   <Label>Empleado(s)</Label>
@@ -410,6 +440,7 @@ export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [assignments, setAssignments] = React.useState<Assignment[]>([])
+  const [tasks, setTasks] = React.useState<Task[]>([]);
   const [editingAssignmentGroup, setEditingAssignmentGroup] = React.useState<Assignment[] | null>(null);
 
   React.useEffect(() => {
@@ -426,9 +457,17 @@ export default function SchedulePage() {
       } else {
         setAssignments(initialAssignments);
       }
+
+      const savedTasks = localStorage.getItem('tasks');
+       if (savedTasks) {
+           setTasks(JSON.parse(savedTasks));
+       } else {
+           setTasks(initialTasks);
+       }
     } catch (error) {
-      console.error("Failed to load assignments from localStorage", error);
+      console.error("Failed to load data from localStorage", error);
       setAssignments(initialAssignments);
+      setTasks(initialTasks);
     }
   }, []);
 
@@ -440,17 +479,23 @@ export default function SchedulePage() {
     }
   }, [assignments]);
 
+  React.useEffect(() => {
+    try {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    } catch (error) {
+        console.error("Failed to save tasks to localStorage", error);
+    }
+  }, [tasks]);
+
   const handleAssignTask = (newAssignments: Assignment[]) => {
     setAssignments(prev => [...prev, ...newAssignments]);
   }
 
  const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => {
     setAssignments(prev => {
-        // Remove all assignments that were part of the original group
         const originalIds = new Set(originalAssignments.map(a => a.id));
         const filtered = prev.filter(a => !originalIds.has(a.id));
 
-        // Create the updated assignments for each selected employee
         const newAssignments = newEmployeeIds.map(employeeId => {
             return {
                 id: `a${Date.now()}${Math.random()}`,
@@ -476,10 +521,20 @@ export default function SchedulePage() {
   const handleCloseDialogs = () => {
     setIsCreateOpen(false);
     setIsEditOpen(false);
-    // Give time for dialog to close before resetting state
     setTimeout(() => {
        setEditingAssignmentGroup(null);
     }, 200);
+  }
+
+  const handleTaskCreated = (newTask: Task) => {
+    setTasks(prev => {
+        const isEditing = prev.some(t => t.id === newTask.id);
+        if (isEditing) {
+            return prev.map(t => t.id === newTask.id ? newTask : t);
+        } else {
+            return [...prev, newTask];
+        }
+    });
   }
 
   return (
@@ -501,12 +556,12 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} />
+            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} tasks={tasks} onTaskCreated={handleTaskCreated} />
           </Dialog>
         </header>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignmentGroup} />
+            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={editingAssignmentGroup} tasks={tasks} onTaskCreated={handleTaskCreated} />
         </Dialog>
         
         <Tabs defaultValue="week" className="w-full">
@@ -517,10 +572,10 @@ export default function SchedulePage() {
                 </TabsList>
             </div>
             <TabsContent value="day" className="mt-4">
-                <DayView assignments={assignments} onTaskClick={handleTaskClick} />
+                <DayView assignments={assignments} tasks={tasks} onTaskClick={handleTaskClick} />
             </TabsContent>
             <TabsContent value="week" className="mt-4">
-                <WeekView assignments={assignments} onTaskClick={handleTaskClick} />
+                <WeekView assignments={assignments} tasks={tasks} onTaskClick={handleTaskClick} />
             </TabsContent>
         </Tabs>
 
