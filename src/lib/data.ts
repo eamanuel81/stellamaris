@@ -36,6 +36,8 @@ export type Assignment = {
     startTime: Date;
     endTime: Date;
     status: 'assigned' | 'accepted' | 'completed';
+    clientId?: string;
+    boatIds?: string[];
 };
 
 export type Boat = {
@@ -70,10 +72,10 @@ export const tasks: Task[] = [
 ];
 
 export const assignments: Assignment[] = [
-    { id: 'a1', taskId: 't1', employeeId: '1', startTime: new Date(new Date().setHours(8, 0, 0, 0)), endTime: new Date(new Date().setHours(10, 0, 0, 0)), status: 'completed' },
+    { id: 'a1', taskId: 't1', employeeId: '1', startTime: new Date(new Date().setHours(8, 0, 0, 0)), endTime: new Date(new Date().setHours(10, 0, 0, 0)), status: 'completed', clientId: 'c1', boatIds: ['b1'] },
     { id: 'a2', taskId: 't2', employeeId: '3', startTime: new Date(new Date().setHours(9, 0, 0, 0)), endTime: new Date(new Date().setHours(9, 30, 0, 0)), status: 'accepted' },
     { id: 'a3', taskId: 't4', employeeId: '2', startTime: new Date(new Date().setHours(11, 0, 0, 0)), endTime: new Date(new Date().setHours(12, 0, 0, 0)), status: 'assigned' },
-    { id: 'a4', taskId: 't3', employeeId: '1', startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 45, 0, 0)), status: 'assigned' },
+    { id: 'a4', taskId: 't3', employeeId: '1', startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 45, 0, 0)), status: 'assigned', clientId: 'c2', boatIds: ['b3'] },
 ];
 
 export const clients: Client[] = [
