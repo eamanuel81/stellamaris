@@ -58,18 +58,21 @@ export default function TasksPage() {
         }
     }, []);
 
-    React.useEffect(() => {
+    const updateTasksAndStorage = (updatedTasks: Task[]) => {
+        setTasks(updatedTasks);
         try {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-            // Dispatch a storage event so other tabs can update
+            const newTasksJSON = JSON.stringify(updatedTasks);
+            localStorage.setItem('tasks', newTasksJSON);
+            // Dispatch a storage event so other tabs/pages can update
             window.dispatchEvent(new StorageEvent('storage', {
                 key: 'tasks',
-                newValue: JSON.stringify(tasks),
+                newValue: newTasksJSON,
             }));
         } catch (error) {
             console.error("Failed to save tasks to localStorage", error);
         }
-    }, [tasks]);
+    };
+
 
     const handleCreateClick = () => {
         setTaskToEdit(null);
@@ -82,19 +85,20 @@ export default function TasksPage() {
     }
     
     const handleSaveTask = (taskData: Task) => {
-        setTasks(prev => {
-            const isEditing = prev.some(t => t.id === taskData.id);
-            if (isEditing) {
-                return prev.map(t => t.id === taskData.id ? taskData : t);
-            } else {
-                return [...prev, taskData];
-            }
-        });
+        const isEditing = tasks.some(t => t.id === taskData.id);
+        let updatedTasks;
+        if (isEditing) {
+            updatedTasks = tasks.map(t => t.id === taskData.id ? taskData : t);
+        } else {
+            updatedTasks = [...tasks, taskData];
+        }
+        updateTasksAndStorage(updatedTasks);
         setTaskToEdit(null);
     }
     
     const handleDeleteTask = (taskId: string) => {
-        setTasks(prev => prev.filter(t => t.id !== taskId));
+        const updatedTasks = tasks.filter(t => t.id !== taskId);
+        updateTasksAndStorage(updatedTasks);
     }
 
     const filteredTasks = tasks.filter(task => {

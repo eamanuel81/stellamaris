@@ -443,45 +443,38 @@ export default function SchedulePage() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [editingAssignmentGroup, setEditingAssignmentGroup] = React.useState<Assignment[] | null>(null);
 
-  const loadTasks = () => {
+  const loadInitialData = React.useCallback(() => {
     try {
-      const savedTasks = localStorage.getItem('tasks');
-       if (savedTasks) {
-           setTasks(JSON.parse(savedTasks));
-       } else {
-           setTasks(initialTasks);
-       }
+        // Load tasks
+        const savedTasks = localStorage.getItem('tasks');
+        setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
+
+        // Load assignments
+        const savedAssignments = localStorage.getItem('assignments');
+        if (savedAssignments) {
+            const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
+                if (key === 'startTime' || key === 'endTime') {
+                    return new Date(value);
+                }
+                return value;
+            });
+            setAssignments(parsedAssignments);
+        } else {
+            setAssignments(initialAssignments);
+        }
     } catch (error) {
-        console.error("Failed to load tasks from localStorage", error);
+        console.error("Failed to load data from localStorage", error);
         setTasks(initialTasks);
+        setAssignments(initialAssignments);
     }
-  };
+  }, []);
 
   React.useEffect(() => {
-    // Load initial data from localStorage
-    try {
-      const savedAssignments = localStorage.getItem('assignments');
-      if (savedAssignments) {
-        const parsed = JSON.parse(savedAssignments, (key, value) => {
-            if (key === 'startTime' || key === 'endTime') {
-                return new Date(value);
-            }
-            return value;
-        });
-        setAssignments(parsed);
-      } else {
-        setAssignments(initialAssignments);
-      }
-    } catch (error) {
-      console.error("Failed to load assignments from localStorage", error);
-      setAssignments(initialAssignments);
-    }
-    loadTasks();
+    loadInitialData();
 
-    // Listen for changes in localStorage from other tabs/windows
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'tasks') {
-            loadTasks();
+        if (event.key === 'tasks' || event.key === 'assignments') {
+            loadInitialData();
         }
     };
     window.addEventListener('storage', handleStorageChange);
@@ -489,7 +482,8 @@ export default function SchedulePage() {
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [loadInitialData]);
+
 
   React.useEffect(() => {
     try {
@@ -499,13 +493,6 @@ export default function SchedulePage() {
     }
   }, [assignments]);
 
-  React.useEffect(() => {
-    try {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-    } catch (error) {
-        console.error("Failed to save tasks to localStorage", error);
-    }
-  }, [tasks]);
 
   const handleAssignTask = (newAssignments: Assignment[]) => {
     setAssignments(prev => [...prev, ...newAssignments]);
@@ -547,16 +534,15 @@ export default function SchedulePage() {
   }
 
   const handleTaskCreated = (newTask: Task) => {
-    const isEditing = tasks.some(t => t.id === newTask.id);
-    let updatedTasks;
-    if (isEditing) {
-        updatedTasks = tasks.map(t => t.id === newTask.id ? newTask : t);
-    } else {
-        updatedTasks = [...tasks, newTask];
-    }
+    const updatedTasks = [...tasks, newTask];
     setTasks(updatedTasks);
-    // Manually trigger storage event for the current window
-    window.dispatchEvent(new StorageEvent('storage', { key: 'tasks' }));
+     try {
+        const newTasksJSON = JSON.stringify(updatedTasks);
+        localStorage.setItem('tasks', newTasksJSON);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'tasks', newValue: newTasksJSON }));
+    } catch (error) {
+        console.error("Failed to save tasks to localStorage", error);
+    }
   }
 
   return (
