@@ -38,6 +38,22 @@ export type Assignment = {
     status: 'assigned' | 'accepted' | 'completed';
 };
 
+export type Boat = {
+  id: string;
+  name: string;
+};
+
+export type Client = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  internalNote: string;
+  boats: Boat[];
+  avatarUrl: string;
+};
+
 export const employees: Employee[] = [
   { id: '1', name: 'Juan', lastName: 'Perez', nickname: 'Juani', dni: '12345678', phone: '1122334455', address: 'Av. Siempre Viva 123', canDrive: true, email: 'juan.perez@example.com', role: 'employee', avatarUrl: 'https://i.pravatar.cc/150?u=juan' },
   { id: '2', name: 'Maria', lastName: 'Gomez', nickname: 'Maru', dni: '87654321', phone: '1166778899', address: 'Calle Falsa 456', canDrive: false, email: 'maria.gomez@example.com', role: 'employee', avatarUrl: 'https://i.pravatar.cc/150?u=maria' },
@@ -58,4 +74,32 @@ export const assignments: Assignment[] = [
     { id: 'a2', taskId: 't2', employeeId: '3', startTime: new Date(new Date().setHours(9, 0, 0, 0)), endTime: new Date(new Date().setHours(9, 30, 0, 0)), status: 'accepted' },
     { id: 'a3', taskId: 't4', employeeId: '2', startTime: new Date(new Date().setHours(11, 0, 0, 0)), endTime: new Date(new Date().setHours(12, 0, 0, 0)), status: 'assigned' },
     { id: 'a4', taskId: 't3', employeeId: '1', startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 45, 0, 0)), status: 'assigned' },
+];
+
+export const clients: Client[] = [
+  { 
+    id: 'c1', 
+    firstName: 'Ricardo', 
+    lastName: 'Fort', 
+    email: 'elcomandante@fort.com', 
+    phone: '1122334455', 
+    internalNote: 'Paga en dólares. Fanático del chocolate.', 
+    boats: [
+      { id: 'b1', name: 'El Fort-Farré' },
+      { id: 'b2', name: 'Miami' }
+    ],
+    avatarUrl: 'https://i.pravatar.cc/150?u=ricardo'
+  },
+  { 
+    id: 'c2', 
+    firstName: 'Susana', 
+    lastName: 'Gimenez', 
+    email: 'su@gimenez.com', 
+    phone: '1166778899', 
+    internalNote: 'Llama seguido. Preguntar por el perro.', 
+    boats: [
+      { id: 'b3', name: 'Shock' }
+    ],
+    avatarUrl: 'https://i.pravatar.cc/150?u=susana'
+  }
 ];

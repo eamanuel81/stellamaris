@@ -37,6 +37,7 @@ import {
   Settings,
   Ship,
   Users,
+  Contact,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
@@ -46,6 +47,7 @@ const adminNavItems = [
   { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
   { href: "/schedule", icon: <CalendarClock />, label: "Asignar Tareas" },
   { href: "/employees", icon: <Users />, label: "Empleados" },
+  { href: "/clients", icon: <Contact />, label: "Clientes" },
 ];
 
 const employeeNavItems = [
