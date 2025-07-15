@@ -13,7 +13,7 @@ import {
     Badge,
 } from "@/components/ui";
 import { Assignment, Task, Client, Employee } from "@/lib/data";
-import { Clock, User, Ship, DollarSign, Edit, Users } from "lucide-react";
+import { Clock, User, Ship, DollarSign, Edit, Users, Shield } from "lucide-react";
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id);
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
@@ -99,6 +99,27 @@ export const AssignmentDetailDialog = ({
                         <Separator />
                     </>
                 )}
+
+                {client && client.responsibles && client.responsibles.length > 0 && (
+                     <>
+                        <div className="grid gap-2">
+                            <h4 className="font-semibold text-sm">Otros Responsables</h4>
+                            <div className="space-y-2">
+                            {client.responsibles.map(resp => (
+                                <div key={resp.id} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Shield className="h-4 w-4 shrink-0" />
+                                    <div>
+                                        <span>{resp.firstName} {resp.lastName}</span>
+                                        <span className="text-xs block">Cel: {resp.phone}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            </div>
+                        </div>
+                        <Separator />
+                    </>
+                )}
+
 
                 <div className="grid gap-2">
                     <h4 className="font-semibold text-sm">Personal Asignado</h4>
