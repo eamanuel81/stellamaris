@@ -44,7 +44,18 @@ export type Assignment = {
 export type Boat = {
   id: string;
   name: string;
+  hullType: string;
+  engine: string;
+  registrationNumber: string;
 };
+
+export type ResponsibleParty = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  dni: string;
+  phone: string;
+}
 
 export type Client = {
   id: string;
@@ -54,6 +65,7 @@ export type Client = {
   phone: string;
   internalNote: string;
   boats: Boat[];
+  responsibles: ResponsibleParty[];
   avatarUrl: string;
 };
 
@@ -88,9 +100,10 @@ export const clients: Client[] = [
     phone: '1122334455', 
     internalNote: 'Paga en dólares. Fanático del chocolate.', 
     boats: [
-      { id: 'b1', name: 'El Fort-Farré' },
-      { id: 'b2', name: 'Miami' }
+      { id: 'b1', name: 'El Fort-Farré', hullType: 'Crucero', engine: 'Volvo Penta', registrationNumber: 'ABC-123' },
+      { id: 'b2', name: 'Miami', hullType: 'Lancha', engine: 'Mercury', registrationNumber: 'DEF-456' }
     ],
+    responsibles: [],
     avatarUrl: 'https://i.pravatar.cc/150?u=ricardo'
   },
   { 
@@ -101,7 +114,10 @@ export const clients: Client[] = [
     phone: '1166778899', 
     internalNote: 'Llama seguido. Preguntar por el perro.', 
     boats: [
-      { id: 'b3', name: 'Shock' }
+      { id: 'b3', name: 'Shock', hullType: 'Yate', engine: 'Rolls-Royce', registrationNumber: 'GHI-789' }
+    ],
+    responsibles: [
+        { id: 'r1', firstName: 'Kiko', lastName: 'Gimenez', dni: '12345678', phone: '1199887766' }
     ],
     avatarUrl: 'https://i.pravatar.cc/150?u=susana'
   }

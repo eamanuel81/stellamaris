@@ -13,9 +13,10 @@ import {
   Input,
   Label,
   Textarea,
+  Separator,
 } from "@/components/ui"
 import { PlusCircle, Trash2 } from "lucide-react"
-import { Client, Boat } from "@/lib/data"
+import { Client, Boat, ResponsibleParty } from "@/lib/data"
 
 export const ClientDialog = ({
     open,
@@ -35,6 +36,7 @@ export const ClientDialog = ({
     const [phone, setPhone] = React.useState('');
     const [internalNote, setInternalNote] = React.useState('');
     const [boats, setBoats] = React.useState<Boat[]>([]);
+    const [responsibles, setResponsibles] = React.useState<ResponsibleParty[]>([]);
 
     React.useEffect(() => {
         if (isEditMode && clientToEdit) {
@@ -43,37 +45,61 @@ export const ClientDialog = ({
             setEmail(clientToEdit.email);
             setPhone(clientToEdit.phone);
             setInternalNote(clientToEdit.internalNote);
-            setBoats(clientToEdit.boats);
+            setBoats(clientToEdit.boats.length > 0 ? clientToEdit.boats : [{ id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+            setResponsibles(clientToEdit.responsibles.length > 0 ? clientToEdit.responsibles : [{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
         } else {
             setFirstName('');
             setLastName('');
             setEmail('');
             setPhone('');
             setInternalNote('');
-            setBoats([{ id: `b${Date.now()}`, name: '' }]);
+            setBoats([{ id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+            setResponsibles([{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
         }
     }, [clientToEdit, isEditMode, open]);
 
-    const handleBoatChange = (index: number, value: string) => {
+    const handleBoatChange = (index: number, field: keyof Boat, value: string) => {
         const newBoats = [...boats];
-        newBoats[index].name = value;
+        newBoats[index] = { ...newBoats[index], [field]: value };
         setBoats(newBoats);
     };
 
     const handleAddBoat = () => {
-        setBoats([...boats, { id: `b${Date.now()}`, name: '' }]);
+        setBoats([...boats, { id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
     };
     
     const handleRemoveBoat = (index: number) => {
         if (boats.length > 1) {
             const newBoats = boats.filter((_, i) => i !== index);
             setBoats(newBoats);
+        } else {
+            // Clear the only boat if removed
+            setBoats([{ id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+        }
+    };
+    
+    const handleResponsibleChange = (index: number, field: keyof ResponsibleParty, value: string) => {
+        const newResponsibles = [...responsibles];
+        newResponsibles[index] = { ...newResponsibles[index], [field]: value };
+        setResponsibles(newResponsibles);
+    };
+
+    const handleAddResponsible = () => {
+        setResponsibles([...responsibles, { id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
+    };
+
+    const handleRemoveResponsible = (index: number) => {
+        if (responsibles.length > 1) {
+            const newResponsibles = responsibles.filter((_, i) => i !== index);
+            setResponsibles(newResponsibles);
+        } else {
+             setResponsibles([{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
         }
     };
 
     const handleSubmit = () => {
         if (!firstName || !lastName || !email) {
-            alert('Por favor complete Nombre, Apellido y Email.');
+            alert('Por favor complete Nombre, Apellido y Email del cliente.');
             return;
         }
 
@@ -85,6 +111,7 @@ export const ClientDialog = ({
             phone,
             internalNote,
             boats: boats.filter(b => b.name.trim() !== ''),
+            responsibles: responsibles.filter(r => r.firstName.trim() !== '' && r.lastName.trim() !== ''),
             avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://i.pravatar.cc/150?u=${Date.now()}`
         };
 
@@ -94,59 +121,121 @@ export const ClientDialog = ({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>{isEditMode ? 'Editar Cliente' : 'Agregar Nuevo Cliente'}</DialogTitle>
                     <DialogDescription>
-                        Complete los datos del cliente y sus embarcaciones.
+                        Complete los datos del cliente, sus embarcaciones y personas responsables.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="firstName">Nombre</Label>
-                            <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" />
+                <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
+                    {/* Client Details */}
+                    <div className="space-y-4">
+                        <h4 className="font-semibold text-lg">Datos del Cliente</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="firstName">Nombre</Label>
+                                <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Juan" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="lastName">Apellido</Label>
+                                <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Perez" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="juan@example.com" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone">Celular</Label>
+                                <Input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="1122334455" />
+                            </div>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="lastName">Apellido</Label>
-                            <Input id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Perez" />
+                            <Label htmlFor="internalNote">Nota Interna</Label>
+                            <Textarea id="internalNote" value={internalNote} onChange={e => setInternalNote(e.target.value)} placeholder="Información relevante sobre el cliente..." />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="juan@example.com" />
-                        </div>
-                         <div className="grid gap-2">
-                            <Label htmlFor="phone">Celular</Label>
-                            <Input id="phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="1122334455" />
-                        </div>
-                    </div>
-                    <div className="grid gap-2">
-                         <Label htmlFor="internalNote">Nota Interna</Label>
-                         <Textarea id="internalNote" value={internalNote} onChange={e => setInternalNote(e.target.value)} placeholder="Información relevante sobre el cliente..." />
-                    </div>
-                    <div className="grid gap-2 pt-2">
-                        <Label>Embarcaciones</Label>
-                        <div className="space-y-2">
+                    
+                    <Separator />
+
+                    {/* Boats Section */}
+                    <div className="space-y-4">
+                         <h4 className="font-semibold text-lg">Embarcaciones</h4>
                         {boats.map((boat, index) => (
-                             <div key={index} className="flex items-center gap-2">
-                                <Input 
-                                    value={boat.name}
-                                    onChange={(e) => handleBoatChange(index, e.target.value)}
-                                    placeholder={`Nombre de la embarcación ${index + 1}`}
-                                />
-                                <Button variant="ghost" size="icon" onClick={() => handleRemoveBoat(index)} disabled={boats.length <= 1}>
+                             <div key={boat.id} className="p-4 border rounded-lg space-y-4 relative">
+                                <h5 className="font-medium">Embarcación #{index+1}</h5>
+                                <div className="grid grid-cols-2 gap-4">
+                                     <div className="grid gap-2">
+                                        <Label htmlFor={`boat-name-${index}`}>Nombre</Label>
+                                        <Input id={`boat-name-${index}`} value={boat.name} onChange={(e) => handleBoatChange(index, 'name', e.target.value)} placeholder="Nombre" />
+                                     </div>
+                                      <div className="grid gap-2">
+                                        <Label htmlFor={`boat-reg-${index}`}>Patente</Label>
+                                        <Input id={`boat-reg-${index}`} value={boat.registrationNumber} onChange={(e) => handleBoatChange(index, 'registrationNumber', e.target.value)} placeholder="ABC-123" />
+                                     </div>
+                                </div>
+                                 <div className="grid grid-cols-2 gap-4">
+                                     <div className="grid gap-2">
+                                        <Label htmlFor={`boat-hull-${index}`}>Tipo de Casco</Label>
+                                        <Input id={`boat-hull-${index}`} value={boat.hullType} onChange={(e) => handleBoatChange(index, 'hullType', e.target.value)} placeholder="Lancha, Crucero, etc." />
+                                     </div>
+                                      <div className="grid gap-2">
+                                        <Label htmlFor={`boat-engine-${index}`}>Motor</Label>
+                                        <Input id={`boat-engine-${index}`} value={boat.engine} onChange={(e) => handleBoatChange(index, 'engine', e.target.value)} placeholder="Marca y modelo del motor" />
+                                     </div>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => handleRemoveBoat(index)} className="absolute top-2 right-2">
                                     <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                             </div>
                         ))}
-                        </div>
                         <Button variant="outline" size="sm" onClick={handleAddBoat} className="mt-2 w-fit">
                             <PlusCircle className="mr-2 h-4 w-4" />
                             Agregar Embarcación
                         </Button>
                     </div>
+
+                    <Separator />
+
+                     {/* Responsibles Section */}
+                     <div className="space-y-4">
+                         <h4 className="font-semibold text-lg">Responsables (no clientes)</h4>
+                        {responsibles.map((resp, index) => (
+                             <div key={resp.id} className="p-4 border rounded-lg space-y-4 relative">
+                                <h5 className="font-medium">Responsable #{index+1}</h5>
+                                <div className="grid grid-cols-2 gap-4">
+                                     <div className="grid gap-2">
+                                        <Label htmlFor={`resp-first-name-${index}`}>Nombre</Label>
+                                        <Input id={`resp-first-name-${index}`} value={resp.firstName} onChange={(e) => handleResponsibleChange(index, 'firstName', e.target.value)} placeholder="Nombre" />
+                                     </div>
+                                      <div className="grid gap-2">
+                                        <Label htmlFor={`resp-last-name-${index}`}>Apellido</Label>
+                                        <Input id={`resp-last-name-${index}`} value={resp.lastName} onChange={(e) => handleResponsibleChange(index, 'lastName', e.target.value)} placeholder="Apellido" />
+                                     </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                     <div className="grid gap-2">
+                                        <Label htmlFor={`resp-dni-${index}`}>DNI</Label>
+                                        <Input id={`resp-dni-${index}`} value={resp.dni} onChange={(e) => handleResponsibleChange(index, 'dni', e.target.value)} placeholder="DNI" />
+                                     </div>
+                                      <div className="grid gap-2">
+                                        <Label htmlFor={`resp-phone-${index}`}>Celular</Label>
+                                        <Input id={`resp-phone-${index}`} value={resp.phone} onChange={(e) => handleResponsibleChange(index, 'phone', e.target.value)} placeholder="Celular" />
+                                     </div>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => handleRemoveResponsible(index)} className="absolute top-2 right-2">
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </div>
+                        ))}
+                        <Button variant="outline" size="sm" onClick={handleAddResponsible} className="mt-2 w-fit">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Agregar Responsable
+                        </Button>
+                    </div>
+
                 </div>
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
