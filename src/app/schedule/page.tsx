@@ -3,9 +3,9 @@
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
-import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, TooltipProvider } from "@/components/ui"
+import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui"
 import { PlusCircle, Clock, User, Ship, DollarSign } from "lucide-react"
-import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients } from "@/lib/data"
+import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee } from "@/lib/data"
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
 import { AssignmentDetailDialog } from "@/components/assignment-detail-dialog"
 
@@ -97,6 +97,54 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
     return layoutAssignments;
 };
 
+const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignmentGroup: Assignment[], tasks: Task[], clients: Client[], employees: Employee[] }) => {
+    if (!assignmentGroup || assignmentGroup.length === 0) return null;
+
+    const firstAssignment = assignmentGroup[0];
+    const task = getTaskById(firstAssignment.taskId, tasks);
+    const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
+    const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
+    const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as Employee[];
+
+    const calculateExtrasTotal = () => {
+        if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
+        return firstAssignment.selectedExtras.reduce((total, selected) => {
+            const extraDetails = task.extras!.find(e => e.id === selected.extraId);
+            return total + (extraDetails?.price || 0) * selected.quantity;
+        }, 0);
+    };
+    const extrasTotal = calculateExtrasTotal();
+
+    return (
+        <div className="space-y-2 p-2 text-sm">
+            <p className="font-bold">{task?.title}</p>
+            <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4 shrink-0" />
+                <span>{new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            {client && (
+                 <div className="flex items-center gap-2 text-muted-foreground">
+                    <User className="h-4 w-4 shrink-0" />
+                    <span>{client.firstName} {client.lastName}</span>
+                </div>
+            )}
+            {boats.length > 0 && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <Ship className="h-4 w-4 shrink-0" />
+                    <span>{boats.map(b => b.name).join(', ')}</span>
+                </div>
+            )}
+            <p className="text-muted-foreground">{assignedEmployees.map(e => e.name).join(', ')}</p>
+            {extrasTotal > 0 && (
+                 <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
+                    <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
+                    <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}</span>
+                </div>
+            )}
+        </div>
+    )
+}
+
 const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const timeSlots = generateTimeSlots()
     const today = new Date();
@@ -125,71 +173,79 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
     }
 
     return (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="p-4 border-b">
-                <h3 className="font-semibold">Horario de Hoy</h3>
-                <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            </div>
-            <div className="relative h-[600px] overflow-y-auto">
-                <div className="grid">
-                    {timeSlots.map((time) => (
-                        <div key={time} className="grid grid-cols-[auto_1fr] items-start">
-                            <div className="sticky top-0 -mt-2 text-right">
-                                <span className="relative top-2 pr-4 text-xs text-muted-foreground">{time}</span>
-                            </div>
-                            <div className="border-l border-border pl-4">
-                                <div className="h-12 border-dashed border-b"></div>
-                            </div>
-                        </div>
-                    ))}
+        <TooltipProvider>
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+                <div className="p-4 border-b">
+                    <h3 className="font-semibold">Horario de Hoy</h3>
+                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
-                <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
-                     {processedAssignments.map((processed, index) => {
-                        const assignmentGroup = processed.group;
-                        const firstAssignment = assignmentGroup[0];
-                        const task = getTaskById(firstAssignment.taskId, tasks);
-                        if (!task) return null;
-
-                        const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-                        const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                        const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
-                        const top = getTaskPosition(firstAssignment.startTime);
-                        const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
-
-                        const width = 100 / processed.totalColumns;
-                        const left = width * processed.column;
-                        
-                        return (
-                            <div
-                                key={`${firstAssignment.id}-${index}`}
-                                onClick={() => onTaskClick(assignmentGroup)}
-                                className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between overflow-hidden"
-                                style={{ 
-                                    top: `${top}px`, 
-                                    height: `${height}px`,
-                                    width: `calc(${width}% - 4px)`,
-                                    left: `calc(${left}% + 2px)`
-                                }}
-                            >
-                                <div className="space-y-0.5">
-                                    <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
-                                    <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                <div className="relative h-[600px] overflow-y-auto">
+                    <div className="grid">
+                        {timeSlots.map((time) => (
+                            <div key={time} className="grid grid-cols-[auto_1fr] items-start">
+                                <div className="sticky top-0 -mt-2 text-right">
+                                    <span className="relative top-2 pr-4 text-xs text-muted-foreground">{time}</span>
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                    {client && <User className="h-3 w-3 text-primary-foreground/80" />}
-                                    {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
-                                    {firstAssignment.selectedExtras && firstAssignment.selectedExtras.length > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
+                                <div className="border-l border-border pl-4">
+                                    <div className="h-12 border-dashed border-b"></div>
                                 </div>
                             </div>
-                        )
-                     })}
+                        ))}
+                    </div>
+                    <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
+                        {processedAssignments.map((processed, index) => {
+                            const assignmentGroup = processed.group;
+                            const firstAssignment = assignmentGroup[0];
+                            const task = getTaskById(firstAssignment.taskId, tasks);
+                            if (!task) return null;
+
+                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
+                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
+                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
+                            const top = getTaskPosition(firstAssignment.startTime);
+                            const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
+
+                            const width = 100 / processed.totalColumns;
+                            const left = width * processed.column;
+                            
+                            return (
+                                <Tooltip key={`${firstAssignment.id}-${index}`}>
+                                    <TooltipTrigger asChild>
+                                        <div
+                                            onClick={() => onTaskClick(assignmentGroup)}
+                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between overflow-hidden"
+                                            style={{ 
+                                                top: `${top}px`, 
+                                                height: `${height}px`,
+                                                width: `calc(${width}% - 4px)`,
+                                                left: `calc(${left}% + 2px)`
+                                            }}
+                                        >
+                                            <div className="space-y-0.5">
+                                                <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
+                                                <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                {client && <User className="h-3 w-3 text-primary-foreground/80" />}
+                                                {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
+                                                {firstAssignment.selectedExtras && firstAssignment.selectedExtras.length > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
+                                            </div>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" align="start">
+                                        <TooltipDetail assignmentGroup={assignmentGroup} tasks={tasks} clients={clients} employees={employees} />
+                                    </TooltipContent>
+                                </Tooltip>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
-        </div>
+        </TooltipProvider>
     )
 }
 
-const WeekView = ({ assignments, tasks, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
@@ -271,22 +327,28 @@ const WeekView = ({ assignments, tasks, onTaskClick }: { assignments: Assignment
 
 
                                             return (
-                                                <div
-                                                    key={`${firstAssignment.id}-${index}`}
-                                                    onClick={() => onTaskClick(assignmentGroup)}
-                                                    className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-start overflow-hidden"
-                                                    style={{
-                                                        top: `${top}px`,
-                                                        height: `${height}px`,
-                                                        width: `calc(${width}% - 4px)`,
-                                                        left: `calc(${left}% + 2px)`,
-                                                    }}
-                                                >
-                                                    <div className="space-y-0.5">
-                                                        <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
-                                                        <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                                    </div>
-                                                </div>
+                                                <Tooltip key={`${firstAssignment.id}-${index}`}>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={() => onTaskClick(assignmentGroup)}
+                                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-start overflow-hidden"
+                                                            style={{
+                                                                top: `${top}px`,
+                                                                height: `${height}px`,
+                                                                width: `calc(${width}% - 4px)`,
+                                                                left: `calc(${left}% + 2px)`,
+                                                            }}
+                                                        >
+                                                            <div className="space-y-0.5">
+                                                                <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
+                                                                <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                            </div>
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="right" align="start">
+                                                        <TooltipDetail assignmentGroup={assignmentGroup} tasks={tasks} clients={clients} employees={employees} />
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             )
                                         })
                                     }
@@ -501,3 +563,4 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
