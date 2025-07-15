@@ -19,6 +19,7 @@ export type Task = {
   duration: number; // in minutes
   requiresDriving: boolean;
   type?: string;
+  qualifiedEmployeeIds?: string[]; // Array of employee IDs
 };
 
 export type Assignment = {
@@ -38,11 +39,11 @@ export const employees: Employee[] = [
 ];
 
 export const tasks: Task[] = [
-  { id: 't1', title: 'Limpieza de Embarcación', description: 'Limpieza profunda de cubierta y casco.', duration: 120, requiresDriving: false, type: 'Mantenimiento' },
-  { id: 't2', title: 'Bajada de Lancha', description: 'Bajar lancha modelo X a la plataforma A.', duration: 30, requiresDriving: true, type: 'Operativo' },
-  { id: 't3', title: 'Subida de Lancha', description: 'Subir lancha modelo Y desde el agua.', duration: 45, requiresDriving: true, type: 'Operativo' },
-  { id: 't4', title: 'Revisión de Motor', description: 'Chequeo general del estado del motor.', duration: 60, requiresDriving: false, type: 'Mantenimiento' },
-  { id: 't5', title: 'Pintura de Casco', description: 'Aplicar una capa de pintura anti-fouling.', duration: 240, requiresDriving: false, type: 'Mantenimiento' },
+  { id: 't1', title: 'Limpieza de Embarcación', description: 'Limpieza profunda de cubierta y casco.', duration: 120, requiresDriving: false, type: 'Mantenimiento', qualifiedEmployeeIds: ['1', '2', '4'] },
+  { id: 't2', title: 'Bajada de Lancha', description: 'Bajar lancha modelo X a la plataforma A.', duration: 30, requiresDriving: true, type: 'Operativo', qualifiedEmployeeIds: ['1', '3'] },
+  { id: 't3', title: 'Subida de Lancha', description: 'Subir lancha modelo Y desde el agua.', duration: 45, requiresDriving: true, type: 'Operativo', qualifiedEmployeeIds: ['1', '3'] },
+  { id: 't4', title: 'Revisión de Motor', description: 'Chequeo general del estado del motor.', duration: 60, requiresDriving: false, type: 'Mantenimiento', qualifiedEmployeeIds: ['2', '3'] },
+  { id: 't5', title: 'Pintura de Casco', description: 'Aplicar una capa de pintura anti-fouling.', duration: 240, requiresDriving: false, type: 'Mantenimiento', qualifiedEmployeeIds: ['1', '4'] },
 ];
 
 export const assignments: Assignment[] = [

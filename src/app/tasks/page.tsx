@@ -34,15 +34,29 @@ import {
   TableHeader,
   TableRow,
   Textarea,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui"
 import { AppLayout } from "@/components/app-layout"
-import { Car, MoreHorizontal, PlusCircle, Trash2 } from "lucide-react"
-import { tasks } from "@/lib/data"
+import { Car, ChevronDown, MoreHorizontal, PlusCircle, Trash2 } from "lucide-react"
+import { tasks, employees } from "@/lib/data"
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 
+const getEmployeeById = (id: string) => employees.find(e => e.id === id)
+
 export default function TasksPage() {
     const [open, setOpen] = React.useState(false);
+    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
+    
+    const handleEmployeeSelect = (employeeId: string) => {
+        setSelectedEmployees(prev =>
+            prev.includes(employeeId)
+                ? prev.filter(id => id !== employeeId)
+                : [...prev, employeeId]
+        );
+    }
+    
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -55,7 +69,7 @@ export default function TasksPage() {
               Cree y gestione los tipos de tareas para asignar.
             </p>
           </div>
-           <Dialog open={open} onOpenChange={setOpen}>
+           <Dialog open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (!isOpen) setSelectedEmployees([]); }}>
             <DialogTrigger asChild>
               <Button>
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -94,10 +108,48 @@ export default function TasksPage() {
                         Esta tarea necesita que el empleado sepa conducir
                     </Label>
                 </div>
+                <div className="grid gap-2 pt-2">
+                  <Label>Empleados Cualificados</Label>
+                   <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex justify-between items-center font-normal">
+                                <span className="truncate">
+                                    {selectedEmployees.length === 0 && "Seleccione empleados"}
+                                    {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
+                                    {selectedEmployees.length > 1 && `${selectedEmployees.length} empleados seleccionados`}
+                                </span>
+                                <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                            <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {employees.map(emp => (
+                                <DropdownMenuCheckboxItem
+                                    key={emp.id}
+                                    checked={selectedEmployees.includes(emp.id)}
+                                    onSelect={(e) => e.preventDefault()}
+                                    onCheckedChange={() => handleEmployeeSelect(emp.id)}
+                                >
+                                    <div className="flex items-center justify-between w-full">
+                                        <span>{emp.name} {emp.lastName}</span>
+                                        {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
+                                    </div>
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedEmployees.map(id => {
+                            const emp = getEmployeeById(id);
+                            return emp ? <Badge key={id} variant="secondary">{emp.name} {emp.lastName}</Badge> : null;
+                        })}
+                    </div>
+                </div>
               </div>
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" onClick={() => setOpen(false)}>Crear Tarea</Button>
+                <Button type="button" variant="outline" onClick={() => { setOpen(false); setSelectedEmployees([]); }}>Cancelar</Button>
+                <Button type="submit" onClick={() => { setOpen(false); setSelectedEmployees([]); }}>Crear Tarea</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -172,5 +224,3 @@ export default function TasksPage() {
     </AppLayout>
   )
 }
-
-    

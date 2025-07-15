@@ -259,6 +259,10 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
         }
     }, [assignmentToEdit, isEditMode]);
 
+    const handleTaskSelectChange = (taskId: string) => {
+        setSelectedTaskId(taskId);
+        setSelectedEmployees([]); // Reset employees when task changes
+    };
 
     const handleEmployeeSelect = (employeeId: string) => {
         setSelectedEmployees(prev =>
@@ -309,6 +313,12 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
 
         setOpen(false);
     }
+    
+    const selectedTask = getTaskById(selectedTaskId);
+    const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds
+        ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
+        : employees;
+
 
     return (
         <DialogContent className="sm:max-w-md">
@@ -321,7 +331,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
             <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                     <Label htmlFor="task">Tarea</Label>
-                    <Select value={selectedTaskId} onValueChange={setSelectedTaskId}>
+                    <Select value={selectedTaskId} onValueChange={handleTaskSelectChange}>
                         <SelectTrigger id="task">
                             <SelectValue placeholder="Seleccione una tarea" />
                         </SelectTrigger>
@@ -336,7 +346,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                   <Label>Empleado(s)</Label>
                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="flex justify-between items-center font-normal">
+                            <Button variant="outline" className="flex justify-between items-center font-normal" disabled={!selectedTaskId}>
                                 <span className="truncate">
                                     {selectedEmployees.length === 0 && "Seleccione empleados"}
                                     {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
@@ -348,7 +358,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                             <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {employees.map(emp => (
+                             {qualifiedEmployees.length > 0 ? qualifiedEmployees.map(emp => (
                                 <DropdownMenuCheckboxItem
                                     key={emp.id}
                                     checked={selectedEmployees.includes(emp.id)}
@@ -360,7 +370,9 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
                                         {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
                                     </div>
                                 </DropdownMenuCheckboxItem>
-                            ))}
+                            )) : (
+                                <DropdownMenuItem disabled>No hay empleados cualificados para esta tarea.</DropdownMenuItem>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <div className="flex flex-wrap gap-1 mt-2">
@@ -404,7 +416,13 @@ export default function SchedulePage() {
     try {
       const savedAssignments = localStorage.getItem('assignments');
       if (savedAssignments) {
-        setAssignments(JSON.parse(savedAssignments));
+        const parsed = JSON.parse(savedAssignments, (key, value) => {
+            if (key === 'startTime' || key === 'endTime') {
+                return new Date(value);
+            }
+            return value;
+        });
+        setAssignments(parsed);
       } else {
         setAssignments(initialAssignments);
       }
@@ -510,5 +528,3 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
-
-    
