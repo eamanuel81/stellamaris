@@ -110,6 +110,7 @@ export const AssignmentDetailDialog = ({
                                     <Shield className="h-4 w-4 shrink-0" />
                                     <div>
                                         <span>{resp.firstName} {resp.lastName}</span>
+                                        <span className="text-xs block">DNI: {resp.dni}</span>
                                         <span className="text-xs block">Cel: {resp.phone}</span>
                                     </div>
                                 </div>
