@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -43,15 +44,42 @@ import { tasks as initialTasks, employees, Task } from "@/lib/data"
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 
-const getEmployeeById = (id: string) => employees.find(e => e.id === a.id)
-
-const CreateTaskDialog = ({ setOpen, onTaskCreate }: { setOpen: (open: boolean) => void; onTaskCreate: (newTask: Task) => void }) => {
+const TaskDialog = ({ 
+    open, 
+    setOpen, 
+    onTaskSave, 
+    taskToEdit 
+}: { 
+    open: boolean;
+    setOpen: (open: boolean) => void; 
+    onTaskSave: (task: Task) => void;
+    taskToEdit: Task | null;
+}) => {
+    const isEditMode = !!taskToEdit;
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [duration, setDuration] = React.useState<number | "">("");
     const [type, setType] = React.useState("");
     const [requiresDriving, setRequiresDriving] = React.useState(false);
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        if (isEditMode && taskToEdit) {
+            setTitle(taskToEdit.title);
+            setDescription(taskToEdit.description);
+            setDuration(taskToEdit.duration);
+            setType(taskToEdit.type || "");
+            setRequiresDriving(taskToEdit.requiresDriving);
+            setSelectedEmployees(taskToEdit.qualifiedEmployeeIds || []);
+        } else {
+            setTitle("");
+            setDescription("");
+            setDuration("");
+            setType("");
+            setRequiresDriving(false);
+            setSelectedEmployees([]);
+        }
+    }, [taskToEdit, isEditMode]);
     
     const handleEmployeeSelect = (employeeId: string) => {
         setSelectedEmployees(prev =>
@@ -63,13 +91,12 @@ const CreateTaskDialog = ({ setOpen, onTaskCreate }: { setOpen: (open: boolean) 
     
     const handleSubmit = () => {
         if (!title || !description || !duration) {
-            // Basic validation
             alert("Por favor complete Título, Descripción y Duración.");
             return;
         }
 
-        const newTask: Task = {
-            id: `t${Date.now()}`,
+        const taskData: Task = {
+            id: isEditMode ? taskToEdit!.id : `t${Date.now()}`,
             title,
             description,
             duration: Number(duration),
@@ -78,97 +105,119 @@ const CreateTaskDialog = ({ setOpen, onTaskCreate }: { setOpen: (open: boolean) 
             qualifiedEmployeeIds: selectedEmployees
         };
 
-        onTaskCreate(newTask);
+        onTaskSave(taskData);
         setOpen(false);
     }
 
     return (
-        <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader>
-            <DialogTitle>Crear nuevo tipo de tarea</DialogTitle>
-            <DialogDescription>
-                Complete los detalles de la nueva tarea. Podrá asignarla a los empleados más tarde.
-            </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-                <Label htmlFor="title">Título de la Tarea</Label>
-                <Input id="title" placeholder="Ej: Limpieza de cubierta" value={title} onChange={e => setTitle(e.target.value)} />
-            </div>
+        <Dialog open={open} onOpenChange={setOpen}>
+             <DialogContent className="sm:max-w-[480px]">
+                <DialogHeader>
+                <DialogTitle>{isEditMode ? 'Editar Tarea' : 'Crear nuevo tipo de tarea'}</DialogTitle>
+                <DialogDescription>
+                    {isEditMode ? 'Modifique los detalles de la tarea.' : 'Complete los detalles de la nueva tarea. Podrá asignarla a los empleados más tarde.'}
+                </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
                 <div className="grid gap-2">
-                <Label htmlFor="description">Descripción</Label>
-                <Textarea id="description" placeholder="Describa la tarea en detalle..." value={description} onChange={e => setDescription(e.target.value)} />
-            </div>
-                <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="duration">Duración (minutos)</Label>
-                    <Input id="duration" type="number" placeholder="Ej: 60" value={duration} onChange={e => setDuration(e.target.value === '' ? '' : Number(e.target.value))} />
+                    <Label htmlFor="title">Título de la Tarea</Label>
+                    <Input id="title" placeholder="Ej: Limpieza de cubierta" value={title} onChange={e => setTitle(e.target.value)} />
                 </div>
                     <div className="grid gap-2">
-                    <Label htmlFor="type">Tipo (Opcional)</Label>
-                    <Input id="type" placeholder="Ej: Mantenimiento" value={type} onChange={e => setType(e.target.value)} />
+                    <Label htmlFor="description">Descripción</Label>
+                    <Textarea id="description" placeholder="Describa la tarea en detalle..." value={description} onChange={e => setDescription(e.target.value)} />
                 </div>
-            </div>
-                <div className="flex items-center space-x-2 pt-2">
-                <Checkbox id="requiresDriving" checked={requiresDriving} onCheckedChange={(checked) => setRequiresDriving(Boolean(checked))} />
-                <Label htmlFor="requiresDriving" className="font-normal">
-                    Esta tarea necesita que el empleado sepa conducir
-                </Label>
-            </div>
-            <div className="grid gap-2 pt-2">
-                <Label>Empleados Cualificados</Label>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex justify-between items-center font-normal">
-                            <span className="truncate">
-                                {selectedEmployees.length === 0 && "Seleccione empleados"}
-                                {selectedEmployees.length === 1 && employees.find(e => e.id === selectedEmployees[0])?.name + ' ' + employees.find(e => e.id === selectedEmployees[0])?.lastName}
-                                {selectedEmployees.length > 1 && `${selectedEmployees.length} empleados seleccionados`}
-                            </span>
-                            <ChevronDown className="h-4 w-4 opacity-50" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                        <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {employees.map(emp => (
-                            <DropdownMenuCheckboxItem
-                                key={emp.id}
-                                checked={selectedEmployees.includes(emp.id)}
-                                onSelect={(e) => e.preventDefault()}
-                                onCheckedChange={() => handleEmployeeSelect(emp.id)}
-                            >
-                                <div className="flex items-center justify-between w-full">
-                                    <span>{emp.name} {emp.lastName}</span>
-                                    {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
-                                </div>
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedEmployees.map(id => {
-                        const emp = employees.find(e => e.id === id);
-                        return emp ? <Badge key={id} variant="secondary">{emp.name} {emp.lastName}</Badge> : null;
-                    })}
+                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="duration">Duración (minutos)</Label>
+                        <Input id="duration" type="number" placeholder="Ej: 60" value={duration} onChange={e => setDuration(e.target.value === '' ? '' : Number(e.target.value))} />
+                    </div>
+                        <div className="grid gap-2">
+                        <Label htmlFor="type">Tipo (Opcional)</Label>
+                        <Input id="type" placeholder="Ej: Mantenimiento" value={type} onChange={e => setType(e.target.value)} />
+                    </div>
                 </div>
-            </div>
-            </div>
-            <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => { setOpen(false); }}>Cancelar</Button>
-            <Button type="submit" onClick={handleSubmit}>Crear Tarea</Button>
-            </DialogFooter>
-        </DialogContent>
+                    <div className="flex items-center space-x-2 pt-2">
+                    <Checkbox id="requiresDriving" checked={requiresDriving} onCheckedChange={(checked) => setRequiresDriving(Boolean(checked))} />
+                    <Label htmlFor="requiresDriving" className="font-normal">
+                        Esta tarea necesita que el empleado sepa conducir
+                    </Label>
+                </div>
+                <div className="grid gap-2 pt-2">
+                    <Label>Empleados Cualificados</Label>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="flex justify-between items-center font-normal">
+                                <span className="truncate">
+                                    {selectedEmployees.length === 0 && "Seleccione empleados"}
+                                    {selectedEmployees.length === 1 && employees.find(e => e.id === selectedEmployees[0])?.name + ' ' + employees.find(e => e.id === selectedEmployees[0])?.lastName}
+                                    {selectedEmployees.length > 1 && `${selectedEmployees.length} empleados seleccionados`}
+                                </span>
+                                <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                            <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {employees.map(emp => (
+                                <DropdownMenuCheckboxItem
+                                    key={emp.id}
+                                    checked={selectedEmployees.includes(emp.id)}
+                                    onSelect={(e) => e.preventDefault()}
+                                    onCheckedChange={() => handleEmployeeSelect(emp.id)}
+                                >
+                                    <div className="flex items-center justify-between w-full">
+                                        <span>{emp.name} {emp.lastName}</span>
+                                        {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
+                                    </div>
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {selectedEmployees.map(id => {
+                            const emp = employees.find(e => e.id === id);
+                            return emp ? <Badge key={id} variant="secondary">{emp.name} {emp.lastName}</Badge> : null;
+                        })}
+                    </div>
+                </div>
+                </div>
+                <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => { setOpen(false); }}>Cancelar</Button>
+                <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Crear Tarea'}</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 }
 
 export default function TasksPage() {
-    const [open, setOpen] = React.useState(false);
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+    const [taskToEdit, setTaskToEdit] = React.useState<Task | null>(null);
     const [tasks, setTasks] = React.useState<Task[]>(initialTasks);
     const [searchTerm, setSearchTerm] = React.useState("");
 
-    const handleCreateTask = (newTask: Task) => {
-        setTasks(prev => [...prev, newTask]);
+    const handleCreateClick = () => {
+        setTaskToEdit(null);
+        setIsDialogOpen(true);
+    }
+
+    const handleEditClick = (task: Task) => {
+        setTaskToEdit(task);
+        setIsDialogOpen(true);
+    }
+    
+    const handleSaveTask = (taskData: Task) => {
+        const isEditing = tasks.some(t => t.id === taskData.id);
+        if (isEditing) {
+            setTasks(prev => prev.map(t => t.id === taskData.id ? taskData : t));
+        } else {
+            setTasks(prev => [...prev, taskData]);
+        }
+    }
+    
+    const handleDeleteTask = (taskId: string) => {
+        setTasks(prev => prev.filter(t => t.id !== taskId));
     }
 
     const filteredTasks = tasks.filter(task => {
@@ -198,16 +247,18 @@ export default function TasksPage() {
               Cree y gestione los tipos de tareas para asignar.
             </p>
           </div>
-           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Crear Tarea
-              </Button>
-            </DialogTrigger>
-            <CreateTaskDialog setOpen={setOpen} onTaskCreate={handleCreateTask} />
-          </Dialog>
+            <Button onClick={handleCreateClick}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Crear Tarea
+            </Button>
         </header>
+
+        <TaskDialog 
+            open={isDialogOpen}
+            setOpen={setIsDialogOpen}
+            onTaskSave={handleSaveTask}
+            taskToEdit={taskToEdit}
+        />
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -256,7 +307,7 @@ export default function TasksPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(task)}>Editar</DropdownMenuItem>
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
@@ -272,7 +323,7 @@ export default function TasksPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleDeleteTask(task.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -288,3 +339,5 @@ export default function TasksPage() {
     </AppLayout>
   )
 }
+
+    
