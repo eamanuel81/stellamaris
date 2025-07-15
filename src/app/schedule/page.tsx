@@ -4,7 +4,7 @@
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
-import { PlusCircle, Clock, User, ChevronDown, Car, Trash2, Ship } from "lucide-react"
+import { PlusCircle, Clock, User, ChevronDown, Car, Trash2, Ship, DollarSign } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, TaskExtra } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
@@ -64,6 +64,15 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
         const height = (durationMinutes / 60) * 48; // 48px per hour
         return Math.max(24, height - 2); // Subtract 2px for a small gap, min height 24px
     }
+    
+    const calculateExtrasTotal = (assignment: Assignment, task: Task | undefined) => {
+        if (!task || !task.extras || !assignment.selectedExtras) return 0;
+        return assignment.selectedExtras.reduce((total, selected) => {
+            const extraDetails = task.extras!.find(e => e.id === selected.extraId);
+            return total + (extraDetails?.price || 0) * selected.quantity;
+        }, 0);
+    }
+
 
     return (
         <TooltipProvider>
@@ -93,6 +102,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
 
                             const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
                             const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
+                            const extrasTotal = calculateExtrasTotal(firstAssignment, task);
 
                             const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
                             const startTime = new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -105,11 +115,17 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={() => onTaskClick(assignmentGroup)}
-                                            className="absolute w-[calc(100%-1rem)] rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10"
+                                            className="absolute w-[calc(100%-1rem)] rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between"
                                             style={{ top: `${top}px`, height: `${height}px` }}
                                         >
-                                            <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
-                                            <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                            <div>
+                                                <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
+                                                <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
+                                                {extrasTotal > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
+                                            </div>
                                         </div>
                                     </TooltipTrigger>
                                      <TooltipContent className="max-w-xs">
@@ -137,6 +153,14 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                                 <Clock className="h-4 w-4 shrink-0" />
                                                 <span>{startTime} a {endTime} ({task.duration} min)</span>
                                             </div>
+                                            {extrasTotal > 0 && (
+                                                <div className="flex items-center gap-2 text-sm font-medium text-green-600">
+                                                    <DollarSign className="h-4 w-4 shrink-0" />
+                                                    <span>
+                                                        Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </TooltipContent>
                                 </Tooltip>
@@ -171,6 +195,14 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
         
         return groupAssignmentsByTimeAndTask(dayAssignments);
     }
+    
+    const calculateExtrasTotal = (assignment: Assignment, task: Task | undefined) => {
+        if (!task || !task.extras || !assignment.selectedExtras) return 0;
+        return assignment.selectedExtras.reduce((total, selected) => {
+            const extraDetails = task.extras!.find(e => e.id === selected.extraId);
+            return total + (extraDetails?.price || 0) * selected.quantity;
+        }, 0);
+    }
 
     return (
         <TooltipProvider>
@@ -195,6 +227,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
                                     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
                                     const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
+                                    const extrasTotal = calculateExtrasTotal(firstAssignment, task);
 
                                     const startTime = new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                     const endTime = new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -204,15 +237,26 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             <TooltipTrigger asChild>
                                                 <Card 
                                                     onClick={() => onTaskClick(assignmentGroup)}
-                                                    className="p-2 bg-primary/10 cursor-pointer hover:bg-primary/20"
+                                                    className="p-2 bg-primary/10 cursor-pointer hover:bg-primary/20 space-y-1"
                                                 >
                                                     <p className="font-bold text-xs truncate">{task.title}</p>
                                                     <p className="text-xs text-muted-foreground truncate">
                                                         {assignedEmployees.map(e => e.name).join(', ')}
                                                     </p>
-                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                                        <Clock className="h-3 w-3" />
-                                                        <span>{startTime} - {endTime}</span>
+                                                    {boats.length > 0 && (
+                                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                            <Ship className="h-3 w-3" />
+                                                            <span className="truncate">{boats.map(b => b.name).join(', ')}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                        <div className="flex items-center gap-1">
+                                                            <Clock className="h-3 w-3" />
+                                                            <span>{startTime}</span>
+                                                        </div>
+                                                         {extrasTotal > 0 && (
+                                                            <DollarSign className="h-3 w-3 text-green-600" />
+                                                        )}
                                                     </div>
                                                 </Card>
                                             </TooltipTrigger>
@@ -241,6 +285,14 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                         <Clock className="h-4 w-4 shrink-0" />
                                                         <span>{startTime} a {endTime} ({task.duration} min)</span>
                                                     </div>
+                                                    {extrasTotal > 0 && (
+                                                        <div className="flex items-center gap-2 text-sm font-medium text-green-600">
+                                                            <DollarSign className="h-4 w-4 shrink-0" />
+                                                            <span>
+                                                                Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </TooltipContent>
                                         </Tooltip>
@@ -863,3 +915,5 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
