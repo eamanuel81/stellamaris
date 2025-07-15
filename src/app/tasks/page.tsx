@@ -61,6 +61,11 @@ export default function TasksPage() {
     React.useEffect(() => {
         try {
             localStorage.setItem('tasks', JSON.stringify(tasks));
+            // Dispatch a storage event so other tabs can update
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: 'tasks',
+                newValue: JSON.stringify(tasks),
+            }));
         } catch (error) {
             console.error("Failed to save tasks to localStorage", error);
         }

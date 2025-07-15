@@ -259,7 +259,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
             setEndTime("11:00");
             setDate(formatDateForInput(new Date()));
         }
-    }, [assignmentToEdit, isEditMode]);
+    }, [assignmentToEdit, isEditMode, open]); // also depend on open to reset
 
     const handleTaskSelectChange = (taskId: string) => {
         setSelectedTaskId(taskId);
@@ -283,8 +283,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
         
-        const assignmentDate = new Date(date);
-        assignmentDate.setUTCHours(0, 0, 0, 0);
+        const assignmentDate = new Date(date + 'T00:00:00'); // Use T00:00:00 to avoid timezone issues
 
         const startDate = new Date(assignmentDate.getTime());
         startDate.setHours(startHour, startMinute, 0, 0);
@@ -320,6 +319,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, assignme
     const handleTaskCreated = (newTask: Task) => {
         onTaskCreated(newTask);
         setSelectedTaskId(newTask.id); // auto-select the new task
+        setIsCreateTaskOpen(false); // Close the creation dialog
     }
 
     const selectedTask = getTaskById(selectedTaskId, tasks);
@@ -443,7 +443,22 @@ export default function SchedulePage() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [editingAssignmentGroup, setEditingAssignmentGroup] = React.useState<Assignment[] | null>(null);
 
+  const loadTasks = () => {
+    try {
+      const savedTasks = localStorage.getItem('tasks');
+       if (savedTasks) {
+           setTasks(JSON.parse(savedTasks));
+       } else {
+           setTasks(initialTasks);
+       }
+    } catch (error) {
+        console.error("Failed to load tasks from localStorage", error);
+        setTasks(initialTasks);
+    }
+  };
+
   React.useEffect(() => {
+    // Load initial data from localStorage
     try {
       const savedAssignments = localStorage.getItem('assignments');
       if (savedAssignments) {
@@ -457,18 +472,23 @@ export default function SchedulePage() {
       } else {
         setAssignments(initialAssignments);
       }
-
-      const savedTasks = localStorage.getItem('tasks');
-       if (savedTasks) {
-           setTasks(JSON.parse(savedTasks));
-       } else {
-           setTasks(initialTasks);
-       }
     } catch (error) {
-      console.error("Failed to load data from localStorage", error);
+      console.error("Failed to load assignments from localStorage", error);
       setAssignments(initialAssignments);
-      setTasks(initialTasks);
     }
+    loadTasks();
+
+    // Listen for changes in localStorage from other tabs/windows
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'tasks') {
+            loadTasks();
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   React.useEffect(() => {
@@ -527,14 +547,16 @@ export default function SchedulePage() {
   }
 
   const handleTaskCreated = (newTask: Task) => {
-    setTasks(prev => {
-        const isEditing = prev.some(t => t.id === newTask.id);
-        if (isEditing) {
-            return prev.map(t => t.id === newTask.id ? newTask : t);
-        } else {
-            return [...prev, newTask];
-        }
-    });
+    const isEditing = tasks.some(t => t.id === newTask.id);
+    let updatedTasks;
+    if (isEditing) {
+        updatedTasks = tasks.map(t => t.id === newTask.id ? newTask : t);
+    } else {
+        updatedTasks = [...tasks, newTask];
+    }
+    setTasks(updatedTasks);
+    // Manually trigger storage event for the current window
+    window.dispatchEvent(new StorageEvent('storage', { key: 'tasks' }));
   }
 
   return (
