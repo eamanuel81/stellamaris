@@ -105,11 +105,6 @@ export const TaskDialog = ({
         setExtras(prev => prev.filter((_, i) => i !== index));
     }
 
-    const totalExtras = React.useMemo(() => {
-        return extras.reduce((sum, extra) => sum + (extra.price || 0), 0);
-    }, [extras]);
-
-
     const handleSubmit = () => {
         if (!title || !description || !duration) {
             alert("Por favor complete Título, Descripción y Duración.");
@@ -248,16 +243,6 @@ export const TaskDialog = ({
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Agregar Extra
                             </Button>
-                            {extras.length > 0 && (
-                                <div className="mt-4 pt-4 border-t">
-                                    <div className="flex justify-between items-center font-semibold">
-                                        <span>Total de Extras:</span>
-                                        <span>
-                                            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(totalExtras)}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </TabsContent>
                 </Tabs>
