@@ -8,6 +8,7 @@ import { PlusCircle, Clock, User, ChevronDown, Car, Trash2, Ship } from "lucide-
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
+import { ClientDialog } from "@/components/client-dialog"
 
 const generateTimeSlots = () => {
   const slots = []
@@ -253,7 +254,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
     )
 }
 
-const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDeleteTask, assignmentToEdit, tasks, clients, onTaskCreated }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => void; onDeleteTask: (assignmentsToDelete: Assignment[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; clients: Client[]; onTaskCreated: (task: Task) => void; }) => {
+const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDeleteTask, assignmentToEdit, tasks, clients, onTaskCreated, onClientCreated }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => void; onDeleteTask: (assignmentsToDelete: Assignment[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; clients: Client[]; onTaskCreated: (task: Task) => void; onClientCreated: (client: Client) => void; }) => {
     const isEditMode = !!assignmentToEdit;
     const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
 
@@ -264,6 +265,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
     const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
     const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "11:00");
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
+    const [isCreateClientOpen, setIsCreateClientOpen] = React.useState(false);
     
     const formatDateForInput = (date: Date) => {
         const d = new Date(date);
@@ -311,7 +313,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
     }
 
     const handleClientSelectChange = (clientId: string) => {
-        setSelectedClientId(clientId);
+        setSelectedClientId(clientId === "none" ? undefined : clientId);
         setSelectedBoatIds([]); // Reset boats when client changes
     };
 
@@ -378,6 +380,12 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
         setIsCreateTaskOpen(false); // Close the creation dialog
     }
 
+    const handleClientCreated = (newClient: Client) => {
+        onClientCreated(newClient);
+        setSelectedClientId(newClient.id); // auto-select the new client
+        setIsCreateClientOpen(false); // Close the creation dialog
+    }
+
     const selectedTask = getTaskById(selectedTaskId, tasks);
     const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
         ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
@@ -433,17 +441,39 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
 
                 <div className="grid gap-2">
                   <Label>Cliente (Opcional)</Label>
-                    <Select value={selectedClientId} onValueChange={handleClientSelectChange}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Seleccione un cliente" />
-                        </SelectTrigger>
-                        <SelectContent>
-                             <SelectItem value="none">Ninguno</SelectItem>
-                            {clients.map(client => (
-                                <SelectItem key={client.id} value={client.id}>{client.firstName} {client.lastName}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                        <Select value={selectedClientId} onValueChange={handleClientSelectChange}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccione un cliente" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">Ninguno</SelectItem>
+                                {clients.map(client => (
+                                    <SelectItem key={client.id} value={client.id}>{client.firstName} {client.lastName}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Dialog open={isCreateClientOpen} onOpenChange={setIsCreateClientOpen}>
+                             <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="icon">
+                                                <PlusCircle className="h-4 w-4" />
+                                            </Button>
+                                        </DialogTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Crear nuevo cliente</TooltipContent>
+                                </Tooltip>
+                             </TooltipProvider>
+                            <ClientDialog
+                                open={isCreateClientOpen}
+                                setOpen={setIsCreateClientOpen}
+                                onSave={handleClientCreated}
+                                clientToEdit={null}
+                            />
+                        </Dialog>
+                    </div>
                 </div>
                 
                  {selectedClient && (
@@ -689,6 +719,18 @@ export default function SchedulePage() {
     }
   }
 
+  const handleClientCreated = (newClient: Client) => {
+    const updatedClients = [...clients, newClient];
+    setClients(updatedClients);
+     try {
+        const newClientsJSON = JSON.stringify(updatedClients);
+        localStorage.setItem('clients', newClientsJSON);
+        window.dispatchEvent(new StorageEvent('storage', { key: 'clients', newValue: newClientsJSON }));
+    } catch (error) {
+        console.error("Failed to save clients to localStorage", error);
+    }
+  }
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -708,12 +750,12 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteAssignment} assignmentToEdit={null} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} />
+            <AssignTaskDialogContent setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteAssignment} assignmentToEdit={null} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} />
           </Dialog>
         </header>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteAssignment} assignmentToEdit={editingAssignmentGroup} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} />
+            <AssignTaskDialogContent setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} onDeleteTask={handleDeleteAssignment} assignmentToEdit={editingAssignmentGroup} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} />
         </Dialog>
         
         <Tabs defaultValue="week" className="w-full">
