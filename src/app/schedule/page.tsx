@@ -39,6 +39,65 @@ const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
     return Array.from(grouped.values());
 }
 
+const processOverlaps = (groupedAssignments: Assignment[][]) => {
+     const assignmentsWithLayout = groupedAssignments.map(group => ({
+        group,
+        startTime: new Date(group[0].startTime),
+        endTime: new Date(group[0].endTime),
+    }));
+
+    // For sorting and layout calculation, we need to handle overlaps.
+    // We create a temporary structure to hold layout properties.
+    const layoutAssignments = assignmentsWithLayout.map(a => ({ ...a, overlaps: [] as any[], column: -1, totalColumns: 1 }));
+
+    // Detect overlaps
+    for (let i = 0; i < layoutAssignments.length; i++) {
+        for (let j = i + 1; j < layoutAssignments.length; j++) {
+            const a = layoutAssignments[i];
+            const b = layoutAssignments[j];
+            if (a.startTime < b.endTime && a.endTime > b.startTime) {
+                a.overlaps.push(b);
+                b.overlaps.push(a);
+            }
+        }
+    }
+    
+    // Sort by start time to process chronologically
+    layoutAssignments.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+    
+    // Assign columns
+    for (const assignment of layoutAssignments) {
+        if (assignment.column === -1) {
+            const placedInColumn = (colIndex: number) => {
+                 const columns: any[][] = [[]];
+                for(const other of layoutAssignments) {
+                    if (other.column === colIndex) {
+                        if (assignment.startTime < other.endTime && assignment.endTime > other.startTime) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            
+            let col = 0;
+            while(placedInColumn(col)) {
+                col++;
+            }
+            assignment.column = col;
+        }
+
+        // Expand totalColumns for all overlapping items
+        const allInvolved = [assignment, ...assignment.overlaps];
+        const maxColumns = Math.max(...allInvolved.map(a => a.column)) + 1;
+        for (const item of allInvolved) {
+            item.totalColumns = Math.max(item.totalColumns, maxColumns);
+        }
+    }
+
+    return layoutAssignments;
+};
+
 const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const timeSlots = generateTimeSlots()
     const today = new Date();
@@ -51,6 +110,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
     }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
     const groupedAssignments = groupAssignmentsByTimeAndTask(todayAssignments);
+    const processedAssignments = processOverlaps(groupedAssignments);
 
     const getTaskPosition = (startTime: Date) => {
         const startHour = 6;
@@ -72,107 +132,6 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
             return total + (extraDetails?.price || 0) * selected.quantity;
         }, 0);
     }
-
-    // Process assignments to add layout properties for overlaps
-    const processedAssignments = React.useMemo(() => {
-        const assignmentsWithLayout = groupedAssignments.map(group => ({
-            group,
-            startTime: new Date(group[0].startTime),
-            endTime: new Date(group[0].endTime),
-            overlaps: [] as any[],
-            columns: 0,
-            column: 0
-        }));
-
-        for (let i = 0; i < assignmentsWithLayout.length; i++) {
-            for (let j = i + 1; j < assignmentsWithLayout.length; j++) {
-                const a = assignmentsWithLayout[i];
-                const b = assignmentsWithLayout[j];
-                if (a.startTime < b.endTime && a.endTime > b.startTime) {
-                    a.overlaps.push(b);
-                    b.overlaps.push(a);
-                }
-            }
-        }
-        
-        const findColumns = (assignment: any) => {
-             let maxColumns = 0;
-            const connected = [assignment];
-            const processed = new Set();
-
-            while(connected.length > 0) {
-                const current = connected.shift();
-                if(processed.has(current)) continue;
-                processed.add(current);
-
-                const currentColumns = [current];
-                 for (const other of processed) {
-                    if (current.startTime < other.endTime && current.endTime > other.startTime) {
-                        if (!currentColumns.find(c => c === other)) {
-                            currentColumns.push(other);
-                        }
-                    }
-                }
-                maxColumns = Math.max(maxColumns, currentColumns.length)
-
-                for (const overlap of current.overlaps) {
-                    if (!processed.has(overlap)) {
-                        connected.push(overlap);
-                    }
-                }
-            }
-            return maxColumns || 1;
-        }
-
-        const placed = new Set();
-        assignmentsWithLayout.forEach(assignment => {
-            if(placed.has(assignment)) return;
-
-            const connected = [assignment];
-            const cluster = new Set([assignment]);
-            while(connected.length > 0) {
-                const current = connected.shift();
-                if(!current) continue;
-                current.overlaps.forEach(o => {
-                    if(!cluster.has(o)) {
-                        cluster.add(o);
-                        connected.push(o);
-                    }
-                });
-            }
-            
-            const sortedCluster = Array.from(cluster).sort((a,b) => a.startTime.getTime() - b.startTime.getTime());
-            
-            sortedCluster.forEach(a => {
-                const columns: any[] = [];
-                for(let i = 0; i < sortedCluster.length; i++) {
-                    columns.push([]);
-                }
-                
-                sortedCluster.forEach(item => {
-                    let placedInColumn = false;
-                    for(let i = 0; i < columns.length; i++) {
-                        const lastInColumn = columns[i][columns[i].length - 1];
-                        if(!lastInColumn || item.startTime >= lastInColumn.endTime) {
-                            columns[i].push(item);
-                            item.column = i;
-                            placedInColumn = true;
-                            break;
-                        }
-                    }
-                });
-
-                const totalColumns = columns.filter(c => c.length > 0).length;
-                 sortedCluster.forEach(item => item.columns = totalColumns);
-
-            });
-
-             cluster.forEach(item => placed.add(item));
-        });
-
-        return assignmentsWithLayout;
-
-    }, [groupedAssignments]);
 
     return (
         <TooltipProvider>
@@ -211,7 +170,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                             const top = getTaskPosition(firstAssignment.startTime);
                             const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
 
-                            const width = 100 / processed.columns;
+                            const width = 100 / processed.totalColumns;
                             const left = width * processed.column;
                             
                             return (
@@ -219,19 +178,20 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={() => onTaskClick(assignmentGroup)}
-                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between"
+                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between overflow-hidden"
                                             style={{ 
                                                 top: `${top}px`, 
                                                 height: `${height}px`,
                                                 width: `calc(${width}% - 4px)`,
-                                                left: `${left}%`
+                                                left: `calc(${left}% + 2px)`
                                             }}
                                         >
-                                            <div>
+                                            <div className="space-y-0.5">
                                                 <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
                                                 <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
                                             </div>
                                             <div className="flex items-center gap-2 mt-1">
+                                                {client && <User className="h-3 w-3 text-primary-foreground/80" />}
                                                 {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
                                                 {extrasTotal > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
                                             </div>
@@ -291,11 +251,12 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
         return day;
     });
 
-    const timeSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+    const timeSlots = Array.from({ length: 18 }, (_, i) => `${String(i + 6).padStart(2, '0')}:00`);
 
     const getTaskPosition = (startTime: Date) => {
+        const startHour = 6;
         const hours = startTime.getHours() + startTime.getMinutes() / 60;
-        return hours * 48; // 48px per hour
+        return (hours - startHour) * 48; // 48px per hour
     };
 
     const getTaskHeight = (startTime: Date, endTime: Date) => {
@@ -337,20 +298,25 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                         </div>
                         {/* Days columns */}
                         <div className="grid grid-cols-7 relative">
-                            {weekDays.map((day, dayIndex) => (
-                                <div key={day.toISOString()} className="relative border-r last:border-r-0">
-                                    {timeSlots.map(time => (
-                                        <div key={time} className="h-12 border-b border-dashed"></div>
-                                    ))}
-                                    {groupAssignmentsByTimeAndTask(assignments
-                                        .filter(a => {
-                                            const assignmentDate = new Date(a.startTime);
-                                            assignmentDate.setHours(0,0,0,0);
-                                            const compareDate = new Date(day);
-                                            compareDate.setHours(0,0,0,0);
-                                            return assignmentDate.getTime() === compareDate.getTime();
-                                        }))
-                                        .map((assignmentGroup, index) => {
+                            {weekDays.map((day) => {
+                                const dayAssignments = assignments.filter(a => {
+                                    const assignmentDate = new Date(a.startTime);
+                                    assignmentDate.setHours(0,0,0,0);
+                                    const compareDate = new Date(day);
+                                    compareDate.setHours(0,0,0,0);
+                                    return assignmentDate.getTime() === compareDate.getTime();
+                                });
+                                
+                                const groupedForDay = groupAssignmentsByTimeAndTask(dayAssignments);
+                                const processedForDay = processOverlaps(groupedForDay);
+
+                                return (
+                                    <div key={day.toISOString()} className="relative border-r last:border-r-0">
+                                        {timeSlots.map(time => (
+                                            <div key={time} className="h-12 border-b border-dashed"></div>
+                                        ))}
+                                        {processedForDay.map((processed, index) => {
+                                            const assignmentGroup = processed.group;
                                             const firstAssignment = assignmentGroup[0];
                                             const task = getTaskById(firstAssignment.taskId, tasks);
                                             if (!task) return null;
@@ -362,23 +328,31 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             const startTime = new Date(firstAssignment.startTime);
                                             const endTime = new Date(firstAssignment.endTime);
 
+                                            const height = getTaskHeight(startTime, endTime);
+                                            const top = getTaskPosition(startTime);
+                                            const width = 100 / processed.totalColumns;
+                                            const left = width * processed.column;
+
+
                                             return (
                                                 <Tooltip key={`${firstAssignment.id}-${index}`}>
                                                     <TooltipTrigger asChild>
                                                         <div
                                                             onClick={() => onTaskClick(assignmentGroup)}
-                                                            className="absolute w-[calc(100%-4px)] rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between"
+                                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between overflow-hidden"
                                                             style={{
-                                                                top: `${getTaskPosition(startTime)}px`,
-                                                                height: `${getTaskHeight(startTime, endTime)}px`,
-                                                                left: '2px',
+                                                                top: `${top}px`,
+                                                                height: `${height}px`,
+                                                                width: `calc(${width}% - 4px)`,
+                                                                left: `calc(${left}% + 2px)`,
                                                             }}
                                                         >
-                                                            <div>
+                                                            <div className="space-y-0.5">
                                                                 <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
                                                                 <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
                                                             </div>
                                                             <div className="flex items-center gap-2 mt-1">
+                                                                {client && <User className="h-3 w-3 text-primary-foreground/80" />}
                                                                 {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
                                                                 {extrasTotal > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
                                                             </div>
@@ -423,8 +397,9 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             )
                                         })
                                     }
-                                </div>
-                            ))}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
                 </div>
