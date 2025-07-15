@@ -261,7 +261,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
 
     const getTaskHeight = (startTime: Date, endTime: Date) => {
         const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
-        return (durationMinutes / 60) * 48 - 2; // 48px per hour, -2 for gap
+        return Math.max(24, (durationMinutes / 60) * 48 - 2); // 48px per hour, -2 for gap, min height 24px
     };
 
     const calculateExtrasTotal = (assignment: Assignment, task: Task | undefined) => {
@@ -339,7 +339,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                     <TooltipTrigger asChild>
                                                         <div
                                                             onClick={() => onTaskClick(assignmentGroup)}
-                                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between overflow-hidden"
+                                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-start overflow-hidden"
                                                             style={{
                                                                 top: `${top}px`,
                                                                 height: `${height}px`,
@@ -350,11 +350,6 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                             <div className="space-y-0.5">
                                                                 <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
                                                                 <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                                            </div>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                {client && <User className="h-3 w-3 text-primary-foreground/80" />}
-                                                                {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
-                                                                {extrasTotal > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>
