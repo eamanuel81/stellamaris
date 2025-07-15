@@ -38,6 +38,7 @@ export type Assignment = {
     status: 'assigned' | 'accepted' | 'completed';
     clientId?: string;
     boatIds?: string[];
+    selectedExtras?: { extraId: string; quantity: number }[];
 };
 
 export type Boat = {

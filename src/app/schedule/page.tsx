@@ -5,7 +5,7 @@ import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Separator, DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui"
 import { PlusCircle, Clock, User, ChevronDown, Car, Trash2, Ship } from "lucide-react"
-import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients } from "@/lib/data"
+import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, TaskExtra } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
 import { ClientDialog } from "@/components/client-dialog"
@@ -262,6 +262,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode ? assignmentToEdit.map(a => a.employeeId) : []);
     const [selectedClientId, setSelectedClientId] = React.useState<string | undefined>(firstAssignment?.clientId);
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>(firstAssignment?.boatIds || []);
+    const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>(firstAssignment?.selectedExtras || []);
     const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
     const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "11:00");
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
@@ -277,6 +278,8 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
 
     const [date, setDate] = React.useState(firstAssignment ? formatDateForInput(firstAssignment.startTime) : formatDateForInput(new Date()));
 
+    const selectedTask = getTaskById(selectedTaskId, tasks);
+
     React.useEffect(() => {
         if (isEditMode && assignmentToEdit) {
             const first = assignmentToEdit[0];
@@ -284,6 +287,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             setSelectedEmployees(assignmentToEdit.map(a => a.employeeId));
             setSelectedClientId(first.clientId);
             setSelectedBoatIds(first.boatIds || []);
+            setSelectedExtras(first.selectedExtras || []);
             setStartTime(new Date(first.startTime).toTimeString().substring(0,5));
             setEndTime(new Date(first.endTime).toTimeString().substring(0,5));
             setDate(formatDateForInput(new Date(first.startTime)));
@@ -293,6 +297,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             setSelectedEmployees([]);
             setSelectedClientId(undefined);
             setSelectedBoatIds([]);
+            setSelectedExtras([]);
             setStartTime("09:00");
             setEndTime("11:00");
             setDate(formatDateForInput(new Date()));
@@ -302,6 +307,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
     const handleTaskSelectChange = (taskId: string) => {
         setSelectedTaskId(taskId);
         setSelectedEmployees([]); // Reset employees when task changes
+        setSelectedExtras([]); // Reset extras
     };
 
     const handleEmployeeSelect = (employeeId: string) => {
@@ -324,6 +330,33 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
                 : [...prev, boatId]
         );
     }
+
+    const handleExtraQuantityChange = (extraId: string, quantityStr: string) => {
+        const quantity = Number(quantityStr);
+        if (isNaN(quantity) || quantity < 0) return;
+
+        setSelectedExtras(prev => {
+            const existing = prev.find(e => e.extraId === extraId);
+            if (existing) {
+                if (quantity === 0) {
+                    return prev.filter(e => e.extraId !== extraId);
+                }
+                return prev.map(e => e.extraId === extraId ? { ...e, quantity } : e);
+            } else if (quantity > 0) {
+                return [...prev, { extraId, quantity }];
+            }
+            return prev;
+        });
+    }
+
+    const totalExtrasCost = React.useMemo(() => {
+        if (!selectedTask || !selectedTask.extras) return 0;
+        return selectedExtras.reduce((total, selected) => {
+            const extraDetails = selectedTask.extras?.find(e => e.id === selected.extraId);
+            if (!extraDetails) return total;
+            return total + (extraDetails.price * selected.quantity);
+        }, 0);
+    }, [selectedExtras, selectedTask]);
     
     const handleSubmit = () => {
         if (!selectedTaskId || selectedEmployees.length === 0) {
@@ -348,6 +381,7 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
             endTime: endDate,
             clientId: selectedClientId,
             boatIds: selectedBoatIds,
+            selectedExtras: selectedExtras.filter(e => e.quantity > 0),
         };
         
         if (isEditMode && assignmentToEdit) {
@@ -386,184 +420,236 @@ const AssignTaskDialogContent = ({ setOpen, onAssignTask, onUpdateTask, onDelete
         setIsCreateClientOpen(false); // Close the creation dialog
     }
 
-    const selectedTask = getTaskById(selectedTaskId, tasks);
     const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
         ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
         : employees;
     
     const selectedClient = selectedClientId ? getClientById(selectedClientId, clients) : null;
-
+    const hasExtras = selectedTask && selectedTask.extras && selectedTask.extras.length > 0;
 
     return (
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle>{isEditMode ? 'Editar Tarea Asignada' : 'Asignar una nueva tarea'}</DialogTitle>
                 <DialogDescription>
                     {isEditMode ? 'Modifique los detalles de la asignación.' : 'Seleccione la tarea, el empleado y el horario.'}
                 </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="task">Tarea</Label>
-                    <div className="flex gap-2">
-                        <Select value={selectedTaskId} onValueChange={handleTaskSelectChange}>
-                            <SelectTrigger id="task">
-                                <SelectValue placeholder="Seleccione una tarea" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {tasks.map(task => (
-                                    <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
-                             <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <DialogTrigger asChild>
-                                            <Button variant="outline" size="icon">
-                                                <PlusCircle className="h-4 w-4" />
-                                            </Button>
-                                        </DialogTrigger>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Crear nueva tarea</TooltipContent>
-                                </Tooltip>
-                             </TooltipProvider>
-                            <TaskDialog
-                                open={isCreateTaskOpen}
-                                setOpen={setIsCreateTaskOpen}
-                                onTaskSave={handleTaskCreated}
-                                taskToEdit={null}
-                            />
-                        </Dialog>
-                    </div>
-                </div>
+            <Tabs defaultValue="general" className="w-full">
+                <TabsList className={cn("grid w-full", hasExtras ? "grid-cols-2" : "grid-cols-1")}>
+                    <TabsTrigger value="general">General</TabsTrigger>
+                    {hasExtras && <TabsTrigger value="extras">Extras</TabsTrigger>}
+                </TabsList>
+                <TabsContent value="general">
+                    <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="task">Tarea</Label>
+                            <div className="flex gap-2">
+                                <Select value={selectedTaskId} onValueChange={handleTaskSelectChange}>
+                                    <SelectTrigger id="task">
+                                        <SelectValue placeholder="Seleccione una tarea" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {tasks.map(task => (
+                                            <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
+                                     <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="icon">
+                                                        <PlusCircle className="h-4 w-4" />
+                                                    </Button>
+                                                </DialogTrigger>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Crear nueva tarea</TooltipContent>
+                                        </Tooltip>
+                                     </TooltipProvider>
+                                    <TaskDialog
+                                        open={isCreateTaskOpen}
+                                        setOpen={setIsCreateTaskOpen}
+                                        onTaskSave={handleTaskCreated}
+                                        taskToEdit={null}
+                                    />
+                                </Dialog>
+                            </div>
+                        </div>
 
-                <div className="grid gap-2">
-                  <Label>Cliente (Opcional)</Label>
-                    <div className="flex gap-2">
-                        <Select value={selectedClientId} onValueChange={handleClientSelectChange}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Seleccione un cliente" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">Ninguno</SelectItem>
-                                {clients.map(client => (
-                                    <SelectItem key={client.id} value={client.id}>{client.firstName} {client.lastName}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Dialog open={isCreateClientOpen} onOpenChange={setIsCreateClientOpen}>
-                             <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <DialogTrigger asChild>
-                                            <Button variant="outline" size="icon">
-                                                <PlusCircle className="h-4 w-4" />
-                                            </Button>
-                                        </DialogTrigger>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Crear nuevo cliente</TooltipContent>
-                                </Tooltip>
-                             </TooltipProvider>
-                            <ClientDialog
-                                open={isCreateClientOpen}
-                                setOpen={setIsCreateClientOpen}
-                                onSave={handleClientCreated}
-                                clientToEdit={null}
-                            />
-                        </Dialog>
-                    </div>
-                </div>
-                
-                 {selectedClient && (
-                    <div className="grid gap-2">
-                        <Label>Embarcacion(es)</Label>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="flex justify-between items-center font-normal">
-                                    <span className="truncate">
-                                        {selectedBoatIds.length === 0 && "Seleccione embarcaciones"}
-                                        {selectedBoatIds.length === 1 && selectedClient.boats.find(b => b.id === selectedBoatIds[0])?.name}
-                                        {selectedBoatIds.length > 1 && `${selectedBoatIds.length} embarcaciones seleccionadas`}
-                                    </span>
-                                    <ChevronDown className="h-4 w-4 opacity-50" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                                <DropdownMenuLabel>Embarcaciones de {selectedClient.firstName}</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                {selectedClient.boats.map(boat => (
-                                    <DropdownMenuCheckboxItem
-                                        key={boat.id}
-                                        checked={selectedBoatIds.includes(boat.id)}
-                                        onSelect={(e) => e.preventDefault()}
-                                        onCheckedChange={() => handleBoatSelect(boat.id)}
-                                    >
-                                        {boat.name}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                )}
+                        <div className="grid gap-2">
+                          <Label>Cliente (Opcional)</Label>
+                            <div className="flex gap-2">
+                                <Select value={selectedClientId} onValueChange={handleClientSelectChange}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Seleccione un cliente" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Ninguno</SelectItem>
+                                        {clients.map(client => (
+                                            <SelectItem key={client.id} value={client.id}>{client.firstName} {client.lastName}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Dialog open={isCreateClientOpen} onOpenChange={setIsCreateClientOpen}>
+                                     <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="icon">
+                                                        <PlusCircle className="h-4 w-4" />
+                                                    </Button>
+                                                </DialogTrigger>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Crear nuevo cliente</TooltipContent>
+                                        </Tooltip>
+                                     </TooltipProvider>
+                                    <ClientDialog
+                                        open={isCreateClientOpen}
+                                        setOpen={setIsCreateClientOpen}
+                                        onSave={handleClientCreated}
+                                        clientToEdit={null}
+                                    />
+                                </Dialog>
+                            </div>
+                        </div>
+                        
+                         {selectedClient && (
+                            <div className="grid gap-2">
+                                <Label>Embarcacion(es)</Label>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" className="flex justify-between items-center font-normal">
+                                            <span className="truncate">
+                                                {selectedBoatIds.length === 0 && "Seleccione embarcaciones"}
+                                                {selectedBoatIds.length === 1 && selectedClient.boats.find(b => b.id === selectedBoatIds[0])?.name}
+                                                {selectedBoatIds.length > 1 && `${selectedBoatIds.length} embarcaciones seleccionadas`}
+                                            </span>
+                                            <ChevronDown className="h-4 w-4 opacity-50" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                                        <DropdownMenuLabel>Embarcaciones de {selectedClient.firstName}</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        {selectedClient.boats.map(boat => (
+                                            <DropdownMenuCheckboxItem
+                                                key={boat.id}
+                                                checked={selectedBoatIds.includes(boat.id)}
+                                                onSelect={(e) => e.preventDefault()}
+                                                onCheckedChange={() => handleBoatSelect(boat.id)}
+                                            >
+                                                {boat.name}
+                                            </DropdownMenuCheckboxItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        )}
 
-                <div className="grid gap-2">
-                  <Label>Empleado(s)</Label>
-                   <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="flex justify-between items-center font-normal" disabled={!selectedTaskId}>
-                                <span className="truncate">
-                                    {selectedEmployees.length === 0 && "Seleccione empleados"}
-                                    {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
-                                    {selectedEmployees.length > 1 && `${selectedEmployees.length} empleados seleccionados`}
-                                </span>
-                                <ChevronDown className="h-4 w-4 opacity-50" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                            <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                             {qualifiedEmployees.length > 0 ? qualifiedEmployees.map(emp => (
-                                <DropdownMenuCheckboxItem
-                                    key={emp.id}
-                                    checked={selectedEmployees.includes(emp.id)}
-                                    onSelect={(e) => e.preventDefault()}
-                                    onCheckedChange={() => handleEmployeeSelect(emp.id)}
-                                >
-                                    <div className="flex items-center justify-between w-full">
-                                        <span>{emp.name} {emp.lastName}</span>
-                                        {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
+                        <div className="grid gap-2">
+                          <Label>Empleado(s)</Label>
+                           <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="flex justify-between items-center font-normal" disabled={!selectedTaskId}>
+                                        <span className="truncate">
+                                            {selectedEmployees.length === 0 && "Seleccione empleados"}
+                                            {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
+                                            {selectedEmployees.length > 1 && `${selectedEmployees.length} empleados seleccionados`}
+                                        </span>
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                                    <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                     {qualifiedEmployees.length > 0 ? qualifiedEmployees.map(emp => (
+                                        <DropdownMenuCheckboxItem
+                                            key={emp.id}
+                                            checked={selectedEmployees.includes(emp.id)}
+                                            onSelect={(e) => e.preventDefault()}
+                                            onCheckedChange={() => handleEmployeeSelect(emp.id)}
+                                        >
+                                            <div className="flex items-center justify-between w-full">
+                                                <span>{emp.name} {emp.lastName}</span>
+                                                {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
+                                            </div>
+                                        </DropdownMenuCheckboxItem>
+                                    )) : (
+                                        <DropdownMenuItem disabled>No hay empleados cualificados para esta tarea.</DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                                {selectedEmployees.map(id => {
+                                    const emp = getEmployeeById(id);
+                                    return emp ? <Badge key={id} variant="secondary">{emp.name} {emp.lastName}</Badge> : null;
+                                })}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="startTime">Hora de Inicio</Label>
+                                <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="endTime">Hora de Fin</Label>
+                                <Input id="endTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
+                            </div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="date">Fecha</Label>
+                            <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+                        </div>
+                    </div>
+                </TabsContent>
+                {hasExtras && (
+                    <TabsContent value="extras">
+                        <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
+                            <div className="space-y-4">
+                                {selectedTask.extras!.map((extra: TaskExtra) => {
+                                    const currentQuantity = selectedExtras.find(se => se.extraId === extra.id)?.quantity || 0;
+                                    const subtotal = (extra.price || 0) * currentQuantity;
+                                    return (
+                                        <div key={extra.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-4">
+                                            <div>
+                                                <Label htmlFor={`extra-${extra.id}`}>{extra.name}</Label>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extra.price || 0)} c/u
+                                                </p>
+                                            </div>
+                                            <Input
+                                                id={`extra-${extra.id}`}
+                                                type="number"
+                                                min="0"
+                                                value={currentQuantity}
+                                                onChange={(e) => handleExtraQuantityChange(extra.id, e.target.value)}
+                                                className="w-24"
+                                                placeholder="0"
+                                            />
+                                            <div className="w-28 text-right font-medium">
+                                                {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(subtotal)}
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                             {totalExtrasCost > 0 && (
+                                <div className="mt-4 pt-4 border-t">
+                                    <div className="flex justify-between items-center font-bold text-lg">
+                                        <span>Total de Extras:</span>
+                                        <span>
+                                            {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(totalExtrasCost)}
+                                        </span>
                                     </div>
-                                </DropdownMenuCheckboxItem>
-                            )) : (
-                                <DropdownMenuItem disabled>No hay empleados cualificados para esta tarea.</DropdownMenuItem>
+                                </div>
                             )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                        {selectedEmployees.map(id => {
-                            const emp = getEmployeeById(id);
-                            return emp ? <Badge key={id} variant="secondary">{emp.name} {emp.lastName}</Badge> : null;
-                        })}
-                    </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="startTime">Hora de Inicio</Label>
-                        <Input id="startTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="endTime">Hora de Fin</Label>
-                        <Input id="endTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
-                    </div>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="date">Fecha</Label>
-                    <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
-                </div>
-            </div>
-            <DialogFooter className="sm:justify-between">
+                        </div>
+                    </TabsContent>
+                )}
+            </Tabs>
+
+            <DialogFooter className="sm:justify-between pt-4 border-t">
                 <div>
                      {isEditMode && (
                         <AlertDialog>
