@@ -21,14 +21,16 @@ import {
 } from "@/components/ui"
 import { Employee, Assignment, AssignmentStatus, tasks as allTasks } from "@/lib/data"
 import { Calendar, CheckCheck, Check, Hourglass, X, Ban } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-const statusMap: Record<AssignmentStatus, { text: string; icon: React.ReactNode; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    pending: { text: 'Pendiente', icon: <Hourglass className="h-3 w-3" />, variant: 'outline' },
-    accepted: { text: 'Aceptada', icon: <Check className="h-3 w-3" />, variant: 'secondary' },
-    completed: { text: 'Terminada', icon: <CheckCheck className="h-3 w-3" />, variant: 'default' },
-    rejected: { text: 'Rechazada', icon: <Ban className="h-3 w-3" />, variant: 'destructive' },
-    cancelled: { text: 'Cancelada', icon: <X className="h-3 w-3" />, variant: 'destructive' },
+const statusStyles: Record<AssignmentStatus, { classes: string, text: string; icon: React.ReactNode; }> = {
+    pending: { text: 'Pendiente', icon: <Hourglass className="h-3 w-3" />, classes: "bg-amber-100 border-amber-400 text-amber-800" },
+    accepted: { text: 'Aceptada', icon: <Check className="h-3 w-3" />, classes: "bg-blue-100 border-blue-400 text-blue-800" },
+    completed: { text: 'Terminada', icon: <CheckCheck className="h-3 w-3" />, classes: "bg-green-100 border-green-400 text-green-800" },
+    rejected: { text: 'Rechazada', icon: <Ban className="h-3 w-3" />, classes: "bg-gray-200 border-gray-400 text-gray-700" },
+    cancelled: { text: 'Cancelada', icon: <X className="h-3 w-3" />, classes: "bg-red-100 border-red-400 text-red-800" },
 };
+
 
 const getTaskById = (taskId: string) => {
     // This is inefficient if allTasks is large, but for now it's fine.
@@ -79,7 +81,7 @@ export const EmployeeTasksDialog = ({
                             <TableBody>
                                 {sortedAssignments.map(assignment => {
                                     const task = getTaskById(assignment.taskId);
-                                    const statusInfo = statusMap[assignment.status] || statusMap.pending;
+                                    const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
 
                                     return (
                                         <TableRow key={assignment.id}>
@@ -90,7 +92,7 @@ export const EmployeeTasksDialog = ({
                                                 })}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={statusInfo.variant}>
+                                                <Badge variant="outline" className={cn("font-normal", statusInfo.classes)}>
                                                     {statusInfo.icon}
                                                     <span className="ml-1.5">{statusInfo.text}</span>
                                                 </Badge>
