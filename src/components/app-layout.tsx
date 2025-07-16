@@ -38,14 +38,16 @@ import {
   Ship,
   Users,
   Contact,
+  CalendarDays,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
 
 const adminNavItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-  { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
+  { href: "/today-tasks", icon: <CalendarDays />, label: "Tareas del Día" },
   { href: "/schedule", icon: <CalendarClock />, label: "Asignar Tareas" },
+  { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
   { href: "/employees", icon: <Users />, label: "Empleados" },
   { href: "/clients", icon: <Contact />, label: "Clientes" },
 ];
