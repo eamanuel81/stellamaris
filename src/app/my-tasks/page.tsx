@@ -16,11 +16,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui"
-import { assignments as initialAssignments, tasks as initialTasks, Assignment, AssignmentStatus, Task } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck } from "lucide-react"
+import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
+const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
+
 
 type StatusConfig = {
     text: string;
@@ -40,6 +42,8 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 export default function MyTasksPage() {
     const [assignments, setAssignments] = React.useState<Assignment[]>([]);
     const [tasks, setTasks] = React.useState<Task[]>([]);
+    const [clients, setClients] = React.useState<Client[]>([]);
+
 
     React.useEffect(() => {
         const loadData = () => {
@@ -60,10 +64,14 @@ export default function MyTasksPage() {
                 const savedTasks = localStorage.getItem('tasks');
                 setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
 
+                const savedClients = localStorage.getItem('clients');
+                setClients(savedClients ? JSON.parse(savedClients) : initialClients);
+
             } catch (error) {
                 console.error("Failed to load data from localStorage", error);
                 setAssignments(initialAssignments);
                 setTasks(initialTasks);
+                setClients(initialClients);
             }
         };
         
@@ -107,7 +115,14 @@ export default function MyTasksPage() {
             const task = getTaskById(assignment.taskId, tasks);
             if (!task) return null;
 
+            const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+            const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
             const currentStatus = statusMap[assignment.status] || statusMap.pending;
+
+            const extrasTotal = assignment.selectedExtras?.reduce((total, selected) => {
+                const extraDetails = task.extras?.find(e => e.id === selected.extraId);
+                return total + (extraDetails?.price || 0) * selected.quantity;
+            }, 0) || 0;
             
             return (
               <Card key={assignment.id} className="flex flex-col">
@@ -124,17 +139,41 @@ export default function MyTasksPage() {
                   <CardDescription>{task.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                   <div className="text-sm text-muted-foreground space-y-2">
-                       <div className="flex items-center gap-2">
-                           <Clock className="h-4 w-4" />
-                           <span>
-                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                           </span>
+                   <div className="text-sm text-muted-foreground space-y-4">
+                        <div className="space-y-2">
+                           <div className="flex items-center gap-2">
+                               <Clock className="h-4 w-4" />
+                               <span>
+                                    {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                               </span>
+                           </div>
+                            <div className="flex items-center gap-2">
+                               <Clock className="h-4 w-4" />
+                               <span>Duración estimada: {task.duration} min</span>
+                           </div>
                        </div>
-                        <div className="flex items-center gap-2">
-                           <Clock className="h-4 w-4" />
-                           <span>Duración estimada: {task.duration} min</span>
-                       </div>
+                       
+                        {client && (
+                            <div className="space-y-2 border-t pt-4">
+                                <div className="flex items-center gap-2">
+                                    <User className="h-4 w-4" />
+                                    <span className="font-medium text-foreground">Cliente: {client.firstName} {client.lastName}</span>
+                                </div>
+                                {boats.length > 0 && boats.map(boat => (
+                                    <div key={boat.id} className="flex items-center gap-2 pl-6">
+                                        <Ship className="h-4 w-4" />
+                                        <span>{boat.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {extrasTotal > 0 && (
+                            <div className="flex items-center gap-2 font-bold pt-4 border-t text-green-700">
+                                <DollarSign className="h-4 w-4 shrink-0" />
+                                <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}</span>
+                            </div>
+                        )}
                    </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
