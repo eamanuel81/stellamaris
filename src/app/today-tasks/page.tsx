@@ -194,9 +194,10 @@ export default function TodayTasksPage() {
                                     <ul className="list-disc pl-11 space-y-1">
                                         {assignment.selectedExtras.map(extra => {
                                             const extraDetails = task.extras?.find(e => e.id === extra.extraId);
+                                            if (!extraDetails) return null;
                                             return (
                                                 <li key={extra.extraId}>
-                                                    {extra.quantity}x {extraDetails?.name || 'Extra desconocido'}
+                                                    {extra.quantity}x {extraDetails.name} - {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extraDetails.price * extra.quantity)}
                                                 </li>
                                             )
                                         })}
