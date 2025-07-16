@@ -13,9 +13,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui"
 import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, employees, Assignment, AssignmentStatus, Task, Client, Employee } from "@/lib/data"
-import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays } from "lucide-react"
+import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -43,41 +48,53 @@ export default function TodayTasksPage() {
     const [tasks, setTasks] = React.useState<Task[]>([]);
     const [clients, setClients] = React.useState<Client[]>([]);
 
-    React.useEffect(() => {
-        const loadData = () => {
-             try {
-                const savedAssignments = localStorage.getItem('assignments');
-                if (savedAssignments) {
-                    const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                        if (key === 'startTime' || key === 'endTime') {
-                            return new Date(value);
-                        }
-                        return value;
-                    });
-                    setAssignments(parsedAssignments);
-                } else {
-                    setAssignments(initialAssignments);
-                }
-
-                const savedTasks = localStorage.getItem('tasks');
-                setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
-
-                const savedClients = localStorage.getItem('clients');
-                setClients(savedClients ? JSON.parse(savedClients) : initialClients);
-
-            } catch (error) {
-                console.error("Failed to load data from localStorage", error);
+    const loadData = React.useCallback(() => {
+        try {
+            const savedAssignments = localStorage.getItem('assignments');
+            if (savedAssignments) {
+                const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
+                    if (key === 'startTime' || key === 'endTime') {
+                        return new Date(value);
+                    }
+                    return value;
+                });
+                setAssignments(parsedAssignments);
+            } else {
                 setAssignments(initialAssignments);
-                setTasks(initialTasks);
-                setClients(initialClients);
             }
-        };
-        
+
+            const savedTasks = localStorage.getItem('tasks');
+            setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
+
+            const savedClients = localStorage.getItem('clients');
+            setClients(savedClients ? JSON.parse(savedClients) : initialClients);
+
+        } catch (error) {
+            console.error("Failed to load data from localStorage", error);
+            setAssignments(initialAssignments);
+            setTasks(initialTasks);
+            setClients(initialClients);
+        }
+    }, []);
+
+    React.useEffect(() => {
         loadData();
         window.addEventListener('storage', loadData);
         return () => window.removeEventListener('storage', loadData);
+    }, [loadData]);
 
-    }, []);
+    const updateAssignmentStatus = (assignmentId: string, newStatus: AssignmentStatus) => {
+        const updatedAssignments = assignments.map(a =>
+            a.id === assignmentId ? { ...a, status: newStatus } : a
+        );
+        setAssignments(updatedAssignments);
+        try {
+            localStorage.setItem('assignments', JSON.stringify(updatedAssignments));
+            window.dispatchEvent(new StorageEvent('storage', { key: 'assignments' }));
+        } catch (e) {
+            console.error("Failed to save assignments to localStorage", e);
+        }
+    }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -188,11 +205,26 @@ export default function TodayTasksPage() {
                             )}
                     </div>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex justify-between items-center">
                     <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
                             {currentStatus.icon}
                             <span className="ml-1.5">{currentStatus.text}</span>
                     </Badge>
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Cambiar Estado
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
+                            <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
+                            <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
+                            <DropdownMenuItem disabled={assignment.status === 'rejected'} onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Marcar como Rechazada</DropdownMenuItem>
+                            <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </CardFooter>
                 </Card>
                 )
