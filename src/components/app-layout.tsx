@@ -137,8 +137,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:justify-end">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:justify-between">
           <SidebarTrigger className="sm:hidden" />
+           <div className="hidden sm:flex items-center gap-2">
+              <SidebarTrigger />
+              <h1 className="font-semibold text-lg">
+                {navItems.find(item => pathname.startsWith(item.href))?.label}
+              </h1>
+            </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
