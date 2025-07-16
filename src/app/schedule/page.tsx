@@ -114,7 +114,7 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
     const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as Employee[];
-    const statusInfo = statusStyles[firstAssignment.status];
+    const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
 
     const calculateExtrasTotal = () => {
         if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
@@ -225,7 +225,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
 
                             const width = 100 / processed.totalColumns;
                             const left = width * processed.column;
-                            const statusInfo = statusStyles[firstAssignment.status];
+                            const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
                             const Icon = statusInfo.icon;
                             
                             return (
@@ -348,7 +348,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             const top = getTaskPosition(startTime);
                                             const width = 100 / processed.totalColumns;
                                             const left = width * processed.column;
-                                            const statusInfo = statusStyles[firstAssignment.status];
+                                            const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
                                             const Icon = statusInfo.icon;
 
 
