@@ -223,6 +223,9 @@ export default function MyTasksPage() {
   const activeAssignments = filteredAssignments.filter(a => a.status !== 'completed');
   const completedAssignments = filteredAssignments.filter(a => a.status === 'completed');
 
+  const filterableStatuses = Object.entries(statusMap).filter(
+    ([key]) => key !== 'completed' && key !== 'cancelled'
+  );
 
   return (
     <AppLayout>
@@ -252,7 +255,7 @@ export default function MyTasksPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
-                {Object.entries(statusMap).map(([key, { text }]) => (
+                {filterableStatuses.map(([key, { text }]) => (
                   <SelectItem key={key} value={key}>{text}</SelectItem>
                 ))}
               </SelectContent>
