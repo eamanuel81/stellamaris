@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -27,7 +28,11 @@ export default function LoginPage() {
     e.preventDefault()
     if (role) {
       login(role)
-      router.push("/dashboard")
+      if (role === "admin") {
+        router.push("/dashboard")
+      } else {
+        router.push("/my-tasks")
+      }
     }
   }
 
