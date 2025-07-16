@@ -1,3 +1,4 @@
+
 "use client"
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
@@ -105,7 +106,7 @@ export default function MyTasksPage() {
             const task = getTaskById(assignment.taskId, tasks);
             if (!task) return null;
 
-            const currentStatus = statusMap[assignment.status];
+            const currentStatus = statusMap[assignment.status] || statusMap.pending;
             
             return (
               <Card key={assignment.id} className="flex flex-col">
@@ -126,7 +127,7 @@ export default function MyTasksPage() {
                        <div className="flex items-center gap-2">
                            <Clock className="h-4 w-4" />
                            <span>
-                                {assignment.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {assignment.endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                            </span>
                        </div>
                         <div className="flex items-center gap-2">
