@@ -45,7 +45,7 @@ import {
   Checkbox
 } from "@/components/ui"
 import { PlusCircle, Car, ChevronDown, Trash2 } from "lucide-react"
-import { employees, Task, Assignment, Client, TaskExtra } from "@/lib/data"
+import { employees, Task, Assignment, Client, TaskExtra, AssignmentStatus } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
 import { ClientDialog } from "@/components/client-dialog"
@@ -54,7 +54,15 @@ const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id)
 
-export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, tasks, clients, onTaskCreated, onClientCreated, onDelete }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; clients: Client[]; onTaskCreated: (task: Task) => void; onClientCreated: (client: Client) => void; onDelete?: () => void; }) => {
+const statusOptions: { value: AssignmentStatus; label: string }[] = [
+    { value: 'pending', label: 'Pendiente' },
+    { value: 'accepted', label: 'Aceptada' },
+    { value: 'completed', label: 'Terminada' },
+    { value: 'rejected', label: 'Rechazada' },
+    { value: 'cancelled', label: 'Cancelada' },
+]
+
+export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, tasks, clients, onTaskCreated, onClientCreated, onDelete }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; clients: Client[]; onTaskCreated: (task: Task) => void; onClientCreated: (client: Client) => void; onDelete?: () => void; }) => {
     const isEditMode = !!assignmentToEdit;
     const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
 
@@ -63,6 +71,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
     const [selectedClientId, setSelectedClientId] = React.useState<string | undefined>(firstAssignment?.clientId);
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>(firstAssignment?.boatIds || []);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>(firstAssignment?.selectedExtras || []);
+    const [status, setStatus] = React.useState<AssignmentStatus>(firstAssignment?.status || 'pending');
     const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
     const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "10:00");
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
@@ -92,6 +101,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
             setStartTime(new Date(first.startTime).toTimeString().substring(0,5));
             setEndTime(new Date(first.endTime).toTimeString().substring(0,5));
             setDate(formatDateForInput(new Date(first.startTime)));
+            setStatus(first.status);
             setIsEndTimeManual(false); // Reset on edit
         } else {
              // Reset form for new assignment
@@ -110,6 +120,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
                 setEndTime("10:00");
             }
             setDate(formatDateForInput(new Date()));
+            setStatus('pending');
             setIsEndTimeManual(false);
         }
     }, [assignmentToEdit, isEditMode, tasks]);
@@ -208,6 +219,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
             clientId: selectedClientId,
             boatIds: selectedBoatIds,
             selectedExtras: selectedExtras.filter(e => e.quantity > 0),
+            status: status
         };
         
         if (isEditMode && assignmentToEdit) {
@@ -217,8 +229,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
                 return {
                     id: `a${Date.now()}${Math.random()}`,
                     ...newAssignmentData,
-                    employeeId: employeeId,
-                    status: 'assigned' as const
+                    employeeId: employeeId
                 };
             });
             onAssignTask(newAssignments);
@@ -432,6 +443,23 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
                                 Editar hora de fin manualmente
                             </Label>
                         </div>
+                         {isEditMode && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="status">Estado</Label>
+                                <Select value={status} onValueChange={(value: AssignmentStatus) => setStatus(value)}>
+                                    <SelectTrigger id="status">
+                                        <SelectValue placeholder="Seleccione un estado" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {statusOptions.map(option => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
                 </TabsContent>
                 {hasExtras && (
@@ -480,7 +508,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
                 )}
             </Tabs>
 
-            <DialogFooter className="sm:justify-between">
+            <DialogFooter className="sm:justify-between pt-4 border-t">
                  {isEditMode && onDelete && (
                      <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -512,5 +540,3 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
         </DialogContent>
     )
 }
-
-    

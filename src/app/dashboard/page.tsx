@@ -27,7 +27,7 @@ import {
   ChartTooltipContent,
   ChartContainer,
 } from "@/components/ui"
-import { assignments, employees, tasks } from "@/lib/data"
+import { assignments, employees, tasks, AssignmentStatus } from "@/lib/data"
 
 const chartData = [
   { name: "Juan P.", hours: 45 },
@@ -38,10 +38,15 @@ const chartData = [
 
 const getTaskById = (id: string) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
-const statusMap: { [key: string]: { text: string; variant: "default" | "secondary" | "destructive" | "outline" } } = {
+
+type StatusConfig = { text: string; variant: "default" | "secondary" | "destructive" | "outline" };
+
+const statusMap: Record<AssignmentStatus, StatusConfig> = {
   completed: { text: "Terminado", variant: "default" },
   accepted: { text: "Aceptado", variant: "secondary" },
-  assigned: { text: "Asignado", variant: "outline" },
+  pending: { text: "Pendiente", variant: "outline" },
+  rejected: { text: "Rechazada", variant: "destructive" },
+  cancelled: { text: "Cancelada", variant: "destructive" },
 }
 
 export default function DashboardPage() {

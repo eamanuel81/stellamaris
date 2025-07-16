@@ -5,7 +5,7 @@ import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui"
 import { PlusCircle, Clock, User, Ship, DollarSign, Users } from "lucide-react"
-import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee } from "@/lib/data"
+import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee, AssignmentStatus } from "@/lib/data"
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
 import { AssignmentDetailDialog } from "@/components/assignment-detail-dialog"
 
@@ -438,7 +438,7 @@ export default function SchedulePage() {
     updateAndStoreAssignments([...assignments, ...newAssignments]);
   }
 
- const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'status' | 'employeeId'>, newEmployeeIds: string[]) => {
+ const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => {
     const originalIds = new Set(originalAssignments.map(a => a.id));
     const filtered = assignments.filter(a => !originalIds.has(a.id));
 
@@ -448,7 +448,6 @@ export default function SchedulePage() {
             id: existingAssignment?.id || `a${Date.now()}${Math.random()}`,
             ...newAssignmentData,
             employeeId: employeeId,
-            status: existingAssignment?.status || 'assigned' as const
         };
     });
     
@@ -512,6 +511,22 @@ export default function SchedulePage() {
     handleCloseDialogs();
   }
 
+  const handleStatusChange = (newStatus: AssignmentStatus) => {
+      if (!selectedAssignmentGroup) return;
+
+      const groupIds = new Set(selectedAssignmentGroup.map(a => a.id));
+      const updatedAssignments = assignments.map(a => {
+          if (groupIds.has(a.id)) {
+              return { ...a, status: newStatus };
+          }
+          return a;
+      });
+
+      updateAndStoreAssignments(updatedAssignments);
+      // Also update the selected group to reflect the change immediately in the dialog
+      setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
+  }
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -547,10 +562,7 @@ export default function SchedulePage() {
                     clients={clients}
                     employees={employees}
                     onEdit={handleOpenEdit}
-                    onDelete={() => {
-                        handleDeleteAssignment(selectedAssignmentGroup);
-                        handleCloseDialogs();
-                    }}
+                    onStatusChange={handleStatusChange}
                     setOpen={setIsDetailOpen}
                 />
             )}
@@ -575,5 +587,3 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
-
-    

@@ -12,13 +12,27 @@ import {
     Button,
     Separator,
     Badge,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Label,
 } from "@/components/ui";
-import { Assignment, Task, Client, Employee } from "@/lib/data";
-import { Clock, User, Ship, DollarSign, Edit, Users, Shield } from "lucide-react";
+import { Assignment, Task, Client, Employee, AssignmentStatus } from "@/lib/data";
+import { Clock, User, Ship, DollarSign, Edit, Users, Shield, Tag } from "lucide-react";
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id);
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
 const getEmployeeById = (id: string, employees: Employee[]) => employees.find(e => e.id === id);
+
+const statusOptions: { value: AssignmentStatus; label: string }[] = [
+    { value: 'pending', label: 'Pendiente' },
+    { value: 'accepted', label: 'Aceptada' },
+    { value: 'completed', label: 'Terminada' },
+    { value: 'rejected', label: 'Rechazada' },
+    { value: 'cancelled', label: 'Cancelada' },
+]
 
 interface AssignmentDetailDialogProps {
     assignmentGroup: Assignment[];
@@ -26,7 +40,7 @@ interface AssignmentDetailDialogProps {
     clients: Client[];
     employees: Employee[];
     onEdit: () => void;
-    onDelete: () => void;
+    onStatusChange: (newStatus: AssignmentStatus) => void;
     setOpen: (open: boolean) => void;
 }
 
@@ -36,7 +50,7 @@ export const AssignmentDetailDialog = ({
     clients,
     employees,
     onEdit,
-    onDelete,
+    onStatusChange,
     setOpen
 }: AssignmentDetailDialogProps) => {
 
@@ -69,6 +83,27 @@ export const AssignmentDetailDialog = ({
             </DialogHeader>
 
             <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
+                 <div className="grid gap-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                         <Tag className="h-4 w-4 shrink-0" />
+                         <span>Estado</span>
+                    </div>
+                     <Select value={firstAssignment.status} onValueChange={onStatusChange}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Cambiar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {statusOptions.map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <Separator />
+                
                 <div className="grid gap-2">
                     <h4 className="font-semibold text-sm">Horario</h4>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

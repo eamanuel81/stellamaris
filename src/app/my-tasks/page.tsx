@@ -14,16 +14,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui"
-import { assignments, employees, tasks } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock } from "lucide-react"
+import { assignments, employees, tasks, AssignmentStatus } from "@/lib/data"
+import { Car, Check, ChevronDown, Clock, XCircle, Ban, Hourglass } from "lucide-react"
 
 const getTaskById = (id: string) => tasks.find((t) => t.id === id)
-const getEmployeeById = (id: string) => employees.find((e) => e.id === id)
 
-const statusMap: { [key: string]: { text: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode } } = {
-  completed: { text: "Terminado", variant: "default", icon: <Check className="h-3 w-3" /> },
+type StatusConfig = {
+    text: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    icon: React.ReactNode;
+}
+
+const statusMap: Record<AssignmentStatus, StatusConfig> = {
+  pending: { text: "Pendiente", variant: "outline", icon: <Hourglass className="h-3 w-3" /> },
   accepted: { text: "Aceptado", variant: "secondary", icon: <Clock className="h-3 w-3" /> },
-  assigned: { text: "Asignado", variant: "outline", icon: <Clock className="h-3 w-3" /> },
+  completed: { text: "Terminado", variant: "default", icon: <Check className="h-3 w-3" /> },
+  rejected: { text: "Rechazada", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
+  cancelled: { text: "Cancelada", variant: "destructive", icon: <Ban className="h-3 w-3" /> },
 };
 
 
@@ -92,6 +99,7 @@ export default function MyTasksPage() {
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem disabled={assignment.status === 'accepted'}>Aceptar Tarea</DropdownMenuItem>
                         <DropdownMenuItem disabled={assignment.status === 'completed'}>Marcar como Terminada</DropdownMenuItem>
+                        <DropdownMenuItem>Rechazar Tarea</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </CardFooter>

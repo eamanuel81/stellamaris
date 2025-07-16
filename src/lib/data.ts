@@ -29,13 +29,15 @@ export type Task = {
   extras?: TaskExtra[];
 };
 
+export type AssignmentStatus = 'pending' | 'accepted' | 'completed' | 'rejected' | 'cancelled';
+
 export type Assignment = {
     id: string;
     taskId: string;
     employeeId: string;
     startTime: Date;
     endTime: Date;
-    status: 'assigned' | 'accepted' | 'completed';
+    status: AssignmentStatus;
     clientId?: string;
     boatIds?: string[];
     selectedExtras?: { extraId: string; quantity: number }[];
@@ -89,8 +91,8 @@ export const tasks: Task[] = [
 export const assignments: Assignment[] = [
     { id: 'a1', taskId: 't1', employeeId: '1', startTime: new Date(new Date().setHours(8, 0, 0, 0)), endTime: new Date(new Date().setHours(10, 0, 0, 0)), status: 'completed', clientId: 'c1', boatIds: ['b1'] },
     { id: 'a2', taskId: 't2', employeeId: '3', startTime: new Date(new Date().setHours(9, 0, 0, 0)), endTime: new Date(new Date().setHours(9, 30, 0, 0)), status: 'accepted' },
-    { id: 'a3', taskId: 't4', employeeId: '2', startTime: new Date(new Date().setHours(11, 0, 0, 0)), endTime: new Date(new Date().setHours(12, 0, 0, 0)), status: 'assigned' },
-    { id: 'a4', taskId: 't3', employeeId: '1', startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 45, 0, 0)), status: 'assigned', clientId: 'c2', boatIds: ['b3'] },
+    { id: 'a3', taskId: 't4', employeeId: '2', startTime: new Date(new Date().setHours(11, 0, 0, 0)), endTime: new Date(new Date().setHours(12, 0, 0, 0)), status: 'pending' },
+    { id: 'a4', taskId: 't3', employeeId: '1', startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 45, 0, 0)), status: 'pending', clientId: 'c2', boatIds: ['b3'] },
 ];
 
 export const clients: Client[] = [
@@ -104,7 +106,7 @@ export const clients: Client[] = [
     internalNote: 'Paga en dólares. Fanático del chocolate.', 
     boats: [
       { id: 'b1', name: 'El Fort-Farré', hullType: 'Tracker open 420 mts', engine: 'Datos del Motor', registrationNumber: 'ABC-123', photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'] },
-      { id: 'b2', name: 'Miami', hullType: 'Lancha', engine: 'Mercury', registrationNumber: 'DEF-456' }
+      { id: 'b2', name: 'Miami', hullType: 'Lancha', engine: 'Mercury', registrationNumber: 'DEF-456', photos: [] }
     ],
     responsibles: [],
     avatarUrl: 'https://i.pravatar.cc/150?u=ricardo'
@@ -118,7 +120,7 @@ export const clients: Client[] = [
     phone: '1166778899', 
     internalNote: 'Llama seguido. Preguntar por el perro.', 
     boats: [
-      { id: 'b3', name: 'Shock', hullType: 'Yate', engine: 'Rolls-Royce', registrationNumber: 'GHI-789' }
+      { id: 'b3', name: 'Shock', hullType: 'Yate', engine: 'Rolls-Royce', registrationNumber: 'GHI-789', photos: [] }
     ],
     responsibles: [
         { id: 'r1', firstName: 'Kiko', lastName: 'Gimenez', dni: '12345678', phone: '1199887766' }
