@@ -40,7 +40,7 @@ export const EmployeeDialog = ({
     const [phone, setPhone] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [canDrive, setCanDrive] = React.useState(false);
-    const [sendLink, setSendLink] = React.useState(!isEditMode);
+    const [sendLink, setSendLink] = React.useState(false);
     const [avatarKey, setAvatarKey] = React.useState(Date.now().toString());
 
     React.useEffect(() => {
@@ -65,7 +65,7 @@ export const EmployeeDialog = ({
             setEmail("");
             setCanDrive(false);
             setAvatarKey(Date.now().toString());
-            setSendLink(true);
+            setSendLink(false);
         }
     }, [employeeToEdit, isEditMode, open]);
 
@@ -160,7 +160,7 @@ export const EmployeeDialog = ({
                     <div className="flex items-center space-x-2 pt-2">
                         <Checkbox id="canDrive" checked={canDrive} onCheckedChange={(checked) => setCanDrive(Boolean(checked))} />
                         <Label htmlFor="canDrive" className="font-normal">
-                            El empleado sabe conducir lanchas
+                            El empleado sabe conducir
                         </Label>
                     </div>
                     <div className="flex items-center space-x-2 pt-2">
