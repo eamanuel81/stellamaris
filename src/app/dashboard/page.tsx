@@ -42,7 +42,7 @@ const chartData = [
   { name: "Ana L.", hours: 60 },
 ]
 
-const getTaskById = (id: string) => tasks.find(t => t.id === id)
+const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
 
 type StatusConfig = { text: string; variant: "default" | "secondary" | "destructive" | "outline" };
@@ -105,33 +105,18 @@ export default function DashboardPage() {
       return assignmentDate.getTime() === today.getTime();
   }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
+  const getTaskById = (id: string) => tasks.find(t => t.id === id)
 
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
-        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">
-              Dashboard
-            </h1>
-            <p className="text-muted-foreground">
-              Un resumen de la actividad en Stella Maris.
-            </p>
-          </div>
-          <Sheet>
-            <SheetTrigger asChild>
-               <Button>
-                <CalendarDays className="mr-2 h-4 w-4" />
-                Tareas del Día
-              </Button>
-            </SheetTrigger>
-            <TodayTasksSheet 
-              assignments={todayAssignments}
-              tasks={tasks}
-              clients={clients}
-              employees={employees}
-            />
-          </Sheet>
+        <header>
+          <h1 className="font-headline text-3xl font-bold tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Un resumen de la actividad en Stella Maris.
+          </p>
         </header>
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
