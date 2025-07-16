@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui"
 import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, DollarSign } from "lucide-react"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, Package } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -118,11 +118,6 @@ export default function MyTasksPage() {
             const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
             const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
             const currentStatus = statusMap[assignment.status] || statusMap.pending;
-
-            const extrasTotal = assignment.selectedExtras?.reduce((total, selected) => {
-                const extraDetails = task.extras?.find(e => e.id === selected.extraId);
-                return total + (extraDetails?.price || 0) * selected.quantity;
-            }, 0) || 0;
             
             return (
               <Card key={assignment.id} className="flex flex-col">
@@ -168,10 +163,22 @@ export default function MyTasksPage() {
                             </div>
                         )}
 
-                        {extrasTotal > 0 && (
-                            <div className="flex items-center gap-2 font-bold pt-4 border-t text-green-700">
-                                <DollarSign className="h-4 w-4 shrink-0" />
-                                <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}</span>
+                        {assignment.selectedExtras && assignment.selectedExtras.length > 0 && (
+                            <div className="space-y-2 pt-4 border-t">
+                                <div className="flex items-center gap-2 font-medium text-foreground">
+                                    <Package className="h-4 w-4 shrink-0" />
+                                    <span>Extras Solicitados:</span>
+                                </div>
+                                <ul className="list-disc pl-11 space-y-1">
+                                    {assignment.selectedExtras.map(extra => {
+                                        const extraDetails = task.extras?.find(e => e.id === extra.extraId);
+                                        return (
+                                            <li key={extra.extraId}>
+                                                {extra.quantity}x {extraDetails?.name || 'Extra desconocido'}
+                                            </li>
+                                        )
+                                    })}
+                                </ul>
                             </div>
                         )}
                    </div>
