@@ -249,10 +249,23 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                                     <Icon className="h-3 w-3 shrink-0" />
                                                     <p className="font-bold text-sm truncate">{task.title}</p>
                                                 </div>
-                                                <div className="text-xs opacity-80 truncate pl-5 space-y-0.5">
-                                                    <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                                    {client && <p>{client.firstName} {client.lastName}</p>}
-                                                    {boats.length > 0 && <p>{boats.map(b => b.name).join(', ')}</p>}
+                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
+                                                    <div className="flex items-center gap-1.5 truncate">
+                                                        <Users className="h-3 w-3 shrink-0" />
+                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                    </div>
+                                                    {client && (
+                                                        <div className="flex items-center gap-1.5 truncate">
+                                                            <User className="h-3 w-3 shrink-0" />
+                                                            <p>{client.firstName} {client.lastName}</p>
+                                                        </div>
+                                                    )}
+                                                    {boats.length > 0 && (
+                                                        <div className="flex items-center gap-1.5 truncate">
+                                                            <Ship className="h-3 w-3 shrink-0" />
+                                                            <p>{boats.map(b => b.name).join(', ')}</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -376,10 +389,23 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                                     <Icon className="h-3 w-3 shrink-0" />
                                                                     <p className="font-bold text-sm truncate">{task.title}</p>
                                                                 </div>
-                                                                <div className="text-xs opacity-80 truncate pl-5 space-y-0.5">
-                                                                    <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                                                    {client && <p>{client.firstName} {client.lastName}</p>}
-                                                                    {boats.length > 0 && <p>{boats.map(b => b.name).join(', ')}</p>}
+                                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
+                                                                    <div className="flex items-center gap-1.5 truncate">
+                                                                        <Users className="h-3 w-3 shrink-0" />
+                                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                                    </div>
+                                                                    {client && (
+                                                                        <div className="flex items-center gap-1.5 truncate">
+                                                                            <User className="h-3 w-3 shrink-0" />
+                                                                            <p>{client.firstName} {client.lastName}</p>
+                                                                        </div>
+                                                                    )}
+                                                                    {boats.length > 0 && (
+                                                                        <div className="flex items-center gap-1.5 truncate">
+                                                                            <Ship className="h-3 w-3 shrink-0" />
+                                                                            <p>{boats.map(b => b.name).join(', ')}</p>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
