@@ -47,6 +47,7 @@ export type Boat = {
   hullType: string;
   engine: string;
   registrationNumber: string;
+  photos?: string[];
 };
 
 export type ResponsibleParty = {
@@ -102,7 +103,7 @@ export const clients: Client[] = [
     phone: '1122334455', 
     internalNote: 'Paga en dólares. Fanático del chocolate.', 
     boats: [
-      { id: 'b1', name: 'El Fort-Farré', hullType: 'Tracker open 420 mts', engine: 'Datos del Motor', registrationNumber: 'ABC-123' },
+      { id: 'b1', name: 'El Fort-Farré', hullType: 'Tracker open 420 mts', engine: 'Datos del Motor', registrationNumber: 'ABC-123', photos: ['https://placehold.co/600x400.png', 'https://placehold.co/600x400.png'] },
       { id: 'b2', name: 'Miami', hullType: 'Lancha', engine: 'Mercury', registrationNumber: 'DEF-456' }
     ],
     responsibles: [],

@@ -15,8 +15,9 @@ import {
   Textarea,
   Separator,
 } from "@/components/ui"
-import { PlusCircle, Trash2 } from "lucide-react"
+import { PlusCircle, Trash2, Camera } from "lucide-react"
 import { Client, Boat, ResponsibleParty } from "@/lib/data"
+import Image from "next/image"
 
 export const ClientDialog = ({
     open,
@@ -38,6 +39,8 @@ export const ClientDialog = ({
     const [internalNote, setInternalNote] = React.useState('');
     const [boats, setBoats] = React.useState<Boat[]>([]);
     const [responsibles, setResponsibles] = React.useState<ResponsibleParty[]>([]);
+    
+    const initialBoatState = { id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '', photos: [] };
 
     React.useEffect(() => {
         if (isEditMode && clientToEdit) {
@@ -47,7 +50,7 @@ export const ClientDialog = ({
             setEmail(clientToEdit.email);
             setPhone(clientToEdit.phone);
             setInternalNote(clientToEdit.internalNote);
-            setBoats(clientToEdit.boats.length > 0 ? clientToEdit.boats : [{ id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+            setBoats(clientToEdit.boats.length > 0 ? clientToEdit.boats : [initialBoatState]);
             setResponsibles(clientToEdit.responsibles.length > 0 ? clientToEdit.responsibles : [{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
         } else {
             setFirstName('');
@@ -56,19 +59,19 @@ export const ClientDialog = ({
             setEmail('');
             setPhone('');
             setInternalNote('');
-            setBoats([{ id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+            setBoats([initialBoatState]);
             setResponsibles([{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
         }
     }, [clientToEdit, isEditMode, open]);
 
-    const handleBoatChange = (index: number, field: keyof Boat, value: string) => {
+    const handleBoatChange = (index: number, field: keyof Boat, value: any) => {
         const newBoats = [...boats];
-        newBoats[index] = { ...newBoats[index], [field]: value };
+        (newBoats[index] as any)[field] = value;
         setBoats(newBoats);
     };
 
     const handleAddBoat = () => {
-        setBoats([...boats, { id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+        setBoats([...boats, { ...initialBoatState, id: `b${Date.now()}` }]);
     };
     
     const handleRemoveBoat = (index: number) => {
@@ -77,8 +80,25 @@ export const ClientDialog = ({
             setBoats(newBoats);
         } else {
             // Clear the only boat if removed
-            setBoats([{ id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '' }]);
+            setBoats([{ ...initialBoatState, id: `b${Date.now()}` }]);
         }
+    };
+    
+    const handleAddPhoto = (boatIndex: number) => {
+        const newBoats = [...boats];
+        if (!newBoats[boatIndex].photos) {
+            newBoats[boatIndex].photos = [];
+        }
+        // Using a random number to vary the placeholder image
+        const randomId = Math.floor(Math.random() * 1000);
+        newBoats[boatIndex].photos!.push(`https://placehold.co/600x400.png?text=Foto+${randomId}`);
+        setBoats(newBoats);
+    };
+
+    const handleRemovePhoto = (boatIndex: number, photoIndex: number) => {
+        const newBoats = [...boats];
+        newBoats[boatIndex].photos?.splice(photoIndex, 1);
+        setBoats(newBoats);
     };
     
     const handleResponsibleChange = (index: number, field: keyof ResponsibleParty, value: string) => {
@@ -197,6 +217,40 @@ export const ClientDialog = ({
                                 <Button variant="ghost" size="icon" onClick={() => handleRemoveBoat(index)} className="absolute top-2 right-2">
                                     <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
+                                
+                                <Separator />
+
+                                <div>
+                                    <Label>Fotos de la Embarcación (Opcional)</Label>
+                                    <div className="mt-2 flex items-center gap-4">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => handleAddPhoto(index)}>
+                                            <Camera className="mr-2 h-4 w-4" />
+                                            Agregar Foto
+                                        </Button>
+                                    </div>
+                                    <div className="mt-4 grid grid-cols-3 gap-4">
+                                        {boat.photos?.map((photo, photoIndex) => (
+                                            <div key={photoIndex} className="relative group">
+                                                <Image
+                                                    src={photo}
+                                                    alt={`Foto de la embarcación ${photoIndex + 1}`}
+                                                    width={200}
+                                                    height={150}
+                                                    data-ai-hint="boat"
+                                                    className="rounded-md object-cover aspect-[4/3]"
+                                                />
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => handleRemovePhoto(index, photoIndex)}
+                                                >
+                                                    <Trash2 className="h-3 w-3" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         ))}
                         <Button variant="outline" size="sm" onClick={handleAddBoat} className="mt-2 w-fit">

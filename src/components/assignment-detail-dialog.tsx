@@ -2,6 +2,7 @@
 "use client"
 
 import React from 'react';
+import Image from "next/image"
 import {
     DialogContent,
     DialogHeader,
@@ -100,9 +101,30 @@ export const AssignmentDetailDialog = ({
                                 <span>{client.firstName} {client.lastName}</span>
                             </div>
                             {boats.length > 0 && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground pl-6">
-                                    <Ship className="h-4 w-4 shrink-0" />
-                                    <span>{boats.map(b => b.name).join(', ')}</span>
+                                <div className="pl-6 space-y-3">
+                                    {boats.map(boat => (
+                                        <div key={boat.id} className="mt-2">
+                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Ship className="h-4 w-4 shrink-0" />
+                                                <span>{boat.name}</span>
+                                            </div>
+                                            {boat.photos && boat.photos.length > 0 && (
+                                                <div className="mt-2 grid grid-cols-3 gap-2">
+                                                    {boat.photos.map((photo, index) => (
+                                                        <Image
+                                                            key={index}
+                                                            src={photo}
+                                                            alt={`Foto de ${boat.name}`}
+                                                            width={100}
+                                                            height={75}
+                                                            data-ai-hint="boat"
+                                                            className="rounded-md object-cover aspect-[4/3]"
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
