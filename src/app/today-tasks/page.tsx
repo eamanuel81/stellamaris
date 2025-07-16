@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui"
 import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, employees, Assignment, AssignmentStatus, Task, Client, Employee } from "@/lib/data"
-import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package } from "lucide-react"
+import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
