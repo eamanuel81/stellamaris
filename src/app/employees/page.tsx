@@ -1,29 +1,30 @@
 
 "use client"
 
+import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   Avatar,
   AvatarFallback,
   AvatarImage,
   Badge,
   Button,
   Card,
-  Checkbox,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
   Input,
-  Label,
   Table,
   TableBody,
   TableCell,
@@ -31,22 +32,90 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui"
-import { employees } from "@/lib/data"
+import { employees as initialEmployees, Employee } from "@/lib/data"
 import { Car, MoreHorizontal, PlusCircle, Search } from "lucide-react"
-import React from "react"
+import { EmployeeDialog } from "@/components/employee-dialog"
 
 export default function EmployeesPage() {
-    const [open, setOpen] = React.useState(false);
-    const [avatarKey, setAvatarKey] = React.useState(Date.now().toString());
+  const [employees, setEmployees] = React.useState<Employee[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [employeeToEdit, setEmployeeToEdit] = React.useState<Employee | null>(null);
+  const [searchTerm, setSearchTerm] = React.useState("");
 
-    const handleAvatarChange = () => {
-        setAvatarKey(Date.now().toString());
+  React.useEffect(() => {
+    try {
+      const savedEmployees = localStorage.getItem('employees');
+      setEmployees(savedEmployees ? JSON.parse(savedEmployees) : initialEmployees);
+    } catch (error) {
+      console.error("Failed to load employees from localStorage", error);
+      setEmployees(initialEmployees);
     }
 
-    const handleOpenDialog = () => {
-        handleAvatarChange(); // Generate a new avatar key each time the dialog opens for a new employee
-        setOpen(true);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'employees') {
+        try {
+          const savedEmployees = localStorage.getItem('employees');
+          setEmployees(savedEmployees ? JSON.parse(savedEmployees) : initialEmployees);
+        } catch (error) {
+          console.error("Failed to load employees from localStorage", error);
+          setEmployees(initialEmployees);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const updateEmployeesAndStorage = (updatedEmployees: Employee[]) => {
+    setEmployees(updatedEmployees);
+    try {
+      const newEmployeesJSON = JSON.stringify(updatedEmployees);
+      localStorage.setItem('employees', newEmployeesJSON);
+      window.dispatchEvent(new StorageEvent('storage', { key: 'employees', newValue: newEmployeesJSON }));
+    } catch (error) {
+      console.error("Failed to save employees to localStorage", error);
     }
+  };
+
+  const handleCreateClick = () => {
+    setEmployeeToEdit(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditClick = (employee: Employee) => {
+    setEmployeeToEdit(employee);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveEmployee = (employeeData: Employee) => {
+    const isEditing = employees.some(e => e.id === employeeData.id);
+    let updatedEmployees;
+    if (isEditing) {
+      updatedEmployees = employees.map(e => e.id === employeeData.id ? employeeData : e);
+    } else {
+      updatedEmployees = [...employees, employeeData];
+    }
+    updateEmployeesAndStorage(updatedEmployees);
+  };
+
+  const handleDeleteEmployee = (employeeId: string) => {
+    const updatedEmployees = employees.filter(e => e.id !== employeeId);
+    updateEmployeesAndStorage(updatedEmployees);
+  };
+
+  const filteredEmployees = employees.filter(employee => {
+    const searchTermLower = searchTerm.toLowerCase();
+    return (
+      employee.name.toLowerCase().includes(searchTermLower) ||
+      employee.lastName.toLowerCase().includes(searchTermLower) ||
+      employee.dni.toLowerCase().includes(searchTermLower) ||
+      employee.nickname.toLowerCase().includes(searchTermLower)
+    );
+  });
 
   return (
     <AppLayout>
@@ -60,95 +129,27 @@ export default function EmployeesPage() {
               Gestione el personal de la guardería.
             </p>
           </div>
-           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleOpenDialog}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Agregar Empleado
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Agregar Nuevo Empleado</DialogTitle>
-                <DialogDescription>
-                  Complete los datos del empleado. Se le enviará un enlace para generar su contraseña.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
-                <div className="flex items-center gap-6">
-                   <Avatar className="h-20 w-20">
-                     <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
-                     <AvatarFallback>E</AvatarFallback>
-                   </Avatar>
-                   <div className="space-y-2">
-                     <Label>Avatar</Label>
-                     <div>
-                        <Button type="button" variant="outline" onClick={handleAvatarChange}>Cambiar Avatar</Button>
-                     </div>
-                     <p className="text-xs text-muted-foreground">
-                        Haga clic para generar un nuevo avatar aleatorio.
-                     </p>
-                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Nombre</Label>
-                    <Input id="name" placeholder="Juan" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="lastName">Apellido</Label>
-                    <Input id="lastName" placeholder="Perez" />
-                  </div>
-                </div>
-                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="nickname">Apodo</Label>
-                    <Input id="nickname" placeholder="Juani" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="dni">DNI</Label>
-                    <Input id="dni" placeholder="12345678" />
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="address">Domicilio</Label>
-                    <Input id="address" placeholder="Av. Siempre Viva 123" />
-                </div>
-                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Número de Celular</Label>
-                    <Input id="phone" type="tel" placeholder="1122334455" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="juan.perez@example.com" />
-                  </div>
-                </div>
-                 <div className="flex items-center space-x-2 pt-2">
-                    <Checkbox id="canDrive" />
-                    <Label htmlFor="canDrive" className="font-normal">
-                       El empleado sabe conducir lanchas
-                    </Label>
-                </div>
-                 <div className="flex items-center space-x-2 pt-2">
-                    <Checkbox id="sendLink" defaultChecked/>
-                    <Label htmlFor="sendLink" className="font-normal">
-                       Enviar enlace para generar nueva contraseña
-                    </Label>
-                </div>
-              </div>
-              <DialogFooter>
-                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button type="submit" onClick={() => setOpen(false)}>Guardar Empleado</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={handleCreateClick}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Agregar Empleado
+          </Button>
         </header>
+
+        <EmployeeDialog
+          open={isDialogOpen}
+          setOpen={setIsDialogOpen}
+          onSave={handleSaveEmployee}
+          employeeToEdit={employeeToEdit}
+        />
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar por nombre, DNI o apodo..." className="pl-9" />
+          <Input
+            placeholder="Buscar por nombre, DNI o apodo..."
+            className="pl-9"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
         </div>
 
         <Card className="overflow-hidden">
@@ -166,18 +167,18 @@ export default function EmployeesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((employee) => (
+              {filteredEmployees.map((employee) => (
                 <TableRow key={employee.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
-                       <Avatar className="h-8 w-8">
-                         <AvatarImage src={employee.avatarUrl} alt={employee.name} />
-                         <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
-                       </Avatar>
-                       <div>
-                         {employee.name} {employee.lastName}
-                         <div className="text-xs text-muted-foreground">{employee.email}</div>
-                       </div>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={employee.avatarUrl} alt={employee.name} />
+                        <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        {employee.name} {employee.lastName}
+                        <div className="text-xs text-muted-foreground">{employee.email}</div>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>{employee.dni}</TableCell>
@@ -185,7 +186,7 @@ export default function EmployeesPage() {
                   <TableCell>{employee.phone}</TableCell>
                   <TableCell className="text-center">
                     {employee.canDrive && (
-                       <Badge variant="outline" className="border-green-500 bg-green-50 text-green-700">
+                      <Badge variant="outline" className="border-green-500 bg-green-50 text-green-700">
                         <Car className="mr-2 h-4 w-4" />
                         Sí
                       </Badge>
@@ -201,9 +202,27 @@ export default function EmployeesPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
                         <DropdownMenuItem>Ver Tareas</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">Eliminar</DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                              Eliminar
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado y sus datos asociados.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEmployee(employee.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
