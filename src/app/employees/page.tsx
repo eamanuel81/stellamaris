@@ -1,3 +1,4 @@
+
 "use client"
 
 import { AppLayout } from "@/components/app-layout"
@@ -36,6 +37,17 @@ import React from "react"
 
 export default function EmployeesPage() {
     const [open, setOpen] = React.useState(false);
+    const [avatarKey, setAvatarKey] = React.useState(Date.now().toString());
+
+    const handleAvatarChange = () => {
+        setAvatarKey(Date.now().toString());
+    }
+
+    const handleOpenDialog = () => {
+        handleAvatarChange(); // Generate a new avatar key each time the dialog opens for a new employee
+        setOpen(true);
+    }
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -50,7 +62,7 @@ export default function EmployeesPage() {
           </div>
            <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={handleOpenDialog}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Agregar Empleado
               </Button>
@@ -62,7 +74,23 @@ export default function EmployeesPage() {
                   Complete los datos del empleado. Se le enviará un enlace para generar su contraseña.
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-6">
+              <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
+                <div className="flex items-center gap-6">
+                   <Avatar className="h-20 w-20">
+                     <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
+                     <AvatarFallback>E</AvatarFallback>
+                   </Avatar>
+                   <div className="space-y-2">
+                     <Label>Avatar</Label>
+                     <div>
+                        <Button type="button" variant="outline" onClick={handleAvatarChange}>Cambiar Avatar</Button>
+                     </div>
+                     <p className="text-xs text-muted-foreground">
+                        Haga clic para generar un nuevo avatar aleatorio.
+                     </p>
+                   </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="name">Nombre</Label>
