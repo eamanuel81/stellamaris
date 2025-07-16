@@ -39,6 +39,7 @@ import {
   Users,
   Contact,
   CalendarDays,
+  Calendar,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
@@ -54,6 +55,7 @@ const adminNavItems = [
 
 const employeeNavItems = [
   { href: "/my-tasks", icon: <ClipboardCheck />, label: "Mis Tareas" },
+  { href: "/my-calendar", icon: <Calendar />, label: "Calendario" },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
