@@ -19,9 +19,15 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui"
 import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, Package } from "lucide-react"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, Package, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -138,6 +144,8 @@ export default function MyTasksPage() {
     const [assignments, setAssignments] = React.useState<Assignment[]>([]);
     const [tasks, setTasks] = React.useState<Task[]>([]);
     const [clients, setClients] = React.useState<Client[]>([]);
+    const [searchTerm, setSearchTerm] = React.useState("");
+    const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
 
 
     React.useEffect(() => {
@@ -191,9 +199,29 @@ export default function MyTasksPage() {
         console.error("Failed to save assignments to localStorage", e);
     }
   }
+  
+  const filteredAssignments = myAssignments.filter(assignment => {
+      const task = getTaskById(assignment.taskId, tasks);
+      const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+      
+      if (!task) return false;
 
-  const activeAssignments = myAssignments.filter(a => a.status !== 'completed');
-  const completedAssignments = myAssignments.filter(a => a.status === 'completed');
+      const searchTermLower = searchTerm.toLowerCase();
+      
+      const searchMatch = (
+          task.title.toLowerCase().includes(searchTermLower) ||
+          (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
+          (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
+          (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
+      );
+
+      const statusMatch = statusFilter === 'all' || assignment.status === statusFilter;
+
+      return searchMatch && statusMatch;
+  });
+
+  const activeAssignments = filteredAssignments.filter(a => a.status !== 'completed');
+  const completedAssignments = filteredAssignments.filter(a => a.status === 'completed');
 
 
   return (
@@ -208,12 +236,36 @@ export default function MyTasksPage() {
           </p>
         </header>
 
-        <Tabs defaultValue="pending" className="w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por tarea, cliente o embarcación..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as AssignmentStatus | 'all')}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {Object.entries(statusMap).map(([key, { text }]) => (
+                  <SelectItem key={key} value={key}>{text}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+        </div>
+
+
+        <Tabs defaultValue="assigned" className="w-full">
             <TabsList>
-                <TabsTrigger value="pending">Tareas Pendientes ({activeAssignments.length})</TabsTrigger>
+                <TabsTrigger value="assigned">Tareas Asignadas ({activeAssignments.length})</TabsTrigger>
                 <TabsTrigger value="completed">Tareas Terminadas ({completedAssignments.length})</TabsTrigger>
             </TabsList>
-            <TabsContent value="pending" className="mt-4">
+            <TabsContent value="assigned" className="mt-4">
                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {activeAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
@@ -223,7 +275,7 @@ export default function MyTasksPage() {
                     })}
                 </div>
                 {activeAssignments.length === 0 && (
-                    <p className="text-muted-foreground text-center py-8">¡No tienes tareas pendientes!</p>
+                    <p className="text-muted-foreground text-center py-8">¡No tienes tareas asignadas!</p>
                 )}
             </TabsContent>
             <TabsContent value="completed" className="mt-4">
