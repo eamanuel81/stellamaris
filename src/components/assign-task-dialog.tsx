@@ -443,23 +443,21 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
                                 Editar hora de fin manualmente
                             </Label>
                         </div>
-                         {isEditMode && (
-                            <div className="grid gap-2">
-                                <Label htmlFor="status">Estado</Label>
-                                <Select value={status} onValueChange={(value: AssignmentStatus) => setStatus(value)}>
-                                    <SelectTrigger id="status">
-                                        <SelectValue placeholder="Seleccione un estado" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {statusOptions.map(option => (
-                                            <SelectItem key={option.value} value={option.value}>
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
+                        <div className="grid gap-2">
+                            <Label htmlFor="status">Estado</Label>
+                            <Select value={status} onValueChange={(value: AssignmentStatus) => setStatus(value)}>
+                                <SelectTrigger id="status">
+                                    <SelectValue placeholder="Seleccione un estado" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {statusOptions.map(option => (
+                                        <SelectItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </TabsContent>
                 {hasExtras && (
