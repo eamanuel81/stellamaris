@@ -16,7 +16,6 @@ export * from './form';
 export * from './input';
 export * from './label';
 export * from './menubar';
-export * from './my-task-detail-dialog';
 export * from './popover';
 export * from './progress';
 export * from './radio-group';
