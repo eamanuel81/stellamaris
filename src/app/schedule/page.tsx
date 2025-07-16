@@ -4,10 +4,11 @@
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui"
-import { PlusCircle, Clock, User, Ship, DollarSign, Users } from "lucide-react"
+import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee, AssignmentStatus } from "@/lib/data"
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
 import { AssignmentDetailDialog } from "@/components/assignment-detail-dialog"
+import { cn } from "@/lib/utils"
 
 const generateTimeSlots = () => {
   const slots = []
@@ -22,6 +23,14 @@ const generateTimeSlots = () => {
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id)
+
+const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: string}>, classes: string, tooltipIcon: React.ReactNode }> = {
+    pending: { icon: Hourglass, classes: "bg-amber-100 border-amber-400 text-amber-800 hover:bg-amber-200", tooltipIcon: <Hourglass className="h-4 w-4 shrink-0 text-amber-600" /> },
+    accepted: { icon: Check, classes: "bg-blue-100 border-blue-400 text-blue-800 hover:bg-blue-200", tooltipIcon: <Check className="h-4 w-4 shrink-0 text-blue-600" /> },
+    completed: { icon: CheckCheck, classes: "bg-green-100 border-green-400 text-green-800 hover:bg-green-200", tooltipIcon: <CheckCheck className="h-4 w-4 shrink-0 text-green-600" /> },
+    rejected: { icon: Ban, classes: "bg-gray-200 border-gray-400 text-gray-700 hover:bg-gray-300", tooltipIcon: <Ban className="h-4 w-4 shrink-0 text-gray-600" /> },
+    cancelled: { icon: X, classes: "bg-red-100 border-red-400 text-red-800 hover:bg-red-200", tooltipIcon: <X className="h-4 w-4 shrink-0 text-red-600" /> },
+};
 
 
 const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
@@ -105,6 +114,7 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
     const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as Employee[];
+    const statusInfo = statusStyles[firstAssignment.status];
 
     const calculateExtrasTotal = () => {
         if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
@@ -117,7 +127,10 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
 
     return (
         <div className="space-y-2 p-2 text-sm">
-            <p className="font-bold">{task?.title}</p>
+            <div className="flex items-center gap-2">
+                {statusInfo.tooltipIcon}
+                <p className="font-bold">{task?.title}</p>
+            </div>
             <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 shrink-0" />
                 <span>{new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -212,13 +225,18 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
 
                             const width = 100 / processed.totalColumns;
                             const left = width * processed.column;
+                            const statusInfo = statusStyles[firstAssignment.status];
+                            const Icon = statusInfo.icon;
                             
                             return (
                                 <Tooltip key={`${firstAssignment.id}-${index}`}>
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={() => onTaskClick(assignmentGroup)}
-                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-between overflow-hidden"
+                                            className={cn(
+                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-between overflow-hidden",
+                                                statusInfo.classes
+                                            )}
                                             style={{ 
                                                 top: `${top}px`, 
                                                 height: `${height}px`,
@@ -227,13 +245,14 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                             }}
                                         >
                                             <div className="space-y-0.5">
-                                                <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
-                                                <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                <p className="font-bold text-sm truncate">{task.title}</p>
+                                                <p className="text-xs opacity-80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
                                             </div>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                {client && <User className="h-3 w-3 text-primary-foreground/80" />}
-                                                {boats.length > 0 && <Ship className="h-3 w-3 text-primary-foreground/80" />}
-                                                {firstAssignment.selectedExtras && firstAssignment.selectedExtras.length > 0 && <DollarSign className="h-3 w-3 text-primary-foreground/80" />}
+                                            <div className="flex items-center gap-2 mt-1 opacity-80">
+                                                <Icon className="h-3 w-3" />
+                                                {client && <User className="h-3 w-3" />}
+                                                {boats.length > 0 && <Ship className="h-3 w-3" />}
+                                                {firstAssignment.selectedExtras && firstAssignment.selectedExtras.length > 0 && <DollarSign className="h-3 w-3" />}
                                             </div>
                                         </div>
                                     </TooltipTrigger>
@@ -329,6 +348,8 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             const top = getTaskPosition(startTime);
                                             const width = 100 / processed.totalColumns;
                                             const left = width * processed.column;
+                                            const statusInfo = statusStyles[firstAssignment.status];
+                                            const Icon = statusInfo.icon;
 
 
                                             return (
@@ -336,7 +357,10 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                     <TooltipTrigger asChild>
                                                         <div
                                                             onClick={() => onTaskClick(assignmentGroup)}
-                                                            className="absolute rounded-lg bg-primary/20 p-2 border border-primary/50 cursor-pointer hover:bg-primary/30 z-10 flex flex-col justify-start overflow-hidden"
+                                                            className={cn(
+                                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
+                                                                statusInfo.classes
+                                                            )}
                                                             style={{
                                                                 top: `${top}px`,
                                                                 height: `${height}px`,
@@ -345,8 +369,11 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                             }}
                                                         >
                                                             <div className="space-y-0.5">
-                                                                <p className="font-bold text-sm text-primary-foreground truncate">{task.title}</p>
-                                                                <p className="text-xs text-primary-foreground/80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <Icon className="h-3 w-3 shrink-0" />
+                                                                    <p className="font-bold text-sm truncate">{task.title}</p>
+                                                                </div>
+                                                                <p className="text-xs opacity-80 truncate pl-5">{assignedEmployees.map(e => e.name).join(', ')}</p>
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>
@@ -587,3 +614,5 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
+
+    
