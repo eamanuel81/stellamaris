@@ -17,10 +17,20 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui"
 import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, employees, Assignment, AssignmentStatus, Task, Client, Employee } from "@/lib/data"
-import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays, ChevronDown } from "lucide-react"
+import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays, ChevronDown, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -47,6 +57,9 @@ export default function TodayTasksPage() {
     const [assignments, setAssignments] = React.useState<Assignment[]>([]);
     const [tasks, setTasks] = React.useState<Task[]>([]);
     const [clients, setClients] = React.useState<Client[]>([]);
+    const [searchTerm, setSearchTerm] = React.useState("");
+    const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
+
 
     const loadData = React.useCallback(() => {
         try {
@@ -106,6 +119,34 @@ export default function TodayTasksPage() {
   }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
 
+  const searchFilter = (assignment: Assignment) => {
+      const task = getTaskById(assignment.taskId, tasks);
+      const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+      if (!task) return false;
+
+      const searchTermLower = searchTerm.toLowerCase();
+      
+      return (
+          task.title.toLowerCase().includes(searchTermLower) ||
+          (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
+          (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
+          (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
+      );
+  };
+  
+  const activeAssignments = todayAssignments
+      .filter(a => a.status !== 'completed')
+      .filter(searchFilter)
+      .filter(a => statusFilter === 'all' || a.status === statusFilter);
+      
+  const completedAssignments = todayAssignments
+      .filter(a => a.status === 'completed')
+      .filter(searchFilter);
+
+  const filterableStatuses = Object.entries(statusMap).filter(
+    ([key]) => key !== 'completed'
+  );
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -118,128 +159,284 @@ export default function TodayTasksPage() {
           </p>
         </header>
 
-        {todayAssignments.length > 0 ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {todayAssignments.map((assignment) => {
-                const task = getTaskById(assignment.taskId, tasks);
-                if (!task) return null;
-
-                const employee = getEmployeeById(assignment.employeeId, employees);
-                const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-                const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
-                const currentStatus = statusMap[assignment.status] || statusMap.pending;
-                
-                return (
-                <Card key={assignment.id} className="flex flex-col">
-                    <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                        <CardTitle>{task.title}</CardTitle>
-                        {task.requiresDriving && (
-                        <Badge variant="outline" className="flex-shrink-0">
-                            <Car className="mr-1 h-3 w-3" />
-                            Conducir
-                        </Badge>
-                        )}
-                    </div>
-                    <CardDescription>{task.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                    <div className="text-sm text-muted-foreground space-y-4">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span>
-                                        {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span>Duración estimada: {task.duration} min</span>
-                                </div>
-                            </div>
-
-                            {employee && (
-                                <div className="space-y-2 border-t pt-4">
-                                    <div className="flex items-center gap-2 font-medium text-foreground">
-                                        <Avatar className="h-6 w-6">
-                                            <AvatarImage src={employee.avatarUrl} alt={employee.name} />
-                                            <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
-                                        </Avatar>
-                                        <span>Empleado: {employee.name} {employee.lastName}</span>
-                                    </div>
-                                </div>
-                            )}
-                        
-                            {client && (
-                                <div className="space-y-2 border-t pt-4">
-                                    <div className="flex items-center gap-2">
-                                        <User className="h-4 w-4" />
-                                        <span className="font-medium text-foreground">Cliente: {client.firstName} {client.lastName}</span>
-                                    </div>
-                                    {boats.length > 0 && boats.map(boat => (
-                                        <div key={boat.id} className="flex items-center gap-2 pl-6">
-                                            <Ship className="h-4 w-4" />
-                                            <span>{boat.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {assignment.selectedExtras && assignment.selectedExtras.length > 0 && (
-                                <div className="space-y-2 pt-4 border-t">
-                                    <div className="flex items-center gap-2 font-medium text-foreground">
-                                        <Package className="h-4 w-4 shrink-0" />
-                                        <span>Extras Solicitados:</span>
-                                    </div>
-                                    <ul className="list-disc pl-11 space-y-1">
-                                        {assignment.selectedExtras.map(extra => {
-                                            const extraDetails = task.extras?.find(e => e.id === extra.extraId);
-                                            if (!extraDetails) return null;
-                                            return (
-                                                <li key={extra.extraId}>
-                                                    {extra.quantity}x {extraDetails.name} - {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extraDetails.price * extra.quantity)}
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
-                                </div>
-                            )}
-                    </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between items-center">
-                    <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
-                            {currentStatus.icon}
-                            <span className="ml-1.5">{currentStatus.text}</span>
-                    </Badge>
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            Cambiar Estado
-                            <ChevronDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
-                            <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
-                            <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
-                            <DropdownMenuItem disabled={assignment.status === 'rejected'} onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Marcar como Rechazada</DropdownMenuItem>
-                            <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </CardFooter>
-                </Card>
-                )
-            })}
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por tarea, cliente o embarcación..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+              />
             </div>
-        ) : (
-             <Card className="flex items-center justify-center p-12">
-                <div className="text-center text-muted-foreground">
-                    <CalendarDays className="mx-auto h-12 w-12" />
-                    <h3 className="mt-4 text-lg font-semibold">No hay tareas para hoy</h3>
-                    <p className="mt-2 text-sm">Parece que es un día tranquilo. Puedes asignar nuevas tareas desde el calendario.</p>
-                </div>
-            </Card>
-        )}
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as AssignmentStatus | 'all')}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {filterableStatuses.map(([key, { text }]) => (
+                  <SelectItem key={key} value={key}>{text}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+        </div>
+
+
+        <Tabs defaultValue="assigned" className="w-full">
+            <TabsList>
+                <TabsTrigger value="assigned">Tareas Asignadas ({activeAssignments.length})</TabsTrigger>
+                <TabsTrigger value="completed">Tareas Terminadas ({completedAssignments.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="assigned" className="mt-4">
+                {activeAssignments.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {activeAssignments.map((assignment) => {
+                        const task = getTaskById(assignment.taskId, tasks);
+                        if (!task) return null;
+
+                        const employee = getEmployeeById(assignment.employeeId, employees);
+                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                        const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                        const currentStatus = statusMap[assignment.status] || statusMap.pending;
+                        
+                        return (
+                        <Card key={assignment.id} className="flex flex-col">
+                            <CardHeader>
+                            <div className="flex items-start justify-between gap-4">
+                                <CardTitle>{task.title}</CardTitle>
+                                {task.requiresDriving && (
+                                <Badge variant="outline" className="flex-shrink-0">
+                                    <Car className="mr-1 h-3 w-3" />
+                                    Conducir
+                                </Badge>
+                                )}
+                            </div>
+                            <CardDescription>{task.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                            <div className="text-sm text-muted-foreground space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            <span>
+                                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            <span>Duración estimada: {task.duration} min</span>
+                                        </div>
+                                    </div>
+
+                                    {employee && (
+                                        <div className="space-y-2 border-t pt-4">
+                                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                                <Avatar className="h-6 w-6">
+                                                    <AvatarImage src={employee.avatarUrl} alt={employee.name} />
+                                                    <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
+                                                </Avatar>
+                                                <span>Empleado: {employee.name} {employee.lastName}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                
+                                    {client && (
+                                        <div className="space-y-2 border-t pt-4">
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4" />
+                                                <span className="font-medium text-foreground">Cliente: {client.firstName} {client.lastName}</span>
+                                            </div>
+                                            {boats.length > 0 && boats.map(boat => (
+                                                <div key={boat.id} className="flex items-center gap-2 pl-6">
+                                                    <Ship className="h-4 w-4" />
+                                                    <span>{boat.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {assignment.selectedExtras && assignment.selectedExtras.length > 0 && (
+                                        <div className="space-y-2 pt-4 border-t">
+                                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                                <Package className="h-4 w-4 shrink-0" />
+                                                <span>Extras Solicitados:</span>
+                                            </div>
+                                            <ul className="list-disc pl-11 space-y-1">
+                                                {assignment.selectedExtras.map(extra => {
+                                                    const extraDetails = task.extras?.find(e => e.id === extra.extraId);
+                                                    if (!extraDetails) return null;
+                                                    return (
+                                                        <li key={extra.extraId}>
+                                                            {extra.quantity}x {extraDetails.name} - {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extraDetails.price * extra.quantity)}
+                                                        </li>
+                                                    )
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
+                            </div>
+                            </CardContent>
+                            <CardFooter className="flex justify-between items-center">
+                            <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
+                                    {currentStatus.icon}
+                                    <span className="ml-1.5">{currentStatus.text}</span>
+                            </Badge>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    Cambiar Estado
+                                    <ChevronDown className="ml-2 h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'rejected'} onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Marcar como Rechazada</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </CardFooter>
+                        </Card>
+                        )
+                    })}
+                    </div>
+                ) : (
+                    <Card className="flex items-center justify-center p-12 col-span-full">
+                        <div className="text-center text-muted-foreground">
+                            <CalendarDays className="mx-auto h-12 w-12" />
+                            <h3 className="mt-4 text-lg font-semibold">No hay tareas asignadas para hoy</h3>
+                            <p className="mt-2 text-sm">Puedes asignar nuevas tareas desde el calendario.</p>
+                        </div>
+                    </Card>
+                )}
+            </TabsContent>
+            <TabsContent value="completed" className="mt-4">
+                 {completedAssignments.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {completedAssignments.map((assignment) => {
+                        const task = getTaskById(assignment.taskId, tasks);
+                        if (!task) return null;
+
+                        const employee = getEmployeeById(assignment.employeeId, employees);
+                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                        const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                        const currentStatus = statusMap[assignment.status] || statusMap.pending;
+                        
+                        return (
+                        <Card key={assignment.id} className="flex flex-col">
+                           <CardHeader>
+                            <div className="flex items-start justify-between gap-4">
+                                <CardTitle>{task.title}</CardTitle>
+                                {task.requiresDriving && (
+                                <Badge variant="outline" className="flex-shrink-0">
+                                    <Car className="mr-1 h-3 w-3" />
+                                    Conducir
+                                </Badge>
+                                )}
+                            </div>
+                            <CardDescription>{task.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                            <div className="text-sm text-muted-foreground space-y-4">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            <span>
+                                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            <span>Duración estimada: {task.duration} min</span>
+                                        </div>
+                                    </div>
+
+                                    {employee && (
+                                        <div className="space-y-2 border-t pt-4">
+                                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                                <Avatar className="h-6 w-6">
+                                                    <AvatarImage src={employee.avatarUrl} alt={employee.name} />
+                                                    <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
+                                                </Avatar>
+                                                <span>Empleado: {employee.name} {employee.lastName}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                
+                                    {client && (
+                                        <div className="space-y-2 border-t pt-4">
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4" />
+                                                <span className="font-medium text-foreground">Cliente: {client.firstName} {client.lastName}</span>
+                                            </div>
+                                            {boats.length > 0 && boats.map(boat => (
+                                                <div key={boat.id} className="flex items-center gap-2 pl-6">
+                                                    <Ship className="h-4 w-4" />
+                                                    <span>{boat.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {assignment.selectedExtras && assignment.selectedExtras.length > 0 && (
+                                        <div className="space-y-2 pt-4 border-t">
+                                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                                <Package className="h-4 w-4 shrink-0" />
+                                                <span>Extras Solicitados:</span>
+                                            </div>
+                                            <ul className="list-disc pl-11 space-y-1">
+                                                {assignment.selectedExtras.map(extra => {
+                                                    const extraDetails = task.extras?.find(e => e.id === extra.extraId);
+                                                    if (!extraDetails) return null;
+                                                    return (
+                                                        <li key={extra.extraId}>
+                                                            {extra.quantity}x {extraDetails.name} - {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extraDetails.price * extra.quantity)}
+                                                        </li>
+                                                    )
+                                                })}
+                                            </ul>
+                                        </div>
+                                    )}
+                            </div>
+                            </CardContent>
+                            <CardFooter className="flex justify-between items-center">
+                            <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
+                                    {currentStatus.icon}
+                                    <span className="ml-1.5">{currentStatus.text}</span>
+                            </Badge>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    Cambiar Estado
+                                    <ChevronDown className="ml-2 h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'rejected'} onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Marcar como Rechazada</DropdownMenuItem>
+                                    <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </CardFooter>
+                        </Card>
+                        )
+                    })}
+                    </div>
+                ) : (
+                    <Card className="flex items-center justify-center p-12 col-span-full">
+                        <div className="text-center text-muted-foreground">
+                            <CheckCheck className="mx-auto h-12 w-12" />
+                            <h3 className="mt-4 text-lg font-semibold">No hay tareas terminadas hoy</h3>
+                            <p className="mt-2 text-sm">Las tareas completadas aparecerán aquí.</p>
+                        </div>
+                    </Card>
+                )}
+            </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   )
