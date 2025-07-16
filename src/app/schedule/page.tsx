@@ -234,7 +234,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                         <div
                                             onClick={() => onTaskClick(assignmentGroup)}
                                             className={cn(
-                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-between overflow-hidden",
+                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
                                                 statusInfo.classes
                                             )}
                                             style={{ 
@@ -245,14 +245,15 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                             }}
                                         >
                                             <div className="space-y-0.5">
-                                                <p className="font-bold text-sm truncate">{task.title}</p>
-                                                <p className="text-xs opacity-80 truncate">{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2 mt-1 opacity-80">
-                                                <Icon className="h-3 w-3" />
-                                                {client && <User className="h-3 w-3" />}
-                                                {boats.length > 0 && <Ship className="h-3 w-3" />}
-                                                {firstAssignment.selectedExtras && firstAssignment.selectedExtras.length > 0 && <DollarSign className="h-3 w-3" />}
+                                                <div className="flex items-center gap-1.5">
+                                                    <Icon className="h-3 w-3 shrink-0" />
+                                                    <p className="font-bold text-sm truncate">{task.title}</p>
+                                                </div>
+                                                <div className="text-xs opacity-80 truncate pl-5 space-y-0.5">
+                                                    <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                    {client && <p>{client.firstName} {client.lastName}</p>}
+                                                    {boats.length > 0 && <p>{boats.map(b => b.name).join(', ')}</p>}
+                                                </div>
                                             </div>
                                         </div>
                                     </TooltipTrigger>
@@ -340,6 +341,8 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             const task = getTaskById(firstAssignment.taskId, tasks);
                                             if (!task) return null;
 
+                                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
+                                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
                                             const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
                                             const startTime = new Date(firstAssignment.startTime);
                                             const endTime = new Date(firstAssignment.endTime);
@@ -373,7 +376,11 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                                     <Icon className="h-3 w-3 shrink-0" />
                                                                     <p className="font-bold text-sm truncate">{task.title}</p>
                                                                 </div>
-                                                                <p className="text-xs opacity-80 truncate pl-5">{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                                <div className="text-xs opacity-80 truncate pl-5 space-y-0.5">
+                                                                    <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                                    {client && <p>{client.firstName} {client.lastName}</p>}
+                                                                    {boats.length > 0 && <p>{boats.map(b => b.name).join(', ')}</p>}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>
