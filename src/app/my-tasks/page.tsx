@@ -17,22 +17,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui"
 import { assignments as initialAssignments, tasks as initialTasks, Assignment, AssignmentStatus, Task } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, XCircle, Ban, Hourglass } from "lucide-react"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
 
 type StatusConfig = {
     text: string;
-    variant: "default" | "secondary" | "destructive" | "outline";
     icon: React.ReactNode;
+    classes: string;
 }
 
 const statusMap: Record<AssignmentStatus, StatusConfig> = {
-  pending: { text: "Pendiente", variant: "outline", icon: <Hourglass className="h-3 w-3" /> },
-  accepted: { text: "Aceptado", variant: "secondary", icon: <Clock className="h-3 w-3" /> },
-  completed: { text: "Terminado", variant: "default", icon: <Check className="h-3 w-3" /> },
-  rejected: { text: "Rechazada", variant: "destructive", icon: <XCircle className="h-3 w-3" /> },
-  cancelled: { text: "Cancelada", variant: "destructive", icon: <Ban className="h-3 w-3" /> },
+  pending: { text: "Pendiente", icon: <Hourglass className="h-3 w-3" />, classes: "bg-amber-100 border-amber-400 text-amber-800" },
+  accepted: { text: "Aceptada", icon: <Check className="h-3 w-3" />, classes: "bg-blue-100 border-blue-400 text-blue-800" },
+  completed: { text: "Terminada", icon: <CheckCheck className="h-3 w-3" />, classes: "bg-green-100 border-green-400 text-green-800" },
+  rejected: { text: "Rechazada", icon: <Ban className="h-3 w-3" />, classes: "bg-gray-200 border-gray-400 text-gray-700" },
+  cancelled: { text: "Cancelada", icon: <X className="h-3 w-3" />, classes: "bg-red-100 border-red-400 text-red-800" },
 };
 
 
@@ -137,7 +138,7 @@ export default function MyTasksPage() {
                    </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                   <Badge variant={currentStatus.variant}>
+                   <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
                         {currentStatus.icon}
                         <span className="ml-1.5">{currentStatus.text}</span>
                    </Badge>
