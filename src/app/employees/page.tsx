@@ -32,43 +32,55 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui"
-import { employees as initialEmployees, Employee } from "@/lib/data"
+import { employees as initialEmployees, assignments as initialAssignments, Employee, Assignment } from "@/lib/data"
 import { Car, MoreHorizontal, PlusCircle, Search } from "lucide-react"
 import { EmployeeDialog } from "@/components/employee-dialog"
+import { EmployeeTasksDialog } from "@/components/employee-tasks-dialog"
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = React.useState<Employee[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [assignments, setAssignments] = React.useState<Assignment[]>([]);
+  const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = React.useState(false);
+  const [isTasksDialogOpen, setIsTasksDialogOpen] = React.useState(false);
+  const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [employeeToEdit, setEmployeeToEdit] = React.useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  React.useEffect(() => {
+  const loadData = React.useCallback(() => {
     try {
       const savedEmployees = localStorage.getItem('employees');
       setEmployees(savedEmployees ? JSON.parse(savedEmployees) : initialEmployees);
-    } catch (error) {
-      console.error("Failed to load employees from localStorage", error);
-      setEmployees(initialEmployees);
-    }
-
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'employees') {
-        try {
-          const savedEmployees = localStorage.getItem('employees');
-          setEmployees(savedEmployees ? JSON.parse(savedEmployees) : initialEmployees);
-        } catch (error) {
-          console.error("Failed to load employees from localStorage", error);
-          setEmployees(initialEmployees);
+      const savedAssignments = localStorage.getItem('assignments');
+       if (savedAssignments) {
+            const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
+                if (key === 'startTime' || key === 'endTime') {
+                    return new Date(value);
+                }
+                return value;
+            });
+            setAssignments(parsedAssignments);
+        } else {
+            setAssignments(initialAssignments);
         }
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    } catch (error) {
+      console.error("Failed to load data from localStorage", error);
+      setEmployees(initialEmployees);
+      setAssignments(initialAssignments);
+    }
   }, []);
+
+  React.useEffect(() => {
+    loadData();
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'employees' || event.key === 'assignments') {
+            loadData();
+        }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [loadData]);
 
   const updateEmployeesAndStorage = (updatedEmployees: Employee[]) => {
     setEmployees(updatedEmployees);
@@ -83,13 +95,18 @@ export default function EmployeesPage() {
 
   const handleCreateClick = () => {
     setEmployeeToEdit(null);
-    setIsDialogOpen(true);
+    setIsEmployeeDialogOpen(true);
   };
 
   const handleEditClick = (employee: Employee) => {
     setEmployeeToEdit(employee);
-    setIsDialogOpen(true);
+    setIsEmployeeDialogOpen(true);
   };
+
+  const handleViewTasksClick = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsTasksDialogOpen(true);
+  }
 
   const handleSaveEmployee = (employeeData: Employee) => {
     const isEditing = employees.some(e => e.id === employeeData.id);
@@ -136,11 +153,21 @@ export default function EmployeesPage() {
         </header>
 
         <EmployeeDialog
-          open={isDialogOpen}
-          setOpen={setIsDialogOpen}
+          open={isEmployeeDialogOpen}
+          setOpen={setIsEmployeeDialogOpen}
           onSave={handleSaveEmployee}
           employeeToEdit={employeeToEdit}
         />
+
+        {selectedEmployee && (
+            <EmployeeTasksDialog
+                open={isTasksDialogOpen}
+                setOpen={setIsTasksDialogOpen}
+                employee={selectedEmployee}
+                assignments={assignments.filter(a => a.employeeId === selectedEmployee.id)}
+            />
+        )}
+
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -203,7 +230,7 @@ export default function EmployeesPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
-                        <DropdownMenuItem>Ver Tareas</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleViewTasksClick(employee)}>Ver Tareas</DropdownMenuItem>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
