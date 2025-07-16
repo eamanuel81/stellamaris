@@ -1,4 +1,5 @@
 "use client"
+import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import {
   Badge,
@@ -14,10 +15,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui"
-import { assignments, employees, tasks, AssignmentStatus } from "@/lib/data"
+import { assignments as initialAssignments, tasks as initialTasks, Assignment, AssignmentStatus, Task } from "@/lib/data"
 import { Car, Check, ChevronDown, Clock, XCircle, Ban, Hourglass } from "lucide-react"
 
-const getTaskById = (id: string) => tasks.find((t) => t.id === id)
+const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
 
 type StatusConfig = {
     text: string;
@@ -35,7 +36,57 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 
 
 export default function MyTasksPage() {
-  const myAssignments = assignments.filter(a => ['1','2','3'].includes(a.employeeId)); // Simulating employee logged in
+    const [assignments, setAssignments] = React.useState<Assignment[]>([]);
+    const [tasks, setTasks] = React.useState<Task[]>([]);
+
+    React.useEffect(() => {
+        const loadData = () => {
+             try {
+                const savedAssignments = localStorage.getItem('assignments');
+                if (savedAssignments) {
+                    const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
+                        if (key === 'startTime' || key === 'endTime') {
+                            return new Date(value);
+                        }
+                        return value;
+                    });
+                    setAssignments(parsedAssignments);
+                } else {
+                    setAssignments(initialAssignments);
+                }
+
+                const savedTasks = localStorage.getItem('tasks');
+                setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
+
+            } catch (error) {
+                console.error("Failed to load data from localStorage", error);
+                setAssignments(initialAssignments);
+                setTasks(initialTasks);
+            }
+        };
+        
+        loadData();
+        window.addEventListener('storage', loadData);
+        return () => window.removeEventListener('storage', loadData);
+
+    }, []);
+
+  // Simulating employee with ID '1' (Juan Perez) is logged in
+  const myAssignments = assignments.filter(a => a.employeeId === '1'); 
+
+  const updateAssignmentStatus = (assignmentId: string, newStatus: AssignmentStatus) => {
+    const updatedAssignments = assignments.map(a => 
+        a.id === assignmentId ? { ...a, status: newStatus } : a
+    );
+    setAssignments(updatedAssignments);
+    try {
+        localStorage.setItem('assignments', JSON.stringify(updatedAssignments));
+        window.dispatchEvent(new StorageEvent('storage', { key: 'assignments' }));
+    } catch(e) {
+        console.error("Failed to save assignments to localStorage", e);
+    }
+  }
+
 
   return (
     <AppLayout>
@@ -51,7 +102,7 @@ export default function MyTasksPage() {
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {myAssignments.map((assignment) => {
-            const task = getTaskById(assignment.taskId);
+            const task = getTaskById(assignment.taskId, tasks);
             if (!task) return null;
 
             const currentStatus = statusMap[assignment.status];
@@ -97,9 +148,9 @@ export default function MyTasksPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem disabled={assignment.status === 'accepted'}>Aceptar Tarea</DropdownMenuItem>
-                        <DropdownMenuItem disabled={assignment.status === 'completed'}>Marcar como Terminada</DropdownMenuItem>
-                        <DropdownMenuItem>Rechazar Tarea</DropdownMenuItem>
+                        <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Aceptar Tarea</DropdownMenuItem>
+                        <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Rechazar Tarea</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </CardFooter>

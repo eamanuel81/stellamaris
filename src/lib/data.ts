@@ -93,6 +93,8 @@ export const assignments: Assignment[] = [
     { id: 'a2', taskId: 't2', employeeId: '3', startTime: new Date(new Date().setHours(9, 0, 0, 0)), endTime: new Date(new Date().setHours(9, 30, 0, 0)), status: 'accepted' },
     { id: 'a3', taskId: 't4', employeeId: '2', startTime: new Date(new Date().setHours(11, 0, 0, 0)), endTime: new Date(new Date().setHours(12, 0, 0, 0)), status: 'pending' },
     { id: 'a4', taskId: 't3', employeeId: '1', startTime: new Date(new Date().setHours(14, 0, 0, 0)), endTime: new Date(new Date().setHours(14, 45, 0, 0)), status: 'pending', clientId: 'c2', boatIds: ['b3'] },
+    // Another task for Juan Perez for today
+    { id: 'a5', taskId: 't5', employeeId: '1', startTime: new Date(new Date().setHours(15, 0, 0, 0)), endTime: new Date(new Date().setHours(19, 0, 0, 0)), status: 'accepted' },
 ];
 
 export const clients: Client[] = [

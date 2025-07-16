@@ -22,7 +22,7 @@ import { useAuth } from "@/components/auth-provider"
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
-  const [role, setRole] = React.useState<"admin" | "employee">("admin")
+  const [role, setRole] = React.useState<"admin" | "employee">("employee")
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,7 +52,7 @@ export default function LoginPage() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="admin@stellamaris.com" required defaultValue="admin@stellamaris.com" />
+              <Input id="email" type="email" placeholder="empleado@stellamaris.com" required defaultValue="juan.perez@example.com" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
@@ -61,7 +61,7 @@ export default function LoginPage() {
             <div className="space-y-3">
               <Label>Simular rol</Label>
               <RadioGroup
-                defaultValue="admin"
+                defaultValue="employee"
                 className="flex items-center space-x-4"
                 onValueChange={(value: "admin" | "employee") => setRole(value)}
               >
