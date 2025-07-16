@@ -200,28 +200,29 @@ export default function MyTasksPage() {
     }
   }
   
-  const filteredAssignments = myAssignments.filter(assignment => {
+  const searchFilter = (assignment: Assignment) => {
       const task = getTaskById(assignment.taskId, tasks);
       const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-      
       if (!task) return false;
 
       const searchTermLower = searchTerm.toLowerCase();
       
-      const searchMatch = (
+      return (
           task.title.toLowerCase().includes(searchTermLower) ||
           (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
           (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
           (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
       );
-
-      const statusMatch = statusFilter === 'all' || assignment.status === statusFilter;
-
-      return searchMatch && statusMatch;
-  });
-
-  const activeAssignments = filteredAssignments.filter(a => a.status !== 'completed');
-  const completedAssignments = filteredAssignments.filter(a => a.status === 'completed');
+  };
+  
+  const activeAssignments = myAssignments
+      .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+      .filter(searchFilter)
+      .filter(a => statusFilter === 'all' || a.status === statusFilter);
+      
+  const completedAssignments = myAssignments
+      .filter(a => a.status === 'completed')
+      .filter(searchFilter);
 
   const filterableStatuses = Object.entries(statusMap).filter(
     ([key]) => key !== 'completed' && key !== 'cancelled'
