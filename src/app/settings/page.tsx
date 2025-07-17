@@ -1,6 +1,8 @@
 
 "use client"
 
+import * as React from "react"
+import { useAuth } from "@/components/auth-provider"
 import { AppLayout } from "@/components/app-layout"
 import {
   Button,
@@ -13,9 +15,19 @@ import {
   Input,
   Label,
   Separator,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
 } from "@/components/ui"
 
 export default function SettingsPage() {
+  const { role, avatarKey, setAvatarKey } = useAuth();
+  
+  const handleAvatarChange = () => {
+    // Generate a new random key to update the avatar URL
+    setAvatarKey(Date.now().toString());
+  }
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8 max-w-2xl mx-auto">
@@ -35,7 +47,23 @@ export default function SettingsPage() {
               Esta es tu información personal.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            <div className="flex items-center gap-6">
+               <Avatar className="h-20 w-20">
+                 <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
+                 <AvatarFallback>{role === 'admin' ? 'A' : 'E'}</AvatarFallback>
+               </Avatar>
+               <div className="space-y-2">
+                 <Label>Avatar</Label>
+                 <div>
+                    <Button variant="outline" onClick={handleAvatarChange}>Cambiar Avatar</Button>
+                 </div>
+                 <p className="text-xs text-muted-foreground">
+                    Haga clic para generar un nuevo avatar aleatorio.
+                 </p>
+               </div>
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="firstName">Nombre</Label>

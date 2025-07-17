@@ -37,23 +37,29 @@ import {
   Settings,
   Ship,
   Users,
+  Contact,
+  CalendarDays,
+  Calendar,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
 
 const adminNavItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
-  { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
+  { href: "/today-tasks", icon: <CalendarDays />, label: "Tareas del Día" },
   { href: "/schedule", icon: <CalendarClock />, label: "Asignar Tareas" },
+  { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
   { href: "/employees", icon: <Users />, label: "Empleados" },
+  { href: "/clients", icon: <Contact />, label: "Clientes" },
 ];
 
 const employeeNavItems = [
   { href: "/my-tasks", icon: <ClipboardCheck />, label: "Mis Tareas" },
+  { href: "/my-calendar", icon: <Calendar />, label: "Calendario" },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { role, logout, isLoading } = useAuth()
+  const { role, logout, isLoading, avatarKey } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -131,8 +137,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:justify-end">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:justify-between">
           <SidebarTrigger className="sm:hidden" />
+           <div className="hidden sm:flex items-center gap-2">
+              <SidebarTrigger />
+              <h1 className="font-semibold text-lg">
+                {navItems.find(item => pathname.startsWith(item.href))?.label}
+              </h1>
+            </div>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
@@ -142,7 +154,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-10 w-10 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={`https://i.pravatar.cc/150?u=${role}`} alt="User" />
+                    <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
                     <AvatarFallback>{role === 'admin' ? 'A' : 'E'}</AvatarFallback>
                   </Avatar>
                 </Button>

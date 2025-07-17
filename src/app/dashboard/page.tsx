@@ -1,5 +1,6 @@
-"use client"
 
+"use client"
+import React from "react"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import {
   Activity,
@@ -7,6 +8,7 @@ import {
   Clock,
   DollarSign,
   Users,
+  CalendarDays
 } from "lucide-react"
 
 import { AppLayout } from "@/components/app-layout"
@@ -26,8 +28,12 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   ChartContainer,
+  Button,
+  Sheet,
+  SheetTrigger,
 } from "@/components/ui"
-import { assignments, employees, tasks } from "@/lib/data"
+import { assignments as initialAssignments, employees, tasks as initialTasks, clients as initialClients, Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
+import { TodayTasksSheet } from "@/components/today-tasks-sheet"
 
 const chartData = [
   { name: "Juan P.", hours: 45 },
@@ -36,15 +42,71 @@ const chartData = [
   { name: "Ana L.", hours: 60 },
 ]
 
-const getTaskById = (id: string) => tasks.find(t => t.id === id)
+const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string) => employees.find(e => e.id === id)
-const statusMap: { [key: string]: { text: string; variant: "default" | "secondary" | "destructive" | "outline" } } = {
+
+type StatusConfig = { text: string; variant: "default" | "secondary" | "destructive" | "outline" };
+
+const statusMap: Record<AssignmentStatus, StatusConfig> = {
   completed: { text: "Terminado", variant: "default" },
   accepted: { text: "Aceptado", variant: "secondary" },
-  assigned: { text: "Asignado", variant: "outline" },
+  pending: { text: "Pendiente", variant: "outline" },
+  rejected: { text: "Rechazada", variant: "destructive" },
+  cancelled: { text: "Cancelada", variant: "destructive" },
 }
 
 export default function DashboardPage() {
+  const [assignments, setAssignments] = React.useState<Assignment[]>([]);
+  const [tasks, setTasks] = React.useState<Task[]>([]);
+  const [clients, setClients] = React.useState<Client[]>([]);
+
+  React.useEffect(() => {
+        const loadData = () => {
+             try {
+                const savedAssignments = localStorage.getItem('assignments');
+                if (savedAssignments) {
+                    const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
+                        if (key === 'startTime' || key === 'endTime') {
+                            return new Date(value);
+                        }
+                        return value;
+                    });
+                    setAssignments(parsedAssignments);
+                } else {
+                    setAssignments(initialAssignments);
+                }
+
+                const savedTasks = localStorage.getItem('tasks');
+                setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
+
+                const savedClients = localStorage.getItem('clients');
+                setClients(savedClients ? JSON.parse(savedClients) : initialClients);
+
+            } catch (error) {
+                console.error("Failed to load data from localStorage", error);
+                setAssignments(initialAssignments);
+                setTasks(initialTasks);
+                setClients(initialClients);
+            }
+        };
+        
+        loadData();
+        window.addEventListener('storage', loadData);
+        return () => window.removeEventListener('storage', loadData);
+  }, []);
+
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const todayAssignments = assignments.filter(a => {
+      const assignmentDate = new Date(a.startTime);
+      assignmentDate.setHours(0, 0, 0, 0);
+      return assignmentDate.getTime() === today.getTime();
+  }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+  const getTaskById = (id: string) => tasks.find(t => t.id === id)
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -66,7 +128,7 @@ export default function DashboardPage() {
               <ClipboardList className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">{todayAssignments.length}</div>
               <p className="text-xs text-muted-foreground">
                 +2% que la semana pasada
               </p>

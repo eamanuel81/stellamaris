@@ -6,13 +6,11 @@ import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge } from "@/components/ui"
 import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee, AssignmentStatus } from "@/lib/data"
-import { AssignTaskDialog } from "@/components/assign-task-dialog"
-import { AssignmentDetailDialog } from "@/components/assignment-detail-dialog"
+import { MyTaskDetailDialog } from "@/components/my-task-detail-dialog"
 import { cn } from "@/lib/utils"
 
 const generateTimeSlots = () => {
   const slots = []
-  // from 6 AM to 1 AM next day
   for (let i = 6; i <= 24; i++) {
     slots.push(`${String(i % 24).padStart(2, '0')}:00`)
   }
@@ -21,7 +19,6 @@ const generateTimeSlots = () => {
 }
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
-const getEmployeeById = (id: string) => employees.find(e => e.id === id)
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id)
 
 const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: string}>, classes: string, tooltipIcon: React.ReactNode, label: string }> = {
@@ -32,33 +29,15 @@ const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: strin
     cancelled: { icon: X, classes: "bg-red-100 border-red-400 text-red-800 hover:bg-red-200", tooltipIcon: <X className="h-4 w-4 shrink-0 text-red-600" />, label: 'Cancelada' },
 };
 
-
-const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
-    const grouped = new Map<string, Assignment[]>();
-
-    assignmentsToGroup.forEach(assignment => {
-        const key = `${assignment.taskId}-${assignment.startTime.getTime()}`;
-        if (!grouped.has(key)) {
-            grouped.set(key, []);
-        }
-        grouped.get(key)!.push(assignment);
-    });
-    
-    return Array.from(grouped.values());
-}
-
-const processOverlaps = (groupedAssignments: Assignment[][]) => {
-     const assignmentsWithLayout = groupedAssignments.map(group => ({
-        group,
-        startTime: new Date(group[0].startTime),
-        endTime: new Date(group[0].endTime),
+const processOverlaps = (assignmentsToLayout: Assignment[]) => {
+     const assignmentsWithLayout = assignmentsToLayout.map(assignment => ({
+        assignment,
+        startTime: new Date(assignment.startTime),
+        endTime: new Date(assignment.endTime),
     }));
 
-    // For sorting and layout calculation, we need to handle overlaps.
-    // We create a temporary structure to hold layout properties.
     const layoutAssignments = assignmentsWithLayout.map(a => ({ ...a, overlaps: [] as any[], column: -1, totalColumns: 1 }));
 
-    // Detect overlaps
     for (let i = 0; i < layoutAssignments.length; i++) {
         for (let j = i + 1; j < layoutAssignments.length; j++) {
             const a = layoutAssignments[i];
@@ -70,10 +49,8 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
         }
     }
     
-    // Sort by start time to process chronologically
     layoutAssignments.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
     
-    // Assign columns
     for (const assignment of layoutAssignments) {
         if (assignment.column === -1) {
             const placedInColumn = (colIndex: number) => {
@@ -95,7 +72,6 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
             assignment.column = col;
         }
 
-        // Expand totalColumns for all overlapping items
         const allInvolved = [assignment, ...assignment.overlaps];
         const maxColumns = Math.max(...allInvolved.map(a => a.column)) + 1;
         for (const item of allInvolved) {
@@ -106,25 +82,14 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
     return layoutAssignments;
 };
 
-const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignmentGroup: Assignment[], tasks: Task[], clients: Client[], employees: Employee[] }) => {
-    if (!assignmentGroup || assignmentGroup.length === 0) return null;
+const TooltipDetail = ({ assignment, tasks, clients }: { assignment: Assignment, tasks: Task[], clients: Client[] }) => {
+    if (!assignment) return null;
 
-    const firstAssignment = assignmentGroup[0];
-    const task = getTaskById(firstAssignment.taskId, tasks);
-    const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-    const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-    const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as Employee[];
-    const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
-
-    const calculateExtrasTotal = () => {
-        if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
-        return firstAssignment.selectedExtras.reduce((total, selected) => {
-            const extraDetails = task.extras!.find(e => e.id === selected.extraId);
-            return total + (extraDetails?.price || 0) * selected.quantity;
-        }, 0);
-    };
-    const extrasTotal = calculateExtrasTotal();
-
+    const task = getTaskById(assignment.taskId, tasks);
+    const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+    const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+    const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
+    
     return (
         <div className="space-y-2 p-2 text-sm">
             <div className="flex items-center gap-2">
@@ -133,7 +98,7 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 shrink-0" />
-                <span>{new Date(firstAssignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(firstAssignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>{new Date(assignment.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(assignment.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             {client && (
                  <div className="flex items-center gap-2 text-muted-foreground">
@@ -147,23 +112,11 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
                     <span>{boats.map(b => b.name).join(', ')}</span>
                 </div>
             )}
-            {assignedEmployees.length > 0 && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4 shrink-0" />
-                    <span>{assignedEmployees.map(e => e.name).join(', ')}</span>
-                </div>
-            )}
-            {extrasTotal > 0 && (
-                 <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
-                    <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
-                    <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}</span>
-                </div>
-            )}
         </div>
     )
 }
 
-const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignment: Assignment) => void }) => {
     const timeSlots = generateTimeSlots()
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -174,20 +127,19 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
         return assignmentDate.getTime() === today.getTime();
     }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-    const groupedAssignments = groupAssignmentsByTimeAndTask(todayAssignments);
-    const processedAssignments = processOverlaps(groupedAssignments);
+    const processedAssignments = processOverlaps(todayAssignments);
 
     const getTaskPosition = (startTime: Date) => {
         const startHour = 6;
         const hours = new Date(startTime).getHours() + new Date(startTime).getMinutes() / 60;
-        const topPosition = (hours - startHour) * 48; // 48px per hour (h-12)
+        const topPosition = (hours - startHour) * 48;
         return Math.max(0, topPosition);
     }
 
     const getTaskHeight = (startTime: Date, endTime: Date) => {
         const durationMinutes = (new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60);
-        const height = (durationMinutes / 60) * 48; // 48px per hour
-        return Math.max(24, height - 2); // Subtract 2px for a small gap, min height 24px
+        const height = (durationMinutes / 60) * 48;
+        return Math.max(24, height - 2);
     }
 
     return (
@@ -212,27 +164,26 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                     </div>
                     <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
                         {processedAssignments.map((processed, index) => {
-                            const assignmentGroup = processed.group;
-                            const firstAssignment = assignmentGroup[0];
-                            const task = getTaskById(firstAssignment.taskId, tasks);
+                            const { assignment } = processed;
+                            const task = getTaskById(assignment.taskId, tasks);
                             if (!task) return null;
 
-                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
-                            const top = getTaskPosition(firstAssignment.startTime);
-                            const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
+                            const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                            const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                            
+                            const top = getTaskPosition(assignment.startTime);
+                            const height = getTaskHeight(assignment.startTime, assignment.endTime);
 
                             const width = 100 / processed.totalColumns;
                             const left = width * processed.column;
-                            const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
+                            const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
                             const Icon = statusInfo.icon;
                             
                             return (
-                                <Tooltip key={`${firstAssignment.id}-${index}`}>
+                                <Tooltip key={`${assignment.id}-${index}`}>
                                     <TooltipTrigger asChild>
                                         <div
-                                            onClick={() => onTaskClick(assignmentGroup)}
+                                            onClick={() => onTaskClick(assignment)}
                                             className={cn(
                                                 "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
                                                 statusInfo.classes
@@ -249,11 +200,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                                     <Icon className="h-3 w-3 shrink-0" />
                                                     <p className="font-bold text-sm truncate">{task.title}</p>
                                                 </div>
-                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
-                                                    <div className="flex items-center gap-1.5 truncate">
-                                                        <Users className="h-3 w-3 shrink-0" />
-                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                                    </div>
+                                                 <div className="text-xs opacity-80 pl-5 space-y-0.5">
                                                     {client && (
                                                         <div className="flex items-center gap-1.5 truncate">
                                                             <User className="h-3 w-3 shrink-0" />
@@ -271,7 +218,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                         </div>
                                     </TooltipTrigger>
                                     <TooltipContent side="right" align="start">
-                                        <TooltipDetail assignmentGroup={assignmentGroup} tasks={tasks} clients={clients} employees={employees} />
+                                        <TooltipDetail assignment={assignment} tasks={tasks} clients={clients} />
                                     </TooltipContent>
                                 </Tooltip>
                             )
@@ -283,7 +230,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
     )
 }
 
-const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignment: Assignment) => void }) => {
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
@@ -321,7 +268,6 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                 </div>
                 <div className="relative h-[600px] overflow-y-auto">
                     <div className="grid grid-cols-[60px_1fr]">
-                        {/* Time column */}
                         <div className="relative">
                             {timeSlots.map(time => (
                                 <div key={time} className="h-12 flex items-start justify-end pr-2 border-r">
@@ -329,7 +275,6 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                 </div>
                             ))}
                         </div>
-                        {/* Days columns */}
                         <div className="grid grid-cols-7 relative">
                             {weekDays.map((day) => {
                                 const dayAssignments = assignments.filter(a => {
@@ -340,8 +285,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                     return assignmentDate.getTime() === compareDate.getTime();
                                 });
                                 
-                                const groupedForDay = groupAssignmentsByTimeAndTask(dayAssignments);
-                                const processedForDay = processOverlaps(groupedForDay);
+                                const processedForDay = processOverlaps(dayAssignments);
 
                                 return (
                                     <div key={day.toISOString()} className="relative border-r last:border-r-0">
@@ -349,30 +293,28 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             <div key={time} className="h-12 border-b border-dashed"></div>
                                         ))}
                                         {processedForDay.map((processed, index) => {
-                                            const assignmentGroup = processed.group;
-                                            const firstAssignment = assignmentGroup[0];
-                                            const task = getTaskById(firstAssignment.taskId, tasks);
+                                            const { assignment } = processed;
+                                            const task = getTaskById(assignment.taskId, tasks);
                                             if (!task) return null;
 
-                                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-                                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
-                                            const startTime = new Date(firstAssignment.startTime);
-                                            const endTime = new Date(firstAssignment.endTime);
+                                            const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                                            const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                                            const startTime = new Date(assignment.startTime);
+                                            const endTime = new Date(assignment.endTime);
 
                                             const height = getTaskHeight(startTime, endTime);
                                             const top = getTaskPosition(startTime);
                                             const width = 100 / processed.totalColumns;
                                             const left = width * processed.column;
-                                            const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
+                                            const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
                                             const Icon = statusInfo.icon;
 
 
                                             return (
-                                                <Tooltip key={`${firstAssignment.id}-${index}`}>
+                                                <Tooltip key={`${assignment.id}-${index}`}>
                                                     <TooltipTrigger asChild>
                                                         <div
-                                                            onClick={() => onTaskClick(assignmentGroup)}
+                                                            onClick={() => onTaskClick(assignment)}
                                                             className={cn(
                                                                 "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
                                                                 statusInfo.classes
@@ -384,16 +326,12 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                                 left: `calc(${left}% + 2px)`,
                                                             }}
                                                         >
-                                                            <div className="space-y-0.5">
+                                                             <div className="space-y-0.5">
                                                                 <div className="flex items-center gap-1.5">
                                                                     <Icon className="h-3 w-3 shrink-0" />
                                                                     <p className="font-bold text-sm truncate">{task.title}</p>
                                                                 </div>
-                                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
-                                                                    <div className="flex items-center gap-1.5 truncate">
-                                                                        <Users className="h-3 w-3 shrink-0" />
-                                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
-                                                                    </div>
+                                                                 <div className="text-xs opacity-80 pl-5 space-y-0.5">
                                                                     {client && (
                                                                         <div className="flex items-center gap-1.5 truncate">
                                                                             <User className="h-3 w-3 shrink-0" />
@@ -411,7 +349,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                         </div>
                                                     </TooltipTrigger>
                                                     <TooltipContent side="right" align="start">
-                                                        <TooltipDetail assignmentGroup={assignmentGroup} tasks={tasks} clients={clients} employees={employees} />
+                                                        <TooltipDetail assignment={assignment} tasks={tasks} clients={clients} />
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )
@@ -428,26 +366,21 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
     )
 }
 
-export default function SchedulePage() {
-  const [isCreateOpen, setIsCreateOpen] = React.useState(false)
-  const [isEditOpen, setIsEditOpen] = React.useState(false)
+export default function MyCalendarPage() {
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
   const [assignments, setAssignments] = React.useState<Assignment[]>([])
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [clients, setClients] = React.useState<Client[]>([]);
-  const [selectedAssignmentGroup, setSelectedAssignmentGroup] = React.useState<Assignment[] | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = React.useState<Assignment | null>(null);
 
   const loadInitialData = React.useCallback(() => {
     try {
-        // Load tasks
         const savedTasks = localStorage.getItem('tasks');
         setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
         
-        // Load clients
         const savedClients = localStorage.getItem('clients');
         setClients(savedClients ? JSON.parse(savedClients) : initialClients);
 
-        // Load assignments
         const savedAssignments = localStorage.getItem('assignments');
         if (savedAssignments) {
             const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
@@ -494,98 +427,29 @@ export default function SchedulePage() {
     }
   }
 
-  const handleAssignTask = (newAssignments: Assignment[]) => {
-    updateAndStoreAssignments([...assignments, ...newAssignments]);
-  }
-
- const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => {
-    const originalIds = new Set(originalAssignments.map(a => a.id));
-    const filtered = assignments.filter(a => !originalIds.has(a.id));
-
-    const updatedAssignments = newEmployeeIds.map(employeeId => {
-        const existingAssignment = originalAssignments.find(a => a.employeeId === employeeId);
-        return {
-            id: existingAssignment?.id || `a${Date.now()}${Math.random()}`,
-            ...newAssignmentData,
-            employeeId: employeeId,
-        };
-    });
-    
-    updateAndStoreAssignments([...filtered, ...updatedAssignments]);
-    setSelectedAssignmentGroup(null);
-}
-
-  const handleDeleteAssignment = (assignmentsToDelete: Assignment[]) => {
-      const idsToDelete = new Set(assignmentsToDelete.map(a => a.id));
-      updateAndStoreAssignments(assignments.filter(a => !idsToDelete.has(a.id)));
-      setSelectedAssignmentGroup(null);
-  }
-
-  const handleTaskClick = (assignmentGroup: Assignment[]) => {
-    setSelectedAssignmentGroup(assignmentGroup);
+  const handleTaskClick = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
     setIsDetailOpen(true);
   }
 
-  const handleOpenEdit = () => {
-    setIsDetailOpen(false);
-    setIsEditOpen(true);
-  }
-
   const handleCloseDialogs = () => {
-    setIsCreateOpen(false);
-    setIsEditOpen(false);
     setIsDetailOpen(false);
     setTimeout(() => {
-       setSelectedAssignmentGroup(null);
+       setSelectedAssignment(null);
     }, 200);
   }
 
-  const handleTaskCreated = (newTask: Task) => {
-    const updatedTasks = [...tasks, newTask];
-    setTasks(updatedTasks);
-     try {
-        const newTasksJSON = JSON.stringify(updatedTasks);
-        localStorage.setItem('tasks', newTasksJSON);
-        window.dispatchEvent(new StorageEvent('storage', { key: 'tasks', newValue: newTasksJSON }));
-    } catch (error) {
-        console.error("Failed to save tasks to localStorage", error);
-    }
-  }
-
-  const handleClientCreated = (newClient: Client) => {
-    const updatedClients = [...clients, newClient];
-    setClients(updatedClients);
-     try {
-        const newClientsJSON = JSON.stringify(updatedClients);
-        localStorage.setItem('clients', newClientsJSON);
-        window.dispatchEvent(new StorageEvent('storage', { key: 'clients', newValue: newClientsJSON }));
-    } catch (error) {
-        console.error("Failed to save clients to localStorage", error);
-    }
-  }
-
-  const onDeleteInEdit = () => {
-    if (selectedAssignmentGroup) {
-      handleDeleteAssignment(selectedAssignmentGroup);
-    }
-    handleCloseDialogs();
-  }
-
   const handleStatusChange = (newStatus: AssignmentStatus) => {
-      if (!selectedAssignmentGroup) return;
-
-      const groupIds = new Set(selectedAssignmentGroup.map(a => a.id));
-      const updatedAssignments = assignments.map(a => {
-          if (groupIds.has(a.id)) {
-              return { ...a, status: newStatus };
-          }
-          return a;
-      });
-
+      if (!selectedAssignment) return;
+      const updatedAssignments = assignments.map(a => 
+          a.id === selectedAssignment.id ? { ...a, status: newStatus } : a
+      );
       updateAndStoreAssignments(updatedAssignments);
-      // Also update the selected group to reflect the change immediately in the dialog
-      setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
+      setSelectedAssignment(prev => prev ? { ...prev, status: newStatus } : null);
   }
+
+  // Simulate employee with ID '1' is logged in
+  const myAssignments = assignments.filter(a => a.employeeId === '1');
 
   return (
     <AppLayout>
@@ -593,46 +457,30 @@ export default function SchedulePage() {
         <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="font-headline text-3xl font-bold tracking-tight">
-              Asignar Tareas
+              Mi Calendario
             </h1>
             <p className="text-muted-foreground">
-              Calendario de Asignacion de Tareas a Empleados
+              Vista de calendario de tus tareas asignadas.
             </p>
           </div>
-           <Dialog open={isCreateOpen} onOpenChange={open => open ? setIsCreateOpen(true) : handleCloseDialogs()}>
-            <DialogTrigger asChild>
-              <Button onClick={() => { setSelectedAssignmentGroup(null); setIsCreateOpen(true); }}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Asignar Tarea
-              </Button>
-            </DialogTrigger>
-            <AssignTaskDialog setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} />
-          </Dialog>
         </header>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <h4 className="font-semibold text-foreground">Referencias:</h4>
-            {Object.values(statusStyles).map(({ icon: Icon, classes, label }) => (
+            {Object.values(statusStyles).map(({ classes, label }) => (
                 <div key={label} className="flex items-center gap-2">
                     <div className={cn("w-3 h-3 rounded-full", classes.split(' ').find(c => c.startsWith('bg-')))}></div>
-                    <Icon className="h-4 w-4" />
                     <span>{label}</span>
                 </div>
             ))}
         </div>
 
-        <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialog setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={selectedAssignmentGroup} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} onDelete={onDeleteInEdit} />
-        </Dialog>
-
         <Dialog open={isDetailOpen} onOpenChange={open => open ? setIsDetailOpen(true) : handleCloseDialogs()}>
-            {selectedAssignmentGroup && (
-                <AssignmentDetailDialog
-                    assignmentGroup={selectedAssignmentGroup}
-                    tasks={tasks}
-                    clients={clients}
-                    employees={employees}
-                    onEdit={handleOpenEdit}
+            {selectedAssignment && (
+                <MyTaskDetailDialog
+                    assignment={selectedAssignment}
+                    task={getTaskById(selectedAssignment.taskId, tasks)!}
+                    client={selectedAssignment.clientId ? getClientById(selectedAssignment.clientId, clients) : null}
                     onStatusChange={handleStatusChange}
                     setOpen={setIsDetailOpen}
                 />
@@ -647,10 +495,10 @@ export default function SchedulePage() {
                 </TabsList>
             </div>
             <TabsContent value="day" className="mt-4">
-                <DayView assignments={assignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
+                <DayView assignments={myAssignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
             </TabsContent>
             <TabsContent value="week" className="mt-4">
-                <WeekView assignments={assignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
+                <WeekView assignments={myAssignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
             </TabsContent>
         </Tabs>
 
@@ -658,5 +506,3 @@ export default function SchedulePage() {
     </AppLayout>
   )
 }
-
-    
