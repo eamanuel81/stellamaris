@@ -18,6 +18,7 @@ import {
 import { PlusCircle, Trash2, Camera } from "lucide-react"
 import { Client, Boat, ResponsibleParty } from "@/lib/data"
 import Image from "next/image"
+import { supabase } from '@/lib/supabaseClient';
 
 export const ClientDialog = ({
     open,
@@ -37,8 +38,9 @@ export const ClientDialog = ({
     const [email, setEmail] = React.useState('');
     const [phone, setPhone] = React.useState('');
     const [internalNote, setInternalNote] = React.useState('');
-    const [boats, setBoats] = React.useState<Boat[]>([]);
-    const [responsibles, setResponsibles] = React.useState<ResponsibleParty[]>([]);
+    const [boats, setBoats] = React.useState<any[]>([]);
+    const [responsibles, setResponsibles] = React.useState<any[]>([]);
+    const [uploadedPhotos, setUploadedPhotos] = React.useState<string[]>([]); // URLs subidas en esta sesión
     
     const initialBoatState = { id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '', photos: [] };
 
@@ -95,9 +97,13 @@ export const ClientDialog = ({
         setBoats(newBoats);
     };
 
-    const handleRemovePhoto = (boatIndex: number, photoIndex: number) => {
+    const handleRemovePhoto = async (boatIndex: number, photoIndex: number) => {
+        const photoObj = boats[boatIndex].photos[photoIndex];
+        if (photoObj?.path) {
+            await supabase.storage.from('stellamaris').remove([photoObj.path]);
+        }
         const newBoats = [...boats];
-        newBoats[boatIndex].photos?.splice(photoIndex, 1);
+        newBoats[boatIndex].photos.splice(photoIndex, 1);
         setBoats(newBoats);
     };
     
@@ -120,6 +126,37 @@ export const ClientDialog = ({
         }
     };
 
+    // Subir imagen a Supabase Storage
+    const handleFileChange = async (boatIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const fileExt = file.name.split('.').pop();
+        const filePath = `boats/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        const { error } = await supabase.storage.from('stellamaris').upload(filePath, file);
+        if (error) {
+            alert('Error al subir la imagen');
+            return;
+        }
+        // Obtener URL pública
+        const { data } = supabase.storage.from('stellamaris').getPublicUrl(filePath);
+        if (data?.publicUrl) {
+            const newBoats = [...boats];
+            if (!newBoats[boatIndex].photos) newBoats[boatIndex].photos = [];
+            newBoats[boatIndex].photos.push({ url: data.publicUrl, path: filePath });
+            setBoats(newBoats);
+            setUploadedPhotos(prev => [...prev, filePath]);
+        }
+    };
+
+    // Borrar fotos subidas si se cancela
+    const handleCancel = async () => {
+        for (const path of uploadedPhotos) {
+            await supabase.storage.from('stellamaris').remove([path]);
+        }
+        setUploadedPhotos([]);
+        setOpen(false);
+    };
+
     const handleSubmit = () => {
         if (!firstName || !lastName || !email) {
             alert('Por favor complete Nombre, Apellido y Email del cliente.');
@@ -127,7 +164,7 @@ export const ClientDialog = ({
         }
 
         const clientData: Client = {
-            id: isEditMode && clientToEdit ? clientToEdit.id : `c${Date.now()}`,
+            id: isEditMode && clientToEdit ? clientToEdit.id : undefined as any, // Eliminar id para que lo genere Supabase
             firstName,
             lastName,
             dni,
@@ -139,7 +176,14 @@ export const ClientDialog = ({
             avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://i.pravatar.cc/150?u=${Date.now()}`
         };
 
-        onSave(clientData);
+        if (!isEditMode) {
+            // Eliminar id antes de guardar
+            const { id, ...clientDataWithoutId } = clientData;
+            onSave(clientDataWithoutId as Client);
+        } else {
+            onSave(clientData);
+        }
+        setUploadedPhotos([]);
         setOpen(false);
     };
 
@@ -223,16 +267,17 @@ export const ClientDialog = ({
                                 <div>
                                     <Label>Fotos de la Embarcación (Opcional)</Label>
                                     <div className="mt-2 flex items-center gap-4">
-                                        <Button type="button" variant="outline" size="sm" onClick={() => handleAddPhoto(index)}>
+                                        <label className="inline-flex items-center cursor-pointer">
                                             <Camera className="mr-2 h-4 w-4" />
                                             Agregar Foto
-                                        </Button>
+                                            <input type="file" accept="image/*" className="hidden" onChange={e => handleFileChange(index, e)} />
+                                        </label>
                                     </div>
                                     <div className="mt-4 grid grid-cols-3 gap-4">
-                                        {boat.photos?.map((photo, photoIndex) => (
+                                        {boat.photos?.map((photo: any, photoIndex: any) => (
                                             <div key={photoIndex} className="relative group">
                                                 <Image
-                                                    src={photo}
+                                                    src={photo.url}
                                                     alt={`Foto de la embarcación ${photoIndex + 1}`}
                                                     width={200}
                                                     height={150}
@@ -300,7 +345,7 @@ export const ClientDialog = ({
 
                 </div>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                    <Button type="button" variant="outline" onClick={handleCancel}>Cancelar</Button>
                     <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Guardar Cliente'}</Button>
                 </DialogFooter>
             </DialogContent>

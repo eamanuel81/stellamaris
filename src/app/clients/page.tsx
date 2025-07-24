@@ -30,56 +30,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Badge,
 } from "@/components/ui"
-import { clients as initialClients, Client } from "@/lib/data"
-import { MoreHorizontal, PlusCircle, Search, Ship as ShipIcon } from "lucide-react"
-import { ClientDialog } from "@/components/client-dialog"
+import { useClients } from '@/hooks/use-clients';
+import { Client } from '@/lib/data';
+import { PlusCircle, MoreHorizontal, Search, Ship as ShipIcon } from 'lucide-react';
+import { ClientDialog } from '@/components/client-dialog';
+import { Badge } from '@/components/ui';
+import { useAuth } from '@/components/auth-provider';
 
 export default function ClientsPage() {
-    const [clients, setClients] = React.useState<Client[]>([]);
+    const { clients, isLoading, error, addClient, updateClient, deleteClient } = useClients();
+    const { subrole } = useAuth();
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [clientToEdit, setClientToEdit] = React.useState<Client | null>(null);
     const [searchTerm, setSearchTerm] = React.useState("");
-
-    React.useEffect(() => {
-        try {
-            const savedClients = localStorage.getItem('clients');
-            setClients(savedClients ? JSON.parse(savedClients) : initialClients);
-        } catch (error) {
-            console.error("Failed to load clients from localStorage", error);
-            setClients(initialClients);
-        }
-
-        const handleStorageChange = (event: StorageEvent) => {
-            if (event.key === 'clients') {
-                try {
-                    const savedClients = localStorage.getItem('clients');
-                    setClients(savedClients ? JSON.parse(savedClients) : initialClients);
-                } catch (error) {
-                    console.error("Failed to load clients from localStorage", error);
-                    setClients(initialClients);
-                }
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, []);
-
-    const updateClientsAndStorage = (updatedClients: Client[]) => {
-        setClients(updatedClients);
-        try {
-            const newClientsJSON = JSON.stringify(updatedClients);
-            localStorage.setItem('clients', newClientsJSON);
-            window.dispatchEvent(new StorageEvent('storage', { key: 'clients', newValue: newClientsJSON }));
-        } catch (error) {
-            console.error("Failed to save clients to localStorage", error);
-        }
-    };
+    const [actionLoading, setActionLoading] = React.useState(false);
+    const [actionError, setActionError] = React.useState<string | null>(null);
 
     const handleCreateClick = () => {
         setClientToEdit(null);
@@ -91,24 +57,38 @@ export default function ClientsPage() {
         setIsDialogOpen(true);
     };
 
-    const handleSaveClient = (clientData: Client) => {
-        const isEditing = clients.some(c => c.id === clientData.id);
-        let updatedClients;
+    const handleSaveClient = async (clientData: Client) => {
+        setActionLoading(true);
+        setActionError(null);
+        const isEditing = !!clientToEdit;
         if (isEditing) {
-            updatedClients = clients.map(c => c.id === clientData.id ? clientData : c);
+            const { error } = await updateClient(clientData);
+            if (error) setActionError(error.message);
         } else {
-            updatedClients = [...clients, clientData];
+            // Eliminar id para que lo genere la base de datos
+            const { id, ...clientDataWithoutId } = clientData;
+            const { error } = await addClient(clientDataWithoutId as Omit<Client, 'id'>);
+            if (error) setActionError(error.message);
         }
-        updateClientsAndStorage(updatedClients);
+        setActionLoading(false);
     };
     
-    const handleDeleteClient = (clientId: string) => {
-        const updatedClients = clients.filter(c => c.id !== clientId);
-        updateClientsAndStorage(updatedClients);
+    const handleDeleteClient = async (clientId: string) => {
+        setActionLoading(true);
+        setActionError(null);
+        const { error } = await deleteClient(clientId);
+        if (error) setActionError(error.message);
+        setActionLoading(false);
     };
 
+    // Filtrar clientes: no mostrar el email del admin (ni clientes con email igual al del usuario actual)
     const filteredClients = clients.filter(client => {
         const searchTermLower = searchTerm.toLowerCase();
+        // No mostrar clientes cuyo email coincide con el del usuario logueado (admin)
+        if (client.email && subrole === 'admin' && typeof window !== 'undefined') {
+            const userEmail = window.localStorage.getItem('supabase.auth.token') ? JSON.parse(window.localStorage.getItem('supabase.auth.token')!).currentSession?.user?.email : null;
+            if (userEmail && client.email === userEmail) return false;
+        }
         return (
             client.firstName.toLowerCase().includes(searchTermLower) ||
             client.lastName.toLowerCase().includes(searchTermLower) ||
@@ -129,10 +109,12 @@ export default function ClientsPage() {
               Gestiona los clientes y sus embarcaciones.
             </p>
           </div>
-            <Button onClick={handleCreateClick}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Agregar Cliente
-            </Button>
+            {subrole !== 'encargado' && (
+              <Button onClick={handleCreateClick} disabled={actionLoading}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Agregar Cliente
+              </Button>
+            )}
         </header>
 
         <ClientDialog 
@@ -152,6 +134,11 @@ export default function ClientsPage() {
           />
         </div>
 
+        {isLoading || actionLoading ? (
+          <div className="text-center py-8">Cargando clientes...</div>
+        ) : error || actionError ? (
+          <div className="text-center text-red-500 py-8">Error: {error || actionError}</div>
+        ) : (
         <Card className="overflow-hidden">
           <Table>
             <TableHeader>
@@ -195,14 +182,17 @@ export default function ClientsPage() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="h-8 w-8 p-0" disabled={subrole === 'encargado'}>
                           <span className="sr-only">Abrir menú</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEditClick(client)}>Editar</DropdownMenuItem>
+                        {subrole !== 'encargado' && (
+                          <DropdownMenuItem onClick={() => handleEditClick(client)}>Editar</DropdownMenuItem>
+                        )}
+                        {subrole !== 'encargado' && (
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
@@ -222,6 +212,7 @@ export default function ClientsPage() {
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -230,6 +221,7 @@ export default function ClientsPage() {
             </TableBody>
           </Table>
         </Card>
+        )}
       </div>
     </AppLayout>
   )
