@@ -18,6 +18,7 @@ import {
   Label,
 } from "@/components/ui"
 import { Employee } from "@/lib/data"
+import { useAuth } from '@/components/auth-provider';
 
 export const EmployeeDialog = ({
     open,
@@ -31,6 +32,7 @@ export const EmployeeDialog = ({
     employeeToEdit: Employee | null;
 }) => {
     const isEditMode = !!employeeToEdit;
+    const { subrole: mySubrole } = useAuth();
 
     const [name, setName] = React.useState("");
     const [lastName, setLastName] = React.useState("");
@@ -42,6 +44,7 @@ export const EmployeeDialog = ({
     const [canDrive, setCanDrive] = React.useState(false);
     const [sendLink, setSendLink] = React.useState(false);
     const [avatarKey, setAvatarKey] = React.useState(Date.now().toString());
+    const [subrole, setSubrole] = React.useState<'empleado' | 'encargado' | 'admin'>('empleado');
 
     React.useEffect(() => {
         if (isEditMode && employeeToEdit) {
@@ -54,6 +57,7 @@ export const EmployeeDialog = ({
             setEmail(employeeToEdit.email);
             setCanDrive(employeeToEdit.canDrive);
             setAvatarKey(employeeToEdit.avatarUrl);
+            setSubrole(employeeToEdit.subrole || 'empleado');
             setSendLink(false); // Don't default to sending link in edit mode
         } else {
             setName("");
@@ -65,6 +69,7 @@ export const EmployeeDialog = ({
             setEmail("");
             setCanDrive(false);
             setAvatarKey(Date.now().toString());
+            setSubrole('empleado');
             setSendLink(false);
         }
     }, [employeeToEdit, isEditMode, open]);
@@ -91,6 +96,7 @@ export const EmployeeDialog = ({
             email,
             role: isEditMode ? employeeToEdit!.role : 'employee',
             avatarUrl: `https://i.pravatar.cc/150?u=${avatarKey}`,
+            subrole,
         };
 
         onSave(employeeData);
@@ -157,6 +163,21 @@ export const EmployeeDialog = ({
                             <Input id="email" type="email" placeholder="juan.perez@example.com" value={email} onChange={e => setEmail(e.target.value)} />
                         </div>
                     </div>
+                    {mySubrole === 'admin' && (
+                      <div className="grid gap-2">
+                        <Label htmlFor="subrole">Subrol</Label>
+                        <select
+                          id="subrole"
+                          className="border rounded px-2 py-1"
+                          value={subrole}
+                          onChange={e => setSubrole(e.target.value as 'empleado' | 'encargado' | 'admin')}
+                        >
+                          <option value="empleado">Empleado</option>
+                          <option value="encargado">Encargado</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    )}
                     <div className="flex items-center space-x-2 pt-2">
                         <Checkbox id="canDrive" checked={canDrive} onCheckedChange={(checked) => setCanDrive(Boolean(checked))} />
                         <Label htmlFor="canDrive" className="font-normal">

@@ -10,6 +10,7 @@ export type Employee = {
   email: string;
   role: 'admin' | 'employee';
   avatarUrl: string;
+  subrole?: 'empleado' | 'encargado' | 'admin'; // <-- Agregado 'admin'
 };
 
 export type TaskExtra = {
