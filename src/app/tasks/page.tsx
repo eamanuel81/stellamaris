@@ -37,85 +37,58 @@ import React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TaskDialog } from "@/components/task-dialog"
+import { useTasks } from '@/hooks/use-tasks';
 
 export default function TasksPage() {
+    const { tasks, isLoading, error, addTask, updateTask, deleteTask } = useTasks();
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
     const [taskToEdit, setTaskToEdit] = React.useState<Task | null>(null);
-    const [tasks, setTasks] = React.useState<Task[]>([]);
     const [searchTerm, setSearchTerm] = React.useState("");
-
-    React.useEffect(() => {
-        try {
-            const savedTasks = localStorage.getItem('tasks');
-            if (savedTasks) {
-                setTasks(JSON.parse(savedTasks));
-            } else {
-                setTasks(initialTasks);
-            }
-        } catch (error) {
-            console.error("Failed to load tasks from localStorage", error);
-            setTasks(initialTasks);
-        }
-    }, []);
-
-    const updateTasksAndStorage = (updatedTasks: Task[]) => {
-        setTasks(updatedTasks);
-        try {
-            const newTasksJSON = JSON.stringify(updatedTasks);
-            localStorage.setItem('tasks', newTasksJSON);
-            // Dispatch a storage event so other tabs/pages can update
-            window.dispatchEvent(new StorageEvent('storage', {
-                key: 'tasks',
-                newValue: newTasksJSON,
-            }));
-        } catch (error) {
-            console.error("Failed to save tasks to localStorage", error);
-        }
-    };
-
+    const [actionLoading, setActionLoading] = React.useState(false);
+    const [actionError, setActionError] = React.useState<string | null>(null);
 
     const handleCreateClick = () => {
         setTaskToEdit(null);
         setIsDialogOpen(true);
-    }
+    };
 
     const handleEditClick = (task: Task) => {
         setTaskToEdit(task);
         setIsDialogOpen(true);
-    }
-    
-    const handleSaveTask = (taskData: Task) => {
-        const isEditing = tasks.some(t => t.id === taskData.id);
-        let updatedTasks;
+    };
+
+    const handleSaveTask = async (taskData: Task) => {
+        setActionLoading(true);
+        setActionError(null);
+        const isEditing = !!taskToEdit;
         if (isEditing) {
-            updatedTasks = tasks.map(t => t.id === taskData.id ? taskData : t);
+            const { error } = await updateTask(taskData);
+            if (error) setActionError(error.message);
         } else {
-            updatedTasks = [...tasks, taskData];
+            // Eliminar id para que lo genere la base de datos
+            const { id, ...taskDataWithoutId } = taskData;
+            const { error } = await addTask(taskDataWithoutId as Omit<Task, 'id'>);
+            if (error) setActionError(error.message);
         }
-        updateTasksAndStorage(updatedTasks);
+        setActionLoading(false);
         setTaskToEdit(null);
-    }
-    
-    const handleDeleteTask = (taskId: string) => {
-        const updatedTasks = tasks.filter(t => t.id !== taskId);
-        updateTasksAndStorage(updatedTasks);
-    }
+    };
+
+    const handleDeleteTask = async (taskId: string) => {
+        setActionLoading(true);
+        setActionError(null);
+        const { error } = await deleteTask(taskId);
+        if (error) setActionError(error.message);
+        setActionLoading(false);
+    };
 
     const filteredTasks = tasks.filter(task => {
         const searchTermLower = searchTerm.toLowerCase();
         const titleMatch = task.title.toLowerCase().includes(searchTermLower);
-        
-        const employeeMatch = task.qualifiedEmployeeIds?.some(empId => {
-            const employee = employees.find(e => e.id === empId);
-            return employee && (
-                employee.name.toLowerCase().includes(searchTermLower) ||
-                employee.lastName.toLowerCase().includes(searchTermLower)
-            );
-        });
-
-        return titleMatch || employeeMatch;
+        // No filtrar por empleados aquí, ya que employees puede venir de otro lado
+        return titleMatch;
     });
-    
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
@@ -128,7 +101,7 @@ export default function TasksPage() {
               Cree y gestione los tipos de tareas para asignar.
             </p>
           </div>
-            <Button onClick={handleCreateClick}>
+            <Button onClick={handleCreateClick} disabled={actionLoading}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Crear Tarea
             </Button>
@@ -144,13 +117,18 @@ export default function TasksPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Buscar por título o empleado cualificado..." 
+            placeholder="Buscar por título..." 
             className="pl-9"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
+        {isLoading || actionLoading ? (
+          <div className="text-center py-8">Cargando tareas...</div>
+        ) : error || actionError ? (
+          <div className="text-center text-red-500 py-8">Error: {error || actionError}</div>
+        ) : (
         <Card className="overflow-hidden">
           <TooltipProvider>
             <Table>
@@ -158,8 +136,7 @@ export default function TasksPage() {
                 <TableRow>
                     <TableHead>Título</TableHead>
                     <TableHead>Descripción</TableHead>
-                    <TableHead>Empleados Cualificados</TableHead>
-                    <TableHead className="text-center">Duración</TableHead>
+                    <TableHead>Duración</TableHead>
                     <TableHead className="text-center">Requiere Conducir</TableHead>
                     <TableHead>
                     <span className="sr-only">Acciones</span>
@@ -167,44 +144,10 @@ export default function TasksPage() {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {filteredTasks.map((task) => {
-                    const qualifiedEmployees = task.qualifiedEmployeeIds?.map(id => employees.find(e => e.id === id)).filter(Boolean) as typeof employees;
-                    
-                    return (
-                        <TableRow key={task.id}>
+                {filteredTasks.map((task) => (
+                    <TableRow key={task.id}>
                         <TableCell className="font-medium">{task.title}</TableCell>
                         <TableCell className="max-w-xs truncate text-muted-foreground">{task.description}</TableCell>
-                        <TableCell>
-                            <div className="flex items-center -space-x-2">
-                            {qualifiedEmployees && qualifiedEmployees.length > 0 ? qualifiedEmployees?.slice(0, 3).map(emp => (
-                                <Tooltip key={emp.id}>
-                                <TooltipTrigger asChild>
-                                    <Avatar className="h-6 w-6 border-2 border-card">
-                                    <AvatarImage src={emp.avatarUrl} alt={emp.name} />
-                                    <AvatarFallback>{emp.name[0]}{emp.lastName[0]}</AvatarFallback>
-                                    </Avatar>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {emp.name} {emp.lastName}
-                                </TooltipContent>
-                                </Tooltip>
-                            )) : (
-                                <span className="text-xs text-muted-foreground italic">Todos</span>
-                            )}
-                            {qualifiedEmployees && qualifiedEmployees.length > 3 && (
-                                <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground">
-                                    +{qualifiedEmployees.length - 3}
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {qualifiedEmployees.slice(3).map(e => `${e.name} ${e.lastName}`).join(', ')}
-                                </TooltipContent>
-                                </Tooltip>
-                            )}
-                            </div>
-                        </TableCell>
                         <TableCell className="text-center">{task.duration} min</TableCell>
                         <TableCell className="text-center">
                             {task.requiresDriving && (
@@ -247,13 +190,13 @@ export default function TasksPage() {
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
-                        </TableRow>
-                    )
-                })}
+                    </TableRow>
+                ))}
                 </TableBody>
             </Table>
           </TooltipProvider>
         </Card>
+        )}
       </div>
     </AppLayout>
   )
