@@ -42,17 +42,20 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  Checkbox
+  Checkbox,
+  DropdownMenuItem
 } from "@/components/ui"
 import { PlusCircle, Car, ChevronDown, Trash2 } from "lucide-react"
-import { employees, Task, Assignment, Client, TaskExtra, AssignmentStatus } from "@/lib/data"
+import { Task, Assignment, Client, TaskExtra, AssignmentStatus } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
 import { ClientDialog } from "@/components/client-dialog"
+import { useAssignments } from '@/hooks/use-assignments';
+import { useEmployees } from '@/hooks/use-employees';
+import { useTasks } from '@/hooks/use-tasks';
+import { useClients } from '@/hooks/use-clients';
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
-const getEmployeeById = (id: string) => employees.find(e => e.id === id)
-const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id)
 
 const statusOptions: { value: AssignmentStatus; label: string }[] = [
     { value: 'pending', label: 'Pendiente' },
@@ -62,12 +65,22 @@ const statusOptions: { value: AssignmentStatus; label: string }[] = [
     { value: 'cancelled', label: 'Cancelada' },
 ]
 
-export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignmentToEdit, tasks, clients, onTaskCreated, onClientCreated, onDelete }: { setOpen: (open: boolean) => void; onAssignTask: (newAssignments: Assignment[]) => void; onUpdateTask: (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => void; assignmentToEdit: Assignment[] | null; tasks: Task[]; clients: Client[]; onTaskCreated: (task: Task) => void; onClientCreated: (client: Client) => void; onDelete?: () => void; }) => {
+export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete }: { setOpen: (open: boolean) => void; assignmentToEdit?: Assignment | null; onDelete?: () => void; }) => {
     const isEditMode = !!assignmentToEdit;
-    const firstAssignment = isEditMode ? assignmentToEdit[0] : null;
+    const { assignments, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
+    const { employees } = useEmployees();
+    const { tasks } = useTasks();
+    const { clients } = useClients();
+
+    // Definir getEmployeeById usando los empleados reales:
+    const getEmployeeById = (id: string) => employees.find(e => e.id === id);
+    // Definir getClientById usando los clientes reales:
+    const getClientById = (id: string) => clients.find(c => c.id === id);
+
+    const firstAssignment = isEditMode ? assignmentToEdit : null;
 
     const [selectedTaskId, setSelectedTaskId] = React.useState<string>(firstAssignment?.taskId || "");
-    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode ? assignmentToEdit.map(a => a.employeeId) : []);
+    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode && assignmentToEdit?.employeeId ? [assignmentToEdit.employeeId] : []);
     const [selectedClientId, setSelectedClientId] = React.useState<string | undefined>(firstAssignment?.clientId);
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>(firstAssignment?.boatIds || []);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>(firstAssignment?.selectedExtras || []);
@@ -92,16 +105,15 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
 
     React.useEffect(() => {
         if (isEditMode && assignmentToEdit) {
-            const first = assignmentToEdit[0];
-            setSelectedTaskId(first.taskId);
-            setSelectedEmployees(assignmentToEdit.map(a => a.employeeId));
-            setSelectedClientId(first.clientId);
-            setSelectedBoatIds(first.boatIds || []);
-            setSelectedExtras(first.selectedExtras || []);
-            setStartTime(new Date(first.startTime).toTimeString().substring(0,5));
-            setEndTime(new Date(first.endTime).toTimeString().substring(0,5));
-            setDate(formatDateForInput(new Date(first.startTime)));
-            setStatus(first.status);
+            setSelectedTaskId(assignmentToEdit.taskId);
+            setSelectedEmployees(assignmentToEdit.employeeId ? [assignmentToEdit.employeeId] : []);
+            setSelectedClientId(assignmentToEdit.clientId);
+            setSelectedBoatIds(assignmentToEdit.boatIds || []);
+            setSelectedExtras(assignmentToEdit.selectedExtras || []);
+            setStartTime(new Date(assignmentToEdit.startTime).toTimeString().substring(0,5));
+            setEndTime(new Date(assignmentToEdit.endTime).toTimeString().substring(0,5));
+            setDate(formatDateForInput(new Date(assignmentToEdit.startTime)));
+            setStatus(assignmentToEdit.status);
             setIsEndTimeManual(false); // Reset on edit
         } else {
              // Reset form for new assignment
@@ -195,57 +207,74 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
         }, 0);
     }, [selectedExtras, selectedTask]);
     
-    const handleSubmit = () => {
-        if (!selectedTaskId || selectedEmployees.length === 0) {
-            alert("Por favor seleccione una tarea y al menos un empleado.");
+    const handleSubmit = async () => {
+        if (!selectedTaskId) {
+            alert("Por favor seleccione una tarea.");
             return;
         }
-
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
-        
-        const assignmentDate = new Date(date + 'T00:00:00'); 
-
+        const assignmentDate = new Date(date + 'T00:00:00');
         const startDate = new Date(assignmentDate.getTime());
         startDate.setHours(startHour, startMinute, 0, 0);
-        
         const endDate = new Date(assignmentDate.getTime());
         endDate.setHours(endHour, endMinute, 0, 0);
-
-        const newAssignmentData = {
-            taskId: selectedTaskId,
-            startTime: startDate,
-            endTime: endDate,
-            clientId: selectedClientId,
-            boatIds: selectedBoatIds,
-            selectedExtras: selectedExtras.filter(e => e.quantity > 0),
-            status: status
-        };
-        
         if (isEditMode && assignmentToEdit) {
-            onUpdateTask(assignmentToEdit, newAssignmentData, selectedEmployees);
+            // Editar una sola asignación
+            const assignmentData = {
+                id: assignmentToEdit.id,
+                taskId: selectedTaskId,
+                employeeId: assignmentToEdit.employeeId,
+                startTime: startDate,
+                endTime: endDate,
+                clientId: selectedClientId,
+                boatIds: selectedBoatIds,
+                selectedExtras: selectedExtras.filter(e => e.quantity > 0),
+                status: status
+            };
+            console.log("Enviando a Supabase (update):", assignmentData);
+            await updateAssignment(assignmentData);
+        } else if (selectedEmployees.length === 0) {
+            // Permitir asignaciones sin empleado (no incluir employeeId)
+            const assignmentData: any = {
+                taskId: selectedTaskId,
+                startTime: startDate,
+                endTime: endDate,
+                clientId: selectedClientId,
+                boatIds: selectedBoatIds,
+                selectedExtras: selectedExtras.filter(e => e.quantity > 0),
+                status: status
+            };
+            console.log("Enviando a Supabase (sin empleado):", assignmentData);
+            await addAssignment(assignmentData);
         } else {
-            const newAssignments = selectedEmployees.map(employeeId => {
-                return {
-                    id: `a${Date.now()}${Math.random()}`,
-                    ...newAssignmentData,
-                    employeeId: employeeId
+            // Crear una asignación por cada empleado seleccionado
+            for (const employeeId of selectedEmployees) {
+                const assignmentData = {
+                    taskId: selectedTaskId,
+                    employeeId,
+                    startTime: startDate,
+                    endTime: endDate,
+                    clientId: selectedClientId,
+                    boatIds: selectedBoatIds,
+                    selectedExtras: selectedExtras.filter(e => e.quantity > 0),
+                    status: status
                 };
-            });
-            onAssignTask(newAssignments);
+                console.log("Enviando a Supabase (con empleado):", assignmentData);
+                await addAssignment(assignmentData);
+            }
         }
-
         setOpen(false);
     }
 
     const handleTaskCreated = (newTask: Task) => {
-        onTaskCreated(newTask);
+        // onTaskCreated(newTask); // This was removed from props
         setSelectedTaskId(newTask.id); 
         setIsCreateTaskOpen(false); 
     }
 
     const handleClientCreated = (newClient: Client) => {
-        onClientCreated(newClient);
+        // onClientCreated(newClient); // This was removed from props
         setSelectedClientId(newClient.id); 
         setIsCreateClientOpen(false); 
     }
@@ -254,7 +283,7 @@ export const AssignTaskDialog = ({ setOpen, onAssignTask, onUpdateTask, assignme
         ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
         : employees;
     
-    const selectedClient = selectedClientId ? getClientById(selectedClientId, clients) : null;
+    const selectedClient = selectedClientId ? getClientById(selectedClientId) : null;
     const hasExtras = selectedTask && selectedTask.extras && selectedTask.extras.length > 0;
 
     return (

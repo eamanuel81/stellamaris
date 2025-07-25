@@ -21,6 +21,7 @@ import {
 } from "@/components/ui";
 import { Assignment, Task, Client, Employee, AssignmentStatus } from "@/lib/data";
 import { Clock, User, Ship, DollarSign, Edit, Users, Shield, Tag } from "lucide-react";
+import { useAssignments } from '@/hooks/use-assignments';
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id);
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
@@ -40,7 +41,6 @@ interface AssignmentDetailDialogProps {
     clients: Client[];
     employees: Employee[];
     onEdit: () => void;
-    onStatusChange: (newStatus: AssignmentStatus) => void;
     setOpen: (open: boolean) => void;
 }
 
@@ -50,13 +50,16 @@ export const AssignmentDetailDialog = ({
     clients,
     employees,
     onEdit,
-    onStatusChange,
     setOpen
 }: AssignmentDetailDialogProps) => {
-
+    const { updateAssignment, refetch } = useAssignments();
     if (!assignmentGroup || assignmentGroup.length === 0) return null;
-
     const firstAssignment = assignmentGroup[0];
+    const [localStatus, setLocalStatus] = React.useState(firstAssignment.status);
+    React.useEffect(() => {
+        setLocalStatus(firstAssignment.status);
+    }, [firstAssignment.status]);
+
     const task = getTaskById(firstAssignment.taskId, tasks);
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
@@ -75,6 +78,13 @@ export const AssignmentDetailDialog = ({
     const endTime = new Date(firstAssignment.endTime);
     const duration = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
+    const handleStatusChange = async (newStatus: AssignmentStatus) => {
+        setLocalStatus(newStatus);
+        await updateAssignment({ ...firstAssignment, status: newStatus });
+        await refetch();
+        setOpen(false);
+    };
+
     return (
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -88,7 +98,7 @@ export const AssignmentDetailDialog = ({
                          <Tag className="h-4 w-4 shrink-0" />
                          <span>Estado</span>
                     </div>
-                     <Select value={firstAssignment.status} onValueChange={onStatusChange}>
+                     <Select value={localStatus} onValueChange={handleStatusChange}>
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Cambiar estado" />
                         </SelectTrigger>
@@ -215,7 +225,7 @@ export const AssignmentDetailDialog = ({
 
             <DialogFooter className="justify-end pt-4 border-t">
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setOpen(false)}>Cerrar</Button>
+                    <Button variant="outline" onClick={async () => { await refetch(); setOpen(false); }}>Cerrar</Button>
                     <Button onClick={onEdit}>
                         <Edit className="mr-2 h-4 w-4" />
                         Editar
