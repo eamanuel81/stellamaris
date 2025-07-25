@@ -63,5 +63,5 @@ export function useClients() {
     return { error };
   };
 
-  return { clients, isLoading, error, addClient, updateClient, deleteClient };
+  return { clients, isLoading, error, addClient, updateClient, deleteClient, refetch: fetchClients };
 } 

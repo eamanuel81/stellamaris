@@ -70,7 +70,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const { assignments, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
     const { employees } = useEmployees();
     const { tasks } = useTasks();
-    const { clients } = useClients();
+    const { clients, refetch: refetchClients } = useClients();
 
     // Definir getEmployeeById usando los empleados reales:
     const getEmployeeById = (id: string) => employees.find(e => e.id === id);
@@ -278,8 +278,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         setIsCreateTaskOpen(false); 
     }
 
-    const handleClientCreated = (newClient: Client) => {
-        // onClientCreated(newClient); // This was removed from props
+    const handleClientCreated = async (newClient: Client) => {
+        await refetchClients();
         setSelectedClientId(newClient.id); 
         setIsCreateClientOpen(false); 
     }

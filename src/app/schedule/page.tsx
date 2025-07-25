@@ -39,17 +39,9 @@ const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: strin
 
 
 const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
-    const grouped = new Map<string, Assignment[]>();
-
-    assignmentsToGroup.forEach(assignment => {
-        const key = `${assignment.taskId}-${assignment.startTime.getTime()}`;
-        if (!grouped.has(key)) {
-            grouped.set(key, []);
-        }
-        grouped.get(key)!.push(assignment);
-    });
-    
-    return Array.from(grouped.values());
+    // Cambio: cada asignación individual será un grupo separado
+    // Esto asegura que todas las tareas sean visibles, incluso las que están en el mismo horario
+    return assignmentsToGroup.map(assignment => [assignment]);
 }
 
 const processOverlaps = (groupedAssignments: Assignment[][]) => {
@@ -152,12 +144,10 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
                     <span>{boats.map(b => b.name).join(', ')}</span>
                 </div>
             )}
-            {assignedEmployees.length > 0 && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4 shrink-0" />
-                    <span>{assignedEmployees.map(e => e.name).join(', ')}</span>
-                </div>
-            )}
+            <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4 shrink-0" />
+                <span>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</span>
+            </div>
             {extrasTotal > 0 && (
                  <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
                     <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
@@ -257,7 +247,7 @@ const DayView = ({ assignments, tasks, clients, employees, onTaskClick }: { assi
                                                 <div className="text-xs opacity-80 pl-5 space-y-0.5">
                                                     <div className="flex items-center gap-1.5 truncate">
                                                         <Users className="h-3 w-3 shrink-0" />
-                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
                                                     </div>
                                                     {client && (
                                                         <div className="flex items-center gap-1.5 truncate">
@@ -397,7 +387,7 @@ const WeekView = ({ assignments, tasks, clients, employees, onTaskClick }: { ass
                                                                 <div className="text-xs opacity-80 pl-5 space-y-0.5">
                                                                     <div className="flex items-center gap-1.5 truncate">
                                                                         <Users className="h-3 w-3 shrink-0" />
-                                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
                                                                     </div>
                                                                     {client && (
                                                                         <div className="flex items-center gap-1.5 truncate">

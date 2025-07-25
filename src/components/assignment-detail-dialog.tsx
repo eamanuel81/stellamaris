@@ -130,9 +130,13 @@ export const AssignmentDetailDialog = ({
                 <div className="grid gap-2">
                     <h4 className="font-semibold text-sm">Personal Asignado</h4>
                      <div className="flex flex-wrap gap-2">
-                        {assignedEmployees.map(emp => (
-                            <Badge key={emp.id} variant="secondary">{emp.name} {emp.lastName}</Badge>
-                        ))}
+                        {assignedEmployees.length > 0 ? (
+                            assignedEmployees.map(emp => (
+                                <Badge key={emp.id} variant="secondary">{emp.name} {emp.lastName}</Badge>
+                            ))
+                        ) : (
+                            <Badge variant="outline" className="text-muted-foreground">Sin asignar</Badge>
+                        )}
                     </div>
                 </div>
 

@@ -19,6 +19,7 @@ import { PlusCircle, Trash2, Camera } from "lucide-react"
 import { Client, Boat, ResponsibleParty } from "@/lib/data"
 import Image from "next/image"
 import { supabase } from '@/lib/supabaseClient';
+import { useClients } from '@/hooks/use-clients';
 
 export const ClientDialog = ({
     open,
@@ -28,10 +29,11 @@ export const ClientDialog = ({
 }: {
     open: boolean,
     setOpen: (open: boolean) => void,
-    onSave: (client: Client) => void,
+    onSave?: (client: Client) => void,
     clientToEdit: Client | null
 }) => {
     const isEditMode = !!clientToEdit;
+    const { addClient, updateClient } = useClients();
     const [firstName, setFirstName] = React.useState('');
     const [lastName, setLastName] = React.useState('');
     const [dni, setDni] = React.useState('');
@@ -98,9 +100,13 @@ export const ClientDialog = ({
     };
 
     const handleRemovePhoto = async (boatIndex: number, photoIndex: number) => {
-        const photoObj = boats[boatIndex].photos[photoIndex];
-        if (photoObj?.path) {
-            await supabase.storage.from('stellamaris').remove([photoObj.path]);
+        const photoUrl = boats[boatIndex].photos[photoIndex];
+        // Extraer el path del URL para borrar del storage
+        if (photoUrl && photoUrl.includes('/storage/v1/object/public/stellamaris/')) {
+            const pathMatch = photoUrl.match(/stellamaris\/(.+)$/);
+            if (pathMatch) {
+                await supabase.storage.from('stellamaris').remove([pathMatch[1]]);
+            }
         }
         const newBoats = [...boats];
         newBoats[boatIndex].photos.splice(photoIndex, 1);
@@ -142,7 +148,7 @@ export const ClientDialog = ({
         if (data?.publicUrl) {
             const newBoats = [...boats];
             if (!newBoats[boatIndex].photos) newBoats[boatIndex].photos = [];
-            newBoats[boatIndex].photos.push({ url: data.publicUrl, path: filePath });
+            newBoats[boatIndex].photos.push(data.publicUrl);
             setBoats(newBoats);
             setUploadedPhotos(prev => [...prev, filePath]);
         }
@@ -157,7 +163,7 @@ export const ClientDialog = ({
         setOpen(false);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!firstName || !lastName || !email) {
             alert('Por favor complete Nombre, Apellido y Email del cliente.');
             return;
@@ -176,15 +182,46 @@ export const ClientDialog = ({
             avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://i.pravatar.cc/150?u=${Date.now()}`
         };
 
-        if (!isEditMode) {
-            // Eliminar id antes de guardar
-            const { id, ...clientDataWithoutId } = clientData;
-            onSave(clientDataWithoutId as Client);
-        } else {
-            onSave(clientData);
+        try {
+            let savedClient: Client;
+            
+            if (!isEditMode) {
+                // Eliminar id antes de guardar
+                const { id, ...clientDataWithoutId } = clientData;
+                const { data, error } = await addClient(clientDataWithoutId as Client);
+                if (error) {
+                    alert('Error al guardar el cliente: ' + error.message);
+                    return;
+                }
+                if (!data || data.length === 0) {
+                    alert('Error: No se pudo guardar el cliente');
+                    return;
+                }
+                savedClient = data[0];
+            } else {
+                const { data, error } = await updateClient(clientData);
+                if (error) {
+                    alert('Error al actualizar el cliente: ' + error.message);
+                    return;
+                }
+                if (!data || data.length === 0) {
+                    alert('Error: No se pudo actualizar el cliente');
+                    return;
+                }
+                savedClient = data[0];
+            }
+
+            // Llamar a onSave con el cliente guardado
+            if (onSave) {
+                onSave(savedClient);
+            }
+            
+            setUploadedPhotos([]);
+            setOpen(false);
+        } catch (error) {
+            alert('Error inesperado al guardar el cliente');
+            console.error(error);
         }
-        setUploadedPhotos([]);
-        setOpen(false);
     };
 
     return (
@@ -274,10 +311,10 @@ export const ClientDialog = ({
                                         </label>
                                     </div>
                                     <div className="mt-4 grid grid-cols-3 gap-4">
-                                        {boat.photos?.map((photo: any, photoIndex: any) => (
+                                        {boat.photos?.map((photo: string, photoIndex: number) => (
                                             <div key={photoIndex} className="relative group">
                                                 <Image
-                                                    src={photo.url}
+                                                    src={photo}
                                                     alt={`Foto de la embarcación ${photoIndex + 1}`}
                                                     width={200}
                                                     height={150}
