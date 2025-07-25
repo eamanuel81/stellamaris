@@ -90,6 +90,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
     const [isCreateClientOpen, setIsCreateClientOpen] = React.useState(false);
     const [isEndTimeManual, setIsEndTimeManual] = React.useState(false);
+    const [timeConflictWarning, setTimeConflictWarning] = React.useState<string>('');
     
     const formatDateForInput = (date: Date) => {
         const d = new Date(date);
@@ -207,6 +208,81 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         }, 0);
     }, [selectedExtras, selectedTask]);
     
+    // Verificar conflictos en tiempo real
+    const checkRealTimeConflicts = () => {
+        if (selectedEmployees.length === 0 || !startTime || !endTime || !date) {
+            setTimeConflictWarning('');
+            return;
+        }
+        
+        const [startHour, startMinute] = startTime.split(':').map(Number);
+        const [endHour, endMinute] = endTime.split(':').map(Number);
+        const assignmentDate = new Date(date + 'T00:00:00');
+        const startDate = new Date(assignmentDate.getTime());
+        startDate.setHours(startHour, startMinute, 0, 0);
+        const endDate = new Date(assignmentDate.getTime());
+        endDate.setHours(endHour, endMinute, 0, 0);
+        
+        const conflicts: string[] = [];
+        
+        for (const employeeId of selectedEmployees) {
+            const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, isEditMode && assignmentToEdit ? assignmentToEdit.id : undefined);
+            if (hasConflict) {
+                const employee = getEmployeeById(employeeId);
+                const conflictDetails = conflictingAssignments.map(a => {
+                    const task = getTaskById(a.taskId, tasks);
+                    return `${task?.title || 'Tarea'} (${new Date(a.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                }).join(', ');
+                conflicts.push(`${employee?.name} ${employee?.lastName}: ${conflictDetails}`);
+            }
+        }
+        
+        if (conflicts.length > 0) {
+            setTimeConflictWarning(`⚠️ Conflictos detectados:\n${conflicts.join('\n')}`);
+        } else {
+            setTimeConflictWarning('');
+        }
+    };
+    
+    // Verificar conflictos cuando cambien los horarios o empleados
+    React.useEffect(() => {
+        checkRealTimeConflicts();
+    }, [selectedEmployees, startTime, endTime, date, assignments]);
+    
+    // Función para validar conflictos de horarios
+    const checkTimeConflicts = (employeeId: string, startDate: Date, endDate: Date, excludeAssignmentId?: string): { hasConflict: boolean; conflictingAssignments: Assignment[] } => {
+        const conflictingAssignments = assignments.filter(assignment => {
+            // Excluir la asignación actual si estamos editando
+            if (excludeAssignmentId && assignment.id === excludeAssignmentId) {
+                return false;
+            }
+            
+            // Solo verificar asignaciones del mismo empleado
+            if (assignment.employeeId !== employeeId) {
+                return false;
+            }
+            
+            // Verificar si hay solapamiento de horarios
+            const assignmentStart = new Date(assignment.startTime);
+            const assignmentEnd = new Date(assignment.endTime);
+            
+            // Hay conflicto si:
+            // 1. La nueva tarea empieza durante una tarea existente
+            // 2. La nueva tarea termina durante una tarea existente
+            // 3. La nueva tarea contiene completamente una tarea existente
+            return (
+                (startDate >= assignmentStart && startDate < assignmentEnd) ||
+                (endDate > assignmentStart && endDate <= assignmentEnd) ||
+                (startDate <= assignmentStart && endDate >= assignmentEnd)
+            );
+        });
+        
+        return {
+            hasConflict: conflictingAssignments.length > 0,
+            conflictingAssignments
+        };
+    };
+    
     const handleSubmit = async () => {
         if (!selectedTaskId) {
             alert("Por favor seleccione una tarea.");
@@ -232,6 +308,22 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status
             };
+            
+            // Validar conflictos para edición
+            if (assignmentToEdit.employeeId) {
+                const { hasConflict, conflictingAssignments } = checkTimeConflicts(assignmentToEdit.employeeId, startDate, endDate, assignmentToEdit.id);
+                if (hasConflict) {
+                    const employee = getEmployeeById(assignmentToEdit.employeeId);
+                    const conflictDetails = conflictingAssignments.map(a => {
+                        const task = getTaskById(a.taskId, tasks);
+                        return `• ${task?.title || 'Tarea'} (${new Date(a.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                    }).join('\n');
+                    
+                    alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede guardar la edición.`);
+                    return;
+                }
+            }
+            
             console.log("Enviando a Supabase (update):", assignmentData);
             if (onSave) {
                 await onSave(assignmentData);
@@ -255,6 +347,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         } else {
             // Crear una asignación por cada empleado seleccionado
             for (const employeeId of selectedEmployees) {
+                const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
+                if (hasConflict) {
+                    const employee = getEmployeeById(employeeId);
+                    const conflictDetails = conflictingAssignments.map(a => {
+                        const task = getTaskById(a.taskId, tasks);
+                        return `• ${task?.title || 'Tarea'} (${new Date(a.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                    }).join('\n');
+                    
+                    alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede asignar esta tarea.`);
+                    return; // Salir del bucle si hay un conflicto
+                }
                 const assignmentData = {
                     taskId: selectedTaskId,
                     employeeId,
@@ -477,6 +580,16 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                                 Editar hora de fin manualmente
                             </Label>
                         </div>
+                        
+                        {/* Advertencia de conflictos de horario */}
+                        {timeConflictWarning && (
+                            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                                <p className="text-sm text-yellow-800 whitespace-pre-line">
+                                    {timeConflictWarning}
+                                </p>
+                            </div>
+                        )}
+                        
                         <div className="grid gap-2">
                             <Label htmlFor="status">Estado</Label>
                             <Select value={status} onValueChange={(value: AssignmentStatus) => setStatus(value)}>
