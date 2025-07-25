@@ -65,7 +65,9 @@ export const AssignmentDetailDialog = ({
     const task = getTaskById(firstAssignment.taskId, tasks);
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-    const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId, employees)).filter(Boolean) as Employee[];
+    const assignedEmployees = assignmentGroup.flatMap(a => 
+        a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+    ) as Employee[];
 
     const calculateExtrasTotal = () => {
         if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;

@@ -27,14 +27,29 @@ export function useAssignments() {
   // Crear asignación
   const addAssignment = async (assignment: Omit<Assignment, 'id'>) => {
     setIsLoading(true);
+    console.log('Enviando assignment a Supabase:', assignment);
+    
+    // Asegurar que employeeId sea un array válido
+    if (assignment.employeeId && !Array.isArray(assignment.employeeId)) {
+      console.error('employeeId debe ser un array:', assignment.employeeId);
+      setError('employeeId debe ser un array');
+      setIsLoading(false);
+      return { data: null, error: new Error('employeeId debe ser un array') };
+    }
+    
     const { data, error } = await supabase.from('assignments').insert([assignment]).select();
-    console.log('Respuesta Supabase:', data, error);
+    console.log('Respuesta Supabase - data:', data);
+    console.log('Respuesta Supabase - error:', error);
     if (error) {
       setError(error.message);
+      console.error('Error al crear asignación:', error);
     } else if (data && data.length > 0) {
+      console.log('Asignación creada exitosamente:', data[0]);
       setAssignments(prev => [...prev, data[0]]);
       // Refresca todas las asignaciones para asegurar sincronización
       await fetchAssignments();
+    } else {
+      console.log('No se recibieron datos de Supabase');
     }
     setIsLoading(false);
     return { data, error };

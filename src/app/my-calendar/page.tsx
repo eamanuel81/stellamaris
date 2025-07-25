@@ -449,7 +449,7 @@ export default function MyCalendarPage() {
   }
 
   // Simulate employee with ID '1' is logged in
-  const myAssignments = assignments.filter(a => a.employeeId === '1');
+  const myAssignments = assignments.filter(a => a.employeeId.includes('1'));
 
   return (
     <AppLayout>
@@ -480,7 +480,7 @@ export default function MyCalendarPage() {
                 <MyTaskDetailDialog
                     assignment={selectedAssignment}
                     task={getTaskById(selectedAssignment.taskId, tasks)!}
-                    client={selectedAssignment.clientId ? getClientById(selectedAssignment.clientId, clients) : null}
+                    client={selectedAssignment.clientId ? getClientById(selectedAssignment.clientId, clients) || null : null}
                     onStatusChange={handleStatusChange}
                     setOpen={setIsDetailOpen}
                 />

@@ -165,9 +165,10 @@ export default function TodayTasksPage() {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
 
-                        const employee = getEmployeeById(assignment.employeeId, employees);
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                         const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
+                        const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
                         
                         return (
@@ -289,9 +290,10 @@ export default function TodayTasksPage() {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
 
-                        const employee = getEmployeeById(assignment.employeeId, employees);
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                         const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
+                        const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
                         
                         return (

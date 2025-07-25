@@ -80,7 +80,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const firstAssignment = isEditMode ? assignmentToEdit : null;
 
     const [selectedTaskId, setSelectedTaskId] = React.useState<string>(firstAssignment?.taskId || "");
-    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode && assignmentToEdit?.employeeId ? [assignmentToEdit.employeeId] : []);
+    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode && assignmentToEdit?.employeeId ? assignmentToEdit.employeeId : []);
     const [selectedClientId, setSelectedClientId] = React.useState<string | undefined>(firstAssignment?.clientId);
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>(firstAssignment?.boatIds || []);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>(firstAssignment?.selectedExtras || []);
@@ -107,7 +107,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     React.useEffect(() => {
         if (isEditMode && assignmentToEdit) {
             setSelectedTaskId(assignmentToEdit.taskId);
-            setSelectedEmployees(assignmentToEdit.employeeId ? [assignmentToEdit.employeeId] : []);
+            setSelectedEmployees(assignmentToEdit.employeeId || []);
             setSelectedClientId(assignmentToEdit.clientId);
             setSelectedBoatIds(assignmentToEdit.boatIds || []);
             setSelectedExtras(assignmentToEdit.selectedExtras || []);
@@ -166,7 +166,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 ? prev.filter(id => id !== employeeId)
                 : [...prev, employeeId]
         );
-    }
+    };
+
+    const handleSelectAllEmployees = () => {
+        // Si todos están seleccionados, deseleccionar todos
+        if (selectedEmployees.length === qualifiedEmployees.length) {
+            setSelectedEmployees([]);
+        } else {
+            // Si no todos están seleccionados, seleccionar todos
+            setSelectedEmployees(qualifiedEmployees.map(emp => emp.id));
+        }
+    };
 
     const handleClientSelectChange = (clientId: string) => {
         setSelectedClientId(clientId === "none" ? undefined : clientId);
@@ -231,7 +241,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 const employee = getEmployeeById(employeeId);
                 const conflictDetails = conflictingAssignments.map(a => {
                     const task = getTaskById(a.taskId, tasks);
-                    return `${task?.title || 'Tarea'} (${new Date(a.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                    const assignmentDate = new Date(a.startTime);
+                    return `${task?.title || 'Tarea'} (${assignmentDate.toLocaleDateString()} ${assignmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
                 }).join(', ');
                 conflicts.push(`${employee?.name} ${employee?.lastName}: ${conflictDetails}`);
             }
@@ -258,14 +269,24 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             }
             
             // Solo verificar asignaciones del mismo empleado
-            if (assignment.employeeId !== employeeId) {
+            if (!assignment.employeeId.includes(employeeId)) {
                 return false;
             }
             
-            // Verificar si hay solapamiento de horarios
+            // Verificar que las tareas sean del mismo día
             const assignmentStart = new Date(assignment.startTime);
             const assignmentEnd = new Date(assignment.endTime);
             
+            // Comparar solo las fechas (sin considerar la hora)
+            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const assignmentStartOnly = new Date(assignmentStart.getFullYear(), assignmentStart.getMonth(), assignmentStart.getDate());
+            
+            // Si no es el mismo día, no hay conflicto
+            if (startDateOnly.getTime() !== assignmentStartOnly.getTime()) {
+                return false;
+            }
+            
+            // Si es el mismo día, verificar si hay solapamiento de horarios
             // Hay conflicto si:
             // 1. La nueva tarea empieza durante una tarea existente
             // 2. La nueva tarea termina durante una tarea existente
@@ -295,12 +316,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         startDate.setHours(startHour, startMinute, 0, 0);
         const endDate = new Date(assignmentDate.getTime());
         endDate.setHours(endHour, endMinute, 0, 0);
+        
+        console.log("Fecha seleccionada:", date);
+        console.log("Horario:", startTime, "-", endTime);
+        console.log("Empleados seleccionados:", selectedEmployees);
+        
         if (isEditMode && assignmentToEdit) {
             // Editar una sola asignación
             const assignmentData = {
                 id: assignmentToEdit.id,
                 taskId: selectedTaskId,
-                employeeId: assignmentToEdit.employeeId,
+                employeeId: selectedEmployees.slice(), // Usar los empleados seleccionados actualmente
                 startTime: startDate,
                 endTime: endDate,
                 clientId: selectedClientId,
@@ -310,17 +336,21 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             };
             
             // Validar conflictos para edición
-            if (assignmentToEdit.employeeId) {
-                const { hasConflict, conflictingAssignments } = checkTimeConflicts(assignmentToEdit.employeeId, startDate, endDate, assignmentToEdit.id);
-                if (hasConflict) {
-                    const employee = getEmployeeById(assignmentToEdit.employeeId);
-                    const conflictDetails = conflictingAssignments.map(a => {
-                        const task = getTaskById(a.taskId, tasks);
-                        return `• ${task?.title || 'Tarea'} (${new Date(a.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
-                    }).join('\n');
-                    
-                    alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede guardar la edición.`);
-                    return;
+            if (selectedEmployees && selectedEmployees.length > 0) {
+                // Verificar conflictos para cada empleado seleccionado actualmente
+                for (const employeeId of selectedEmployees) {
+                    const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, assignmentToEdit.id);
+                    if (hasConflict) {
+                        const employee = getEmployeeById(employeeId);
+                        const conflictDetails = conflictingAssignments.map(a => {
+                            const task = getTaskById(a.taskId, tasks);
+                            const assignmentDate = new Date(a.startTime);
+                            return `• ${task?.title || 'Tarea'} (${assignmentDate.toLocaleDateString()} ${assignmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                        }).join('\n');
+                        
+                        alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede guardar la edición.`);
+                        return;
+                    }
                 }
             }
             
@@ -343,37 +373,61 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 status: status
             };
             console.log("Enviando a Supabase (sin empleado):", assignmentData);
-            await addAssignment(assignmentData);
+            if (onSave) {
+                await onSave(assignmentData);
+            } else {
+                await addAssignment(assignmentData);
+                setOpen(false);
+            }
         } else {
-            // Crear una asignación por cada empleado seleccionado
+            // Crear una sola asignación con múltiples empleados
+            // Verificar conflictos para todos los empleados seleccionados
+            console.log("Verificando conflictos para empleados:", selectedEmployees);
             for (const employeeId of selectedEmployees) {
                 const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
+                console.log(`Empleado ${employeeId}: hasConflict = ${hasConflict}, conflicts = ${conflictingAssignments.length}`);
                 if (hasConflict) {
                     const employee = getEmployeeById(employeeId);
                     const conflictDetails = conflictingAssignments.map(a => {
                         const task = getTaskById(a.taskId, tasks);
-                        return `• ${task?.title || 'Tarea'} (${new Date(a.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+                        const assignmentDate = new Date(a.startTime);
+                        return `• ${task?.title || 'Tarea'} (${assignmentDate.toLocaleDateString()} ${assignmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
                     }).join('\n');
                     
                     alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede asignar esta tarea.`);
-                    return; // Salir del bucle si hay un conflicto
+                    return; // Salir si hay un conflicto
                 }
-                const assignmentData = {
-                    taskId: selectedTaskId,
-                    employeeId,
-                    startTime: startDate,
-                    endTime: endDate,
-                    clientId: selectedClientId,
-                    boatIds: selectedBoatIds,
-                    selectedExtras: selectedExtras.filter(e => e.quantity > 0),
-                    status: status
-                };
-                console.log("Enviando a Supabase (con empleado):", assignmentData);
-                await addAssignment(assignmentData);
+            }
+            
+            // Si no hay conflictos, crear una sola asignación con todos los empleados
+            const assignmentData = {
+                taskId: selectedTaskId,
+                employeeId: selectedEmployees.slice(), // Crear una copia del array para evitar referencias
+                startTime: startDate,
+                endTime: endDate,
+                clientId: selectedClientId,
+                boatIds: selectedBoatIds,
+                selectedExtras: selectedExtras.filter(e => e.quantity > 0),
+                status: status
+            };
+            console.log("Enviando a Supabase (múltiples empleados):", assignmentData);
+            console.log("employeeId type:", typeof assignmentData.employeeId);
+            console.log("employeeId is array:", Array.isArray(assignmentData.employeeId));
+            console.log("employeeId length:", assignmentData.employeeId.length);
+            console.log("employeeId content:", JSON.stringify(assignmentData.employeeId));
+            if (onSave) {
+                await onSave(assignmentData);
+            } else {
+                const result = await addAssignment(assignmentData);
+                if (result.data && !result.error) {
+                    // Esperar un poco para que se complete el refresh
+                    setTimeout(() => {
+                        setOpen(false);
+                    }, 500);
+                }
             }
         }
-        setOpen(false);
-    }
+    };
 
     const handleTaskCreated = (newTask: Task) => {
         // onTaskCreated(newTask); // This was removed from props
@@ -530,6 +584,20 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                                 <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                                     <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
+                                     {qualifiedEmployees.length > 0 ? (
+                                        <>
+                                            <DropdownMenuCheckboxItem
+                                                checked={selectedEmployees.length === qualifiedEmployees.length && qualifiedEmployees.length > 0}
+                                                onSelect={(e) => e.preventDefault()}
+                                                onCheckedChange={handleSelectAllEmployees}
+                                            >
+                                                {selectedEmployees.length === qualifiedEmployees.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                            </DropdownMenuCheckboxItem>
+                                            <DropdownMenuSeparator />
+                                        </>
+                                    ) : (
+                                        <DropdownMenuItem disabled>No hay empleados cualificados para esta tarea.</DropdownMenuItem>
+                                    )}
                                      {qualifiedEmployees.length > 0 ? qualifiedEmployees.map(emp => (
                                         <DropdownMenuCheckboxItem
                                             key={emp.id}

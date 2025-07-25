@@ -32,8 +32,12 @@ import {
   Sheet,
   SheetTrigger,
 } from "@/components/ui"
-import { assignments as initialAssignments, employees, tasks as initialTasks, clients as initialClients, Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
+import { Assignment, AssignmentStatus, Task, Client, Employee } from "@/lib/data"
 import { TodayTasksSheet } from "@/components/today-tasks-sheet"
+import { useAssignments } from '@/hooks/use-assignments';
+import { useTasks } from '@/hooks/use-tasks';
+import { useClients } from '@/hooks/use-clients';
+import { useEmployees } from '@/hooks/use-employees';
 
 const chartData = [
   { name: "Juan P.", hours: 45 },
@@ -43,7 +47,7 @@ const chartData = [
 ]
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
-const getEmployeeById = (id: string) => employees.find(e => e.id === id)
+const getEmployeeById = (id: string, employees: Employee[]) => employees.find(e => e.id === id)
 
 type StatusConfig = { text: string; variant: "default" | "secondary" | "destructive" | "outline" };
 
@@ -56,56 +60,27 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 }
 
 export default function DashboardPage() {
-  const [assignments, setAssignments] = React.useState<Assignment[]>([]);
-  const [tasks, setTasks] = React.useState<Task[]>([]);
-  const [clients, setClients] = React.useState<Client[]>([]);
-
-  React.useEffect(() => {
-        const loadData = () => {
-             try {
-                const savedAssignments = localStorage.getItem('assignments');
-                if (savedAssignments) {
-                    const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                        if (key === 'startTime' || key === 'endTime') {
-                            return new Date(value);
-                        }
-                        return value;
-                    });
-                    setAssignments(parsedAssignments);
-                } else {
-                    setAssignments(initialAssignments);
-                }
-
-                const savedTasks = localStorage.getItem('tasks');
-                setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
-
-                const savedClients = localStorage.getItem('clients');
-                setClients(savedClients ? JSON.parse(savedClients) : initialClients);
-
-            } catch (error) {
-                console.error("Failed to load data from localStorage", error);
-                setAssignments(initialAssignments);
-                setTasks(initialTasks);
-                setClients(initialClients);
-            }
-        };
-        
-        loadData();
-        window.addEventListener('storage', loadData);
-        return () => window.removeEventListener('storage', loadData);
-  }, []);
-
+  const { assignments } = useAssignments();
+  const { tasks } = useTasks();
+  const { clients } = useClients();
+  const { employees } = useEmployees();
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const todayAssignments = assignments.filter(a => {
+  const assignmentsWithDates = assignments.map(a => ({
+    ...a,
+    startTime: new Date(a.startTime),
+    endTime: new Date(a.endTime),
+  }));
+
+  const todayAssignments = assignmentsWithDates.filter(a => {
       const assignmentDate = new Date(a.startTime);
       assignmentDate.setHours(0, 0, 0, 0);
       return assignmentDate.getTime() === today.getTime();
   }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-  const getTaskById = (id: string) => tasks.find(t => t.id === id)
+  const completedToday = todayAssignments.filter(a => a.status === 'completed').length;
 
   return (
     <AppLayout>
@@ -130,7 +105,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{todayAssignments.length}</div>
               <p className="text-xs text-muted-foreground">
-                +2% que la semana pasada
+                Tareas asignadas para hoy
               </p>
             </CardContent>
           </Card>
@@ -142,19 +117,19 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{employees.length}</div>
               <p className="text-xs text-muted-foreground">
-                4 en turno actualmente
+                Empleados registrados
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Horas Trabajadas (Mes)</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Clientes</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">195</div>
+              <div className="text-2xl font-bold">{clients.length}</div>
               <p className="text-xs text-muted-foreground">
-                +15.2% que el mes pasado
+                Clientes registrados
               </p>
             </CardContent>
           </Card>
@@ -164,7 +139,7 @@ export default function DashboardPage() {
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+5</div>
+              <div className="text-2xl font-bold">{completedToday}</div>
               <p className="text-xs text-muted-foreground">
                 Tareas completadas hoy
               </p>
@@ -210,13 +185,15 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assignments.slice(0, 5).map((assignment) => {
-                    const task = getTaskById(assignment.taskId);
-                    const employee = getEmployeeById(assignment.employeeId);
+                  {assignmentsWithDates.slice(0, 5).map((assignment) => {
+                    const task = getTaskById(assignment.taskId, tasks);
+                    const employee = assignment.employeeId && assignment.employeeId.length > 0 
+                      ? getEmployeeById(assignment.employeeId[0], employees) 
+                      : null;
                     return (
                       <TableRow key={assignment.id}>
-                        <TableCell className="font-medium">{task?.title}</TableCell>
-                        <TableCell>{employee?.name}</TableCell>
+                        <TableCell className="font-medium">{task?.title || 'Tarea no encontrada'}</TableCell>
+                        <TableCell>{employee ? `${employee.name} ${employee.lastName}` : 'Sin asignar'}</TableCell>
                         <TableCell>
                            <Badge variant={statusMap[assignment.status]?.variant || 'outline'}>
                             {statusMap[assignment.status]?.text || 'Desconocido'}

@@ -185,7 +185,7 @@ export default function MyTasksPage() {
     }, []);
 
   // Simulating employee with ID '1' (Juan Perez) is logged in
-  const myAssignments = assignments.filter(a => a.employeeId === '1'); 
+  const myAssignments = assignments.filter(a => a.employeeId.includes('1')); 
 
   const updateAssignmentStatus = (assignmentId: string, newStatus: AssignmentStatus) => {
     const updatedAssignments = assignments.map(a => 
@@ -275,7 +275,7 @@ export default function MyTasksPage() {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-                        return <TaskCard key={assignment.id} assignment={assignment} task={task} client={client} updateAssignmentStatus={updateAssignmentStatus} />
+                        return <TaskCard key={assignment.id} assignment={assignment} task={task} client={client || null} updateAssignmentStatus={updateAssignmentStatus} />
                     })}
                 </div>
                 {activeAssignments.length === 0 && (
@@ -288,7 +288,7 @@ export default function MyTasksPage() {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-                        return <TaskCard key={assignment.id} assignment={assignment} task={task} client={client} updateAssignmentStatus={updateAssignmentStatus} />
+                        return <TaskCard key={assignment.id} assignment={assignment} task={task} client={client || null} updateAssignmentStatus={updateAssignmentStatus} />
                     })}
                 </div>
                  {completedAssignments.length === 0 && (

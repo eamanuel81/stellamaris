@@ -110,7 +110,9 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
     const task = getTaskById(firstAssignment.taskId, tasks);
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-    const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId, employees)).filter(Boolean) as Employee[];
+    const assignedEmployees = assignmentGroup.flatMap(a => 
+        a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+    ) as Employee[];
     const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
 
     const calculateExtrasTotal = () => {
@@ -214,7 +216,9 @@ const DayView = ({ assignments, tasks, clients, employees, onTaskClick }: { assi
 
                             const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
                             const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId, employees)).filter(Boolean) as (typeof employees[0])[];
+                            const assignedEmployees = assignmentGroup.flatMap(a => 
+                                a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+                            ) as Employee[];
                             const top = getTaskPosition(firstAssignment.startTime);
                             const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
 
@@ -351,7 +355,9 @@ const WeekView = ({ assignments, tasks, clients, employees, onTaskClick }: { ass
 
                                             const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
                                             const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId, employees)).filter(Boolean) as (typeof employees[0])[];
+                                            const assignedEmployees = assignmentGroup.flatMap(a => 
+                                                a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+                                            ) as Employee[];
                                             const startTime = new Date(firstAssignment.startTime);
                                             const endTime = new Date(firstAssignment.endTime);
 
@@ -427,7 +433,7 @@ export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
-  const { assignments, updateAssignment, refetch } = useAssignments();
+  const { assignments, addAssignment, updateAssignment, deleteAssignment, refetch } = useAssignments();
   const { tasks } = useTasks();
   const { clients } = useClients();
   const { employees } = useEmployees();
@@ -449,9 +455,12 @@ export default function SchedulePage() {
     setSelectedAssignmentGroup(null);
 }
 
-  const handleDeleteAssignment = (assignmentsToDelete: Assignment[]) => {
-      // This function is now handled by the hook, so we just update the state
-      // The actual deletion will happen via the hook's mutation
+  const handleDeleteAssignment = async (assignmentsToDelete: Assignment[]) => {
+      // Eliminar cada asignación del grupo
+      for (const assignment of assignmentsToDelete) {
+          await deleteAssignment(assignment.id);
+      }
+      await refetch();
       setSelectedAssignmentGroup(null);
   }
 
@@ -482,9 +491,9 @@ export default function SchedulePage() {
     // The actual saving/updating will happen via the hook's mutation
   }
 
-  const onDeleteInEdit = () => {
+  const onDeleteInEdit = async () => {
     if (selectedAssignmentGroup) {
-      handleDeleteAssignment(selectedAssignmentGroup);
+      await handleDeleteAssignment(selectedAssignmentGroup);
     }
     handleCloseDialogs();
   }
@@ -517,7 +526,19 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialog setOpen={setIsCreateOpen} assignmentToEdit={null} />
+            <AssignTaskDialog setOpen={setIsCreateOpen} assignmentToEdit={null} onSave={async (assignmentData) => {
+                // Asegurar que employeeId sea un array
+                const assignmentToCreate = {
+                    ...assignmentData,
+                    employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                };
+                await addAssignment(assignmentToCreate);
+                await refetch();
+                // Cerrar el modal después del refresh
+                setTimeout(() => {
+                    setIsCreateOpen(false);
+                }, 500);
+            }} />
         </Dialog>
         </header>
 
@@ -534,9 +555,17 @@ export default function SchedulePage() {
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
             <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} onDelete={onDeleteInEdit} onSave={async (assignmentData) => {
-                await updateAssignment(assignmentData);
+                // Asegurar que employeeId sea un array
+                const assignmentToUpdate = {
+                    ...assignmentData,
+                    employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                };
+                await updateAssignment(assignmentToUpdate);
                 await refetch();
-                // No cierres el modal automáticamente
+                // Cerrar el modal después del refresh
+                setTimeout(() => {
+                    setIsEditOpen(false);
+                }, 500);
             }} />
         </Dialog>
 
