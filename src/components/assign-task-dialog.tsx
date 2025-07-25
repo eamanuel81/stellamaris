@@ -317,9 +317,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         const endDate = new Date(assignmentDate.getTime());
         endDate.setHours(endHour, endMinute, 0, 0);
         
-        console.log("Fecha seleccionada:", date);
-        console.log("Horario:", startTime, "-", endTime);
-        console.log("Empleados seleccionados:", selectedEmployees);
+
         
         if (isEditMode && assignmentToEdit) {
             // Editar una sola asignación
@@ -354,7 +352,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 }
             }
             
-            console.log("Enviando a Supabase (update):", assignmentData);
+
             if (onSave) {
                 await onSave(assignmentData);
             } else {
@@ -372,7 +370,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status
             };
-            console.log("Enviando a Supabase (sin empleado):", assignmentData);
+
             if (onSave) {
                 await onSave(assignmentData);
             } else {
@@ -382,10 +380,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         } else {
             // Crear una sola asignación con múltiples empleados
             // Verificar conflictos para todos los empleados seleccionados
-            console.log("Verificando conflictos para empleados:", selectedEmployees);
             for (const employeeId of selectedEmployees) {
                 const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
-                console.log(`Empleado ${employeeId}: hasConflict = ${hasConflict}, conflicts = ${conflictingAssignments.length}`);
                 if (hasConflict) {
                     const employee = getEmployeeById(employeeId);
                     const conflictDetails = conflictingAssignments.map(a => {
@@ -410,11 +406,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status
             };
-            console.log("Enviando a Supabase (múltiples empleados):", assignmentData);
-            console.log("employeeId type:", typeof assignmentData.employeeId);
-            console.log("employeeId is array:", Array.isArray(assignmentData.employeeId));
-            console.log("employeeId length:", assignmentData.employeeId.length);
-            console.log("employeeId content:", JSON.stringify(assignmentData.employeeId));
+
             if (onSave) {
                 await onSave(assignmentData);
             } else {
