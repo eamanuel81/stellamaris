@@ -437,7 +437,7 @@ export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
-  const { assignments } = useAssignments();
+  const { assignments, updateAssignment, refetch } = useAssignments();
   const { tasks } = useTasks();
   const { clients } = useClients();
   const { employees } = useEmployees();
@@ -543,7 +543,11 @@ export default function SchedulePage() {
         </div>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} onDelete={onDeleteInEdit} />
+            <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} onDelete={onDeleteInEdit} onSave={async (assignmentData) => {
+                await updateAssignment(assignmentData);
+                await refetch();
+                // No cierres el modal automáticamente
+            }} />
         </Dialog>
 
         <Dialog open={isDetailOpen} onOpenChange={open => open ? setIsDetailOpen(true) : handleCloseDialogs()}>
@@ -555,6 +559,23 @@ export default function SchedulePage() {
                     employees={employees}
                     onEdit={handleOpenEdit}
                     setOpen={handleCloseDialogs}
+                    onStatusChange={async (newStatus) => {
+                      if (!selectedAssignmentGroup) return;
+                      await updateAssignment({ ...selectedAssignmentGroup[0], status: newStatus });
+                      await refetch();
+                      // No cierres el modal automáticamente
+                    }}
+                />
+            )}
+            {!selectedAssignmentGroup && (
+                <AssignmentDetailDialog
+                    assignmentGroup={[]}
+                    tasks={tasks}
+                    clients={clients}
+                    employees={employees}
+                    onEdit={handleOpenEdit}
+                    setOpen={handleCloseDialogs}
+                    onStatusChange={async () => {}}
                 />
             )}
         </Dialog>

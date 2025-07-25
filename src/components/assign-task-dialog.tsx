@@ -65,7 +65,7 @@ const statusOptions: { value: AssignmentStatus; label: string }[] = [
     { value: 'cancelled', label: 'Cancelada' },
 ]
 
-export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete }: { setOpen: (open: boolean) => void; assignmentToEdit?: Assignment | null; onDelete?: () => void; }) => {
+export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }: { setOpen: (open: boolean) => void; assignmentToEdit?: Assignment | null; onDelete?: () => void; onSave?: (assignmentData: any) => Promise<void>; }) => {
     const isEditMode = !!assignmentToEdit;
     const { assignments, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
     const { employees } = useEmployees();
@@ -233,7 +233,12 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete }: { setO
                 status: status
             };
             console.log("Enviando a Supabase (update):", assignmentData);
-            await updateAssignment(assignmentData);
+            if (onSave) {
+                await onSave(assignmentData);
+            } else {
+                await updateAssignment(assignmentData);
+                setOpen(false);
+            }
         } else if (selectedEmployees.length === 0) {
             // Permitir asignaciones sin empleado (no incluir employeeId)
             const assignmentData: any = {

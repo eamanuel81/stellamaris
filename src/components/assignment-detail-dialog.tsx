@@ -42,6 +42,7 @@ interface AssignmentDetailDialogProps {
     employees: Employee[];
     onEdit: () => void;
     setOpen: (open: boolean) => void;
+    onStatusChange: (newStatus: AssignmentStatus) => Promise<void>;
 }
 
 export const AssignmentDetailDialog = ({
@@ -50,7 +51,8 @@ export const AssignmentDetailDialog = ({
     clients,
     employees,
     onEdit,
-    setOpen
+    setOpen,
+    onStatusChange
 }: AssignmentDetailDialogProps) => {
     const { updateAssignment, refetch } = useAssignments();
     if (!assignmentGroup || assignmentGroup.length === 0) return null;
@@ -80,9 +82,7 @@ export const AssignmentDetailDialog = ({
 
     const handleStatusChange = async (newStatus: AssignmentStatus) => {
         setLocalStatus(newStatus);
-        await updateAssignment({ ...firstAssignment, status: newStatus });
-        await refetch();
-        setOpen(false);
+        await onStatusChange(newStatus);
     };
 
     return (
