@@ -11,6 +11,7 @@ export type Employee = {
   role: 'admin' | 'employee';
   avatarUrl: string;
   subrole?: 'empleado' | 'encargado' | 'admin'; // <-- Agregado 'admin'
+  auth_id?: string; // ID del usuario en Auth de Supabase
 };
 
 export type TaskExtra = {

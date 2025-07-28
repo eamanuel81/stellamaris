@@ -42,7 +42,6 @@ export const EmployeeDialog = ({
     const [phone, setPhone] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [canDrive, setCanDrive] = React.useState(false);
-    const [sendLink, setSendLink] = React.useState(false);
     const [avatarKey, setAvatarKey] = React.useState(Date.now().toString());
     const [subrole, setSubrole] = React.useState<'empleado' | 'encargado' | 'admin'>('empleado');
 
@@ -58,7 +57,6 @@ export const EmployeeDialog = ({
             setCanDrive(employeeToEdit.canDrive);
             setAvatarKey(employeeToEdit.avatarUrl);
             setSubrole(employeeToEdit.subrole || 'empleado');
-            setSendLink(false); // Don't default to sending link in edit mode
         } else {
             setName("");
             setLastName("");
@@ -70,7 +68,6 @@ export const EmployeeDialog = ({
             setCanDrive(false);
             setAvatarKey(Date.now().toString());
             setSubrole('empleado');
-            setSendLink(false);
         }
     }, [employeeToEdit, isEditMode, open]);
 
@@ -109,7 +106,7 @@ export const EmployeeDialog = ({
                 <DialogHeader>
                     <DialogTitle>{isEditMode ? "Editar Empleado" : "Agregar Nuevo Empleado"}</DialogTitle>
                     <DialogDescription>
-                       {isEditMode ? "Modifique los datos del empleado." : "Complete los datos del empleado. Se le enviará un enlace para generar su contraseña."}
+                       {isEditMode ? "Modifique los datos del empleado." : "Complete los datos del empleado. Se creará automáticamente un usuario con email y contraseña generada (Nombre + DNI)."}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
@@ -163,6 +160,14 @@ export const EmployeeDialog = ({
                             <Input id="email" type="email" placeholder="juan.perez@example.com" value={email} onChange={e => setEmail(e.target.value)} />
                         </div>
                     </div>
+                    {!isEditMode && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <p className="text-sm text-blue-800">
+                                <strong>Nota:</strong> Se creará automáticamente un usuario con este email. 
+                                La contraseña será: <strong>{name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Nombre'}{dni || 'DNI'}</strong>
+                            </p>
+                        </div>
+                    )}
                     {mySubrole === 'admin' && (
                       <div className="grid gap-2">
                         <Label htmlFor="subrole">Subrol</Label>
@@ -182,12 +187,6 @@ export const EmployeeDialog = ({
                         <Checkbox id="canDrive" checked={canDrive} onCheckedChange={(checked) => setCanDrive(Boolean(checked))} />
                         <Label htmlFor="canDrive" className="font-normal">
                             El empleado sabe conducir
-                        </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 pt-2">
-                        <Checkbox id="sendLink" checked={sendLink} onCheckedChange={(checked) => setSendLink(Boolean(checked))} />
-                        <Label htmlFor="sendLink" className="font-normal">
-                            Enviar enlace para generar nueva contraseña
                         </Label>
                     </div>
                 </div>
