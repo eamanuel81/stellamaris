@@ -2,6 +2,12 @@
 "use client"
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
+import { useAuth } from "@/components/auth-provider"
+import { useAssignments } from "@/hooks/use-assignments"
+import { useTasks } from "@/hooks/use-tasks"
+import { useClients } from "@/hooks/use-clients"
+import { useEmployees } from "@/hooks/use-employees"
+import { supabase } from "@/lib/supabaseClient"
 import {
   Badge,
   Button,
@@ -26,13 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui"
-import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
+import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
 import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, Package, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
-
 
 type StatusConfig = {
     text: string;
@@ -98,42 +103,43 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
 
                     {assignment.selectedExtras && assignment.selectedExtras.length > 0 && (
                         <div className="space-y-2 pt-4 border-t">
-                            <div className="flex items-center gap-2 font-medium text-foreground">
-                                <Package className="h-4 w-4 shrink-0" />
-                                <span>Extras Solicitados:</span>
+                            <div className="flex items-center gap-2">
+                                <Package className="h-4 w-4" />
+                                <span className="font-medium text-foreground">Extras:</span>
                             </div>
-                            <ul className="list-disc pl-11 space-y-1">
-                                {assignment.selectedExtras.map(extra => {
-                                    const extraDetails = task.extras?.find(e => e.id === extra.extraId);
-                                    return (
-                                        <li key={extra.extraId}>
-                                            {extra.quantity}x {extraDetails?.name || 'Extra desconocido'}
-                                        </li>
-                                    )
-                                })}
-                            </ul>
+                            {assignment.selectedExtras.map((extra, index) => (
+                                <div key={index} className="flex items-center gap-2 pl-6">
+                                    <span>• {typeof extra === 'string' ? extra : `${extra.quantity}x ${extra.extraId}`}</span>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
             </CardContent>
-            <CardFooter className="flex justify-between items-center">
-                <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
+            <CardFooter className="flex items-center justify-between pt-6">
+                <Badge className={cn("flex items-center gap-1", currentStatus.classes)}>
                     {currentStatus.icon}
-                    <span className="ml-1.5">{currentStatus.text}</span>
+                    {currentStatus.text}
                 </Badge>
                 <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                    Cambiar Estado
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Aceptar Tarea</DropdownMenuItem>
-                    <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Rechazar Tarea</DropdownMenuItem>
-                    <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
-                </DropdownMenuContent>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                            Cambiar Estado
+                            <ChevronDown className="ml-1 h-3 w-3" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {Object.entries(statusMap).map(([key, config]) => (
+                            <DropdownMenuItem
+                                key={key}
+                                onClick={() => updateAssignmentStatus(assignment.id, key as AssignmentStatus)}
+                                className="flex items-center gap-2"
+                            >
+                                {config.icon}
+                                {config.text}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
                 </DropdownMenu>
             </CardFooter>
         </Card>
@@ -141,162 +147,266 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
 }
 
 export default function MyTasksPage() {
-    const [assignments, setAssignments] = React.useState<Assignment[]>([]);
-    const [tasks, setTasks] = React.useState<Task[]>([]);
-    const [clients, setClients] = React.useState<Client[]>([]);
+    const { role, subrole } = useAuth();
+    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment } = useAssignments();
+    const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
+    const { clients, isLoading: clientsLoading, error: clientsError } = useClients();
+    const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
+    const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
 
-
+    // Obtener el email del usuario actual
     React.useEffect(() => {
-        const loadData = () => {
-             try {
-                const savedAssignments = localStorage.getItem('assignments');
-                if (savedAssignments) {
-                    const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                        if (key === 'startTime' || key === 'endTime') {
-                            return new Date(value);
-                        }
-                        return value;
-                    });
-                    setAssignments(parsedAssignments);
-                } else {
-                    setAssignments(initialAssignments);
+        const getUserEmail = async () => {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (user && !error && user.email) {
+                    setCurrentUserEmail(user.email);
+                    console.log('Current user email:', user.email);
                 }
-
-                const savedTasks = localStorage.getItem('tasks');
-                setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
-
-                const savedClients = localStorage.getItem('clients');
-                setClients(savedClients ? JSON.parse(savedClients) : initialClients);
-
             } catch (error) {
-                console.error("Failed to load data from localStorage", error);
-                setAssignments(initialAssignments);
-                setTasks(initialTasks);
-                setClients(initialClients);
+                console.error('Error getting user email:', error);
             }
         };
-        
-        loadData();
-        window.addEventListener('storage', loadData);
-        return () => window.removeEventListener('storage', loadData);
-
+        getUserEmail();
     }, []);
 
-  // Simulating employee with ID '1' (Juan Perez) is logged in
-  const myAssignments = assignments.filter(a => a.employeeId.includes('1')); 
+    console.log('MyTasksPage - Current user email:', currentUserEmail, 'role:', role, 'subrole:', subrole);
+    console.log('MyTasksPage - Data loaded:', {
+        assignments: assignments?.length || 0,
+        tasks: tasks?.length || 0,
+        clients: clients?.length || 0,
+        employees: employees?.length || 0
+    });
 
-  const updateAssignmentStatus = (assignmentId: string, newStatus: AssignmentStatus) => {
-    const updatedAssignments = assignments.map(a => 
-        a.id === assignmentId ? { ...a, status: newStatus } : a
-    );
-    setAssignments(updatedAssignments);
-    try {
-        localStorage.setItem('assignments', JSON.stringify(updatedAssignments));
-        window.dispatchEvent(new StorageEvent('storage', { key: 'assignments' }));
-    } catch(e) {
-        console.error("Failed to save assignments to localStorage", e);
+    // Filtrar asignaciones del empleado actual
+    const myAssignments = React.useMemo(() => {
+        if (!assignments || assignments.length === 0) return [];
+        
+        // Si es admin, mostrar todas las asignaciones
+        if (role === 'admin' || subrole === 'admin') {
+            console.log('Admin user - showing all assignments');
+            return assignments;
+        }
+        
+        // Para empleados, filtrar solo sus asignaciones
+        if (!currentUserEmail) {
+            console.log('No user email found');
+            return [];
+        }
+        
+        // Encontrar el empleado actual basado en el email
+        const currentEmployee = employees.find(emp => emp.email === currentUserEmail);
+        if (!currentEmployee) {
+            console.log('Current user not found in employees list');
+            return [];
+        }
+        
+        console.log('Current employee found:', currentEmployee.name, currentEmployee.lastName);
+        
+        // Filtrar asignaciones que incluyan al empleado actual
+        const filteredAssignments = assignments.filter(assignment => {
+            return assignment.employeeId && assignment.employeeId.includes(currentEmployee.id);
+        });
+        
+        console.log('Filtered assignments for employee:', filteredAssignments.length);
+        return filteredAssignments;
+    }, [assignments, role, subrole, currentUserEmail, employees]);
+
+    const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
+        console.log('Updating assignment status:', assignmentId, 'to', newStatus);
+        
+        try {
+            // Buscar la asignación actual
+            const currentAssignment = assignments.find(a => a.id === assignmentId);
+            if (!currentAssignment) {
+                console.error('Assignment not found:', assignmentId);
+                return;
+            }
+            
+            // Actualizar la asignación con el nuevo estado
+            const updatedAssignment = { ...currentAssignment, status: newStatus };
+            const result = await updateAssignment(updatedAssignment);
+            
+            if (result.error) {
+                console.error('Error updating assignment:', result.error);
+            } else {
+                console.log('Assignment updated successfully');
+            }
+        } catch (error) {
+            console.error('Unexpected error updating assignment:', error);
+        }
     }
-  }
   
-  const searchFilter = (assignment: Assignment) => {
-      const task = getTaskById(assignment.taskId, tasks);
-      const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-      if (!task) return false;
+    const searchFilter = (assignment: Assignment) => {
+        const task = getTaskById(assignment.taskId, tasks);
+        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+        if (!task) return false;
 
-      const searchTermLower = searchTerm.toLowerCase();
-      
-      return (
-          task.title.toLowerCase().includes(searchTermLower) ||
-          (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
-          (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
-          (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
-      );
-  };
-  
-  const activeAssignments = myAssignments
-      .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
-      .filter(searchFilter)
-      .filter(a => statusFilter === 'all' || a.status === statusFilter);
-      
-  const completedAssignments = myAssignments
-      .filter(a => a.status === 'completed')
-      .filter(searchFilter);
+        const searchTermLower = searchTerm.toLowerCase();
+        
+        return (
+            task.title.toLowerCase().includes(searchTermLower) ||
+            (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
+            (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
+            (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
+        );
+    };
+    
+    const activeAssignments = myAssignments
+        .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+        .filter(searchFilter)
+        .filter(a => statusFilter === 'all' || a.status === statusFilter);
+        
+    const completedAssignments = myAssignments
+        .filter(a => a.status === 'completed')
+        .filter(searchFilter);
 
-  const filterableStatuses = Object.entries(statusMap).filter(
-    ([key]) => key !== 'completed' && key !== 'cancelled'
-  );
+    const filterableStatuses = Object.entries(statusMap).filter(
+        ([key]) => key !== 'completed' && key !== 'cancelled'
+    );
 
-  return (
-    <AppLayout>
-      <div className="flex flex-col gap-8">
-        <header>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">
-            Mis Tareas
-          </h1>
-          <p className="text-muted-foreground">
-            Aquí están las tareas que te han sido asignadas.
-          </p>
-        </header>
+    const isLoading = assignmentsLoading || tasksLoading || clientsLoading || employeesLoading;
+    const hasError = assignmentsError || tasksError || clientsError || employeesError;
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por tarea, cliente o embarcación..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
+    if (isLoading) {
+        return (
+            <AppLayout>
+                <div className="flex h-screen w-full items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                </div>
+            </AppLayout>
+        );
+    }
+
+    if (hasError) {
+        return (
+            <AppLayout>
+                <div className="flex flex-col gap-8">
+                    <header>
+                        <h1 className="font-headline text-3xl font-bold tracking-tight">
+                            Mis Tareas
+                        </h1>
+                        <p className="text-muted-foreground">
+                            Error al cargar las tareas. Inténtalo de nuevo.
+                        </p>
+                    </header>
+                    <div className="text-center py-8">
+                        <p className="text-red-500">
+                            {assignmentsError || tasksError || clientsError}
+                        </p>
+                    </div>
+                </div>
+            </AppLayout>
+        );
+    }
+
+    return (
+        <AppLayout>
+            <div className="flex flex-col gap-8">
+                <header>
+                    <h1 className="font-headline text-3xl font-bold tracking-tight">
+                        Mis Tareas
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Aquí están las tareas que te han sido asignadas.
+                    </p>
+                </header>
+
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                                placeholder="Buscar tareas..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10"
+                            />
+                        </div>
+                        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as AssignmentStatus | "all")}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                                <SelectValue placeholder="Filtrar por estado" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos los estados</SelectItem>
+                                {filterableStatuses.map(([key, config]) => (
+                                    <SelectItem key={key} value={key}>
+                                        <div className="flex items-center gap-2">
+                                            {config.icon}
+                                            {config.text}
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <Tabs defaultValue="active" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="active">
+                                Activas ({activeAssignments.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="completed">
+                                Completadas ({completedAssignments.length})
+                            </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="active" className="space-y-4">
+                            {activeAssignments.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No hay tareas activas.
+                                </div>
+                            ) : (
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {activeAssignments.map((assignment) => {
+                                        const task = getTaskById(assignment.taskId, tasks);
+                                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                                        
+                                        if (!task) return null;
+                                        
+                                        return (
+                                            <TaskCard
+                                                key={assignment.id}
+                                                assignment={assignment}
+                                                task={task}
+                                                client={client || null}
+                                                updateAssignmentStatus={updateAssignmentStatus}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </TabsContent>
+                        <TabsContent value="completed" className="space-y-4">
+                            {completedAssignments.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No hay tareas completadas.
+                                </div>
+                            ) : (
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                    {completedAssignments.map((assignment) => {
+                                        const task = getTaskById(assignment.taskId, tasks);
+                                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                                        
+                                        if (!task) return null;
+                                        
+                                        return (
+                                            <TaskCard
+                                                key={assignment.id}
+                                                assignment={assignment}
+                                                task={task}
+                                                client={client || null}
+                                                updateAssignmentStatus={updateAssignmentStatus}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </TabsContent>
+                    </Tabs>
+                </div>
             </div>
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as AssignmentStatus | 'all')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                {filterableStatuses.map(([key, { text }]) => (
-                  <SelectItem key={key} value={key}>{text}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-        </div>
-
-
-        <Tabs defaultValue="assigned" className="w-full">
-            <TabsList>
-                <TabsTrigger value="assigned">Tareas Asignadas ({activeAssignments.length})</TabsTrigger>
-                <TabsTrigger value="completed">Tareas Terminadas ({completedAssignments.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="assigned" className="mt-4">
-                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {activeAssignments.map((assignment) => {
-                        const task = getTaskById(assignment.taskId, tasks);
-                        if (!task) return null;
-                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-                        return <TaskCard key={assignment.id} assignment={assignment} task={task} client={client || null} updateAssignmentStatus={updateAssignmentStatus} />
-                    })}
-                </div>
-                {activeAssignments.length === 0 && (
-                    <p className="text-muted-foreground text-center py-8">¡No tienes tareas asignadas!</p>
-                )}
-            </TabsContent>
-            <TabsContent value="completed" className="mt-4">
-                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {completedAssignments.map((assignment) => {
-                        const task = getTaskById(assignment.taskId, tasks);
-                        if (!task) return null;
-                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-                        return <TaskCard key={assignment.id} assignment={assignment} task={task} client={client || null} updateAssignmentStatus={updateAssignmentStatus} />
-                    })}
-                </div>
-                 {completedAssignments.length === 0 && (
-                    <p className="text-muted-foreground text-center py-8">Aún no has completado ninguna tarea hoy.</p>
-                )}
-            </TabsContent>
-        </Tabs>
-      </div>
-    </AppLayout>
-  )
+        </AppLayout>
+    )
 }

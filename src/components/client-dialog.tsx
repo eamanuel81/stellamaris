@@ -179,7 +179,7 @@ export const ClientDialog = ({
             internalNote,
             boats: boats.filter(b => b.name.trim() !== ''),
             responsibles: responsibles.filter(r => r.firstName.trim() !== '' && r.lastName.trim() !== ''),
-            avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://i.pravatar.cc/150?u=${Date.now()}`
+            avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
         };
 
         try {

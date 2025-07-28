@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/app-layout"
 import { supabase } from "@/lib/supabaseClient"
 import { useAvatar } from "@/contexts/avatar-context"
 import { changeUserPassword, validatePassword } from "@/lib/auth-utils"
+import { updateUserProfile } from "@/lib/profile-utils"
 import {
   Button,
   Card,
@@ -243,102 +244,25 @@ export default function SettingsPage() {
 
       console.log('Saving profile for user:', user.id, user.email);
       console.log('Form data:', formData);
-      console.log('Current profile:', profile);
-      console.log('Current employee:', employee);
 
-      let updateSuccess = false;
+      const result = await updateUserProfile(user.id, user.email!, formData);
 
-      // Intentar actualizar perfil en profiles (solo si existe)
-      if (profile) {
-        console.log('Updating profiles table...');
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            name: formData.name,
-            last_name: formData.lastName,
-            full_name: formData.nickname,
-          })
-          .eq('id', user.id);
-
-        if (profileError) {
-          console.error('Error updating profiles:', profileError);
-          // No lanzar error aquí, continuar con employees
-        } else {
-          console.log('Profiles updated successfully');
-          updateSuccess = true;
+      if (result.success) {
+        // Actualizar estado local con los datos actualizados
+        if (result.updatedProfile) {
+          setProfile(result.updatedProfile);
         }
-      }
-
-      // Actualizar empleado si existe
-      if (employee) {
-        console.log('Updating employees table...');
-        const { error: employeeError } = await supabase
-          .from('employees')
-          .update({
-            name: formData.name,
-            lastName: formData.lastName,
-            nickname: formData.nickname,
-            phone: formData.phone,
-            address: formData.address,
-          })
-          .eq('id', employee.id);
-
-        if (employeeError) {
-          console.error('Error updating employees:', employeeError);
-          throw employeeError;
-        } else {
-          console.log('Employees updated successfully');
-          updateSuccess = true;
+        if (result.updatedEmployee) {
+          setEmployee(result.updatedEmployee);
         }
-      }
 
-      // Si no se pudo actualizar ninguna tabla, crear entrada en profiles
-      if (!updateSuccess && !profile) {
-        console.log('Creating new profile entry...');
-        const { error: createProfileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            name: formData.name,
-            last_name: formData.lastName,
-            full_name: formData.nickname,
-            email: user.email,
-            role: 'Empleado'
-          });
-
-        if (createProfileError) {
-          console.error('Error creating profile:', createProfileError);
-          // No lanzar error aquí, al menos se actualizó employees
-        } else {
-          console.log('Profile created successfully');
-        }
-      }
-
-      // Actualizar estado local
-      if (profile) {
-        setProfile({
-          ...profile,
-          name: formData.name,
-          last_name: formData.lastName,
-          full_name: formData.nickname,
+        toast({
+          title: "Perfil actualizado",
+          description: "Tu información ha sido guardada exitosamente.",
         });
+      } else {
+        throw new Error(result.error || 'Error desconocido');
       }
-
-      if (employee) {
-        setEmployee({
-          ...employee,
-          name: formData.name,
-          lastName: formData.lastName,
-          nickname: formData.nickname,
-          phone: formData.phone,
-          address: formData.address,
-        });
-      }
-
-      toast({
-        title: "Perfil actualizado",
-        description: "Tu información ha sido guardada exitosamente.",
-      });
 
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -431,7 +355,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-6">
                <Avatar className="h-20 w-20">
-                 <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
+                                     <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarKey}`} alt="User" />
                  <AvatarFallback>{role === 'admin' ? 'A' : 'E'}</AvatarFallback>
                </Avatar>
                <div className="space-y-2">
@@ -541,7 +465,7 @@ export default function SettingsPage() {
               />
               {errors.newPassword && <p className="text-sm text-red-500">{errors.newPassword}</p>}
               <p className="text-xs text-muted-foreground">
-                La contraseña debe tener entre 6 y 128 caracteres Debe tener al menos una Mayuscula y un Numero.
+                La contraseña debe tener entre 6 y 128 caracteres.
               </p>
             </div>
             <div className="grid gap-2">

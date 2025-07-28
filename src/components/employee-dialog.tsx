@@ -92,7 +92,7 @@ export const EmployeeDialog = ({
             canDrive,
             email,
             role: isEditMode ? employeeToEdit!.role : 'employee',
-            avatarUrl: `https://i.pravatar.cc/150?u=${avatarKey}`,
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarKey}`,
             subrole,
         };
 
@@ -112,7 +112,7 @@ export const EmployeeDialog = ({
                 <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-6">
                     <div className="flex items-center gap-6">
                         <Avatar className="h-20 w-20">
-                            <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
+                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarKey}`} alt="User" />
                             <AvatarFallback>{name?.[0]}{lastName?.[0]}</AvatarFallback>
                         </Avatar>
                         <div className="space-y-2">

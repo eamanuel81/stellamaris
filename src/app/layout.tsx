@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import { AuthProvider } from '@/components/auth-provider';
 import { AvatarProvider } from '@/contexts/avatar-context';
+import { CacheCleaner } from '@/components/cache-cleaner';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AuthProvider>
           <AvatarProvider>
+            <CacheCleaner />
             {children}
             <Toaster />
           </AvatarProvider>

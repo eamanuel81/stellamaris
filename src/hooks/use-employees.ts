@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase, supabaseAdmin } from '@/lib/supabaseClient';
 import { Employee } from '@/lib/data';
 
@@ -7,22 +7,85 @@ export function useEmployees() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
+    console.log('=== FETCHING EMPLOYEES START ===');
     setIsLoading(true);
-    const { data, error } = await supabase.from('employees').select('*');
-    if (error) {
-      setError(error.message);
-      setEmployees([]);
-    } else {
-      setEmployees(data || []);
-      setError(null);
-    }
-    setIsLoading(false);
-  };
+    setError(null);
+    
+    try {
+      // Verificar si el usuario está autenticado
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('Current user for employees:', user?.id, user?.email);
+      console.log('User error:', userError);
+      
+      if (userError) {
+        console.error('Error getting user:', userError);
+        setError('Error de autenticación');
+        setEmployees([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!user) {
+        console.log('No authenticated user, skipping employees fetch');
+        setEmployees([]);
+        setIsLoading(false);
+        return;
+      }
 
+      console.log('Attempting to fetch employees from database...');
+      
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .order('name', { ascending: true });
+        
+      console.log('Employees response:', { data, error });
+      console.log('Data type:', typeof data);
+      console.log('Data length:', data?.length);
+      console.log('Error type:', typeof error);
+        
+      if (error) {
+        console.error('Error fetching employees:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        setError(`Error cargando empleados: ${error.message}`);
+        setEmployees([]);
+      } else {
+        console.log('Employees loaded from database:', data?.length || 0, 'employees');
+        console.log('Employees data:', data);
+        
+        // Verificar subroles
+        const employeesBySubrole = data?.reduce((acc, emp) => {
+          const subrole = emp.subrole || 'sin_subrole';
+          acc[subrole] = (acc[subrole] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        console.log('Employees by subrole:', employeesBySubrole);
+        
+        setEmployees(data || []);
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching employees:', err);
+      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack available');
+      setError(`Error inesperado al cargar los empleados: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      setEmployees([]);
+    } finally {
+      setIsLoading(false);
+      console.log('=== FETCHING EMPLOYEES END ===');
+    }
+  }, []);
+
+  // Recargar datos cuando el componente se monta
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [fetchEmployees]);
 
   // Función para verificar la estructura de la tabla profiles
   const checkProfilesTable = async () => {
@@ -103,22 +166,20 @@ export function useEmployees() {
 
       if (profileError) {
         console.error('Error creando perfil:', profileError);
-        console.error('Datos del perfil que fallaron:', profileData);
-        // Si falla la creación del perfil, eliminar el usuario de Auth
-        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-        setError(`Error creando perfil: ${profileError.message} - ${JSON.stringify(profileError)}`);
+        // Intentar eliminar el usuario de Auth si falla la creación del perfil
+        try {
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        } catch (deleteError) {
+          console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+        }
+        setError(`Error creando perfil: ${profileError.message}`);
         setIsLoading(false);
         return { data: null, error: profileError };
       }
 
-      console.log('Perfil creado exitosamente:', profileResult);
-
-      // 3. Crear empleado en la tabla employees
-      const employeeWithAuthId = {
-        ...employee,
-        auth_id: authData.user.id // Agregar el ID de Auth al empleado
-      };
-
+      // 3. Crear empleado en la tabla employees con el auth_id
+      const employeeWithAuthId = { ...employee, auth_id: authData.user.id };
+      
       const { data: employeeData, error: employeeError } = await supabase
         .from('employees')
         .insert([employeeWithAuthId])
@@ -126,28 +187,33 @@ export function useEmployees() {
 
       if (employeeError) {
         console.error('Error creando empleado:', employeeError);
-        // Si falla la creación del empleado, eliminar usuario y perfil
-        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-        await supabase.from('profiles').delete().eq('id', authData.user.id);
+        // Intentar limpiar: eliminar perfil y usuario de Auth
+        try {
+          await supabase.from('profiles').delete().eq('id', authData.user.id);
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        } catch (cleanupError) {
+          console.error('Error en limpieza después de fallo:', cleanupError);
+        }
         setError(`Error creando empleado: ${employeeError.message}`);
         setIsLoading(false);
         return { data: null, error: employeeError };
       }
 
       if (employeeData && employeeData.length > 0) {
-        setEmployees(prev => [...prev, employeeData[0]]);
+        console.log('Employee created successfully:', employeeData[0]);
+        setEmployees(prev => [employeeData[0], ...prev]);
         setError(null);
         setIsLoading(false);
         return { data: employeeData[0], error: null };
       }
 
     } catch (error) {
-      console.error('Error inesperado:', error);
-      setError(`Error inesperado: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      console.error('Error inesperado creando empleado:', error);
+      setError('Error inesperado al crear el empleado');
       setIsLoading(false);
-      return { data: null, error: error instanceof Error ? error : new Error('Error desconocido') };
+      return { data: null, error: new Error('Error inesperado') };
     }
-
+    
     setIsLoading(false);
     return { data: null, error: new Error('Error desconocido') };
   };
@@ -155,28 +221,70 @@ export function useEmployees() {
   // Editar empleado
   const updateEmployee = async (employee: Employee) => {
     setIsLoading(true);
-    const { data, error } = await supabase.from('employees').update(employee).eq('id', employee.id).select();
-    if (error) {
-      setError(error.message);
-    } else if (data && data.length > 0) {
-      setEmployees(prev => prev.map(e => e.id === employee.id ? data[0] : e));
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .update(employee)
+        .eq('id', employee.id)
+        .select();
+        
+      if (error) {
+        console.error('Error updating employee:', error);
+        setError(error.message);
+        return { data: null, error };
+      } else if (data && data.length > 0) {
+        console.log('Employee updated successfully:', data[0]);
+        setEmployees(prev => prev.map(e => e.id === employee.id ? data[0] : e));
+        setError(null);
+        return { data: data[0], error: null };
+      }
+    } catch (err) {
+      console.error('Unexpected error updating employee:', err);
+      setError('Error inesperado al actualizar el empleado');
+      return { data: null, error: new Error('Error inesperado') };
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    return { data, error };
+    return { data: null, error: new Error('No se pudo actualizar el empleado') };
   };
 
   // Eliminar empleado
   const deleteEmployee = async (id: string) => {
     setIsLoading(true);
-    const { error } = await supabase.from('employees').delete().eq('id', id);
-    if (error) {
-      setError(error.message);
-    } else {
-      setEmployees(prev => prev.filter(e => e.id !== id));
+    try {
+      const { error } = await supabase.from('employees').delete().eq('id', id);
+      if (error) {
+        console.error('Error deleting employee:', error);
+        setError(error.message);
+        return { error };
+      } else {
+        console.log('Employee deleted successfully:', id);
+        setEmployees(prev => prev.filter(e => e.id !== id));
+        setError(null);
+        return { error: null };
+      }
+    } catch (err) {
+      console.error('Unexpected error deleting employee:', err);
+      setError('Error inesperado al eliminar el empleado');
+      return { error: new Error('Error inesperado') };
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    return { error };
   };
 
-  return { employees, isLoading, error, addEmployee, updateEmployee, deleteEmployee };
+  // Función para recargar datos manualmente
+  const refreshEmployees = useCallback(() => {
+    console.log('Manually refreshing employees...');
+    fetchEmployees();
+  }, [fetchEmployees]);
+
+  return { 
+    employees, 
+    isLoading, 
+    error, 
+    addEmployee, 
+    updateEmployee, 
+    deleteEmployee, 
+    refreshEmployees 
+  };
 } 

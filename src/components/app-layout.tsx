@@ -157,7 +157,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-10 w-10 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={`https://i.pravatar.cc/150?u=${avatarKey}`} alt="User" />
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarKey}`} alt="User" />
                     <AvatarFallback>{role === 'admin' ? 'A' : 'E'}</AvatarFallback>
                   </Avatar>
                 </Button>

@@ -68,9 +68,26 @@ const statusOptions: { value: AssignmentStatus; label: string }[] = [
 export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }: { setOpen: (open: boolean) => void; assignmentToEdit?: Assignment | null; onDelete?: () => void; onSave?: (assignmentData: any) => Promise<void>; }) => {
     const isEditMode = !!assignmentToEdit;
     const { assignments, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
-    const { employees } = useEmployees();
-    const { tasks } = useTasks();
+    const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
+    const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
     const { clients, refetch: refetchClients } = useClients();
+
+    // Logging para debugging
+    React.useEffect(() => {
+        console.log('AssignTaskDialog - Employees data:', {
+            employees: employees?.length || 0,
+            isLoading: employeesLoading,
+            error: employeesError
+        });
+        console.log('AssignTaskDialog - Tasks data:', {
+            tasks: tasks?.length || 0,
+            isLoading: tasksLoading,
+            error: tasksError
+        });
+        console.log('AssignTaskDialog - Clients data:', {
+            clients: clients?.length || 0
+        });
+    }, [employees, employeesLoading, employeesError, tasks, tasksLoading, tasksError, clients]);
 
     // Definir getEmployeeById usando los empleados reales:
     const getEmployeeById = (id: string) => employees.find(e => e.id === id);
@@ -437,6 +454,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
         : employees;
     
+    // Logging adicional para debugging
+    console.log('AssignTaskDialog - Qualified employees:', {
+        selectedTask: selectedTask?.title,
+        qualifiedEmployeeIds: selectedTask?.qualifiedEmployeeIds,
+        totalEmployees: employees?.length || 0,
+        qualifiedEmployees: qualifiedEmployees?.length || 0,
+        employeesData: employees
+    });
+    
+
+    
     const selectedClient = selectedClientId ? getClientById(selectedClientId) : null;
     const hasExtras = selectedTask && selectedTask.extras && selectedTask.extras.length > 0;
 
@@ -562,9 +590,12 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
 
                         <div className="grid gap-2">
                           <Label>Empleado(s)</Label>
+                          
+
+                          
                            <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="flex justify-between items-center font-normal" disabled={!selectedTaskId}>
+                                    <Button variant="outline" className="flex justify-between items-center font-normal">
                                         <span className="truncate">
                                             {selectedEmployees.length === 0 && "Seleccione empleados"}
                                             {selectedEmployees.length === 1 && getEmployeeById(selectedEmployees[0])?.name + ' ' + getEmployeeById(selectedEmployees[0])?.lastName}
