@@ -122,13 +122,13 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                     {currentStatus.text}
                 </Badge>
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            Cambiar Estado
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                    Cambiar Estado
                             <ChevronDown className="ml-1 h-3 w-3" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
                         {Object.entries(statusMap).map(([key, config]) => (
                             <DropdownMenuItem
                                 key={key}
@@ -139,7 +139,7 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                                 {config.text}
                             </DropdownMenuItem>
                         ))}
-                    </DropdownMenuContent>
+                </DropdownMenuContent>
                 </DropdownMenu>
             </CardFooter>
         </Card>
@@ -164,6 +164,21 @@ export default function MyTasksPage() {
                 if (user && !error && user.email) {
                     setCurrentUserEmail(user.email);
                     console.log('Current user email:', user.email);
+                    console.log('Current user ID:', user.id);
+                    
+                    // Verificar si el usuario existe en la tabla de empleados
+                    const { data: employee, error: employeeError } = await supabase
+                        .from('employees')
+                        .select('*')
+                        .eq('email', user.email)
+                        .single();
+                    
+                    if (employeeError) {
+                        console.log('Employee not found in database for email:', user.email);
+                        console.log('Employee error:', employeeError);
+                    } else {
+                        console.log('Employee found in database:', employee);
+                    }
                 }
             } catch (error) {
                 console.error('Error getting user email:', error);
@@ -179,6 +194,8 @@ export default function MyTasksPage() {
         clients: clients?.length || 0,
         employees: employees?.length || 0
     });
+    
+
 
     // Filtrar asignaciones del empleado actual
     const myAssignments = React.useMemo(() => {
@@ -197,17 +214,79 @@ export default function MyTasksPage() {
         }
         
         // Encontrar el empleado actual basado en el email
-        const currentEmployee = employees.find(emp => emp.email === currentUserEmail);
-        if (!currentEmployee) {
+        const currentEmployees = employees.filter(emp => emp.email === currentUserEmail);
+        
+        if (currentEmployees.length === 0) {
             console.log('Current user not found in employees list');
+            console.log('Current user email:', currentUserEmail);
+            console.log('Available employees:', employees.map(emp => ({ id: emp.id, name: emp.name, email: emp.email })));
+            
+            // Intentar buscar por email parcial o similar
+            const similarEmployee = employees.find(emp => 
+                emp.email.toLowerCase().includes(currentUserEmail?.toLowerCase() || '') ||
+                currentUserEmail?.toLowerCase().includes(emp.email.toLowerCase())
+            );
+            
+            if (similarEmployee) {
+                console.log('Found similar employee:', similarEmployee);
+                console.log('Using similar employee for filtering');
+                const filteredAssignments = assignments.filter(assignment => {
+                    let employeeIds: string[] = [];
+                    
+                    if (Array.isArray(assignment.employeeId)) {
+                        employeeIds = assignment.employeeId;
+                    } else if (typeof assignment.employeeId === 'string') {
+                        try {
+                            employeeIds = JSON.parse(assignment.employeeId);
+                        } catch {
+                            employeeIds = [assignment.employeeId];
+                        }
+                    } else if (assignment.employeeId) {
+                        employeeIds = [String(assignment.employeeId)];
+                    }
+                    
+                    const hasEmployee = employeeIds.includes(similarEmployee.id);
+                    console.log(`Assignment ${assignment.id}: employeeId=${assignment.employeeId}, parsed=${employeeIds}, includes similar employee=${hasEmployee}`);
+                    return hasEmployee;
+                });
+                
+                console.log('Filtered assignments for similar employee:', filteredAssignments.length);
+                return filteredAssignments;
+            }
+            
             return [];
         }
         
-        console.log('Current employee found:', currentEmployee.name, currentEmployee.lastName);
+        // Si hay múltiples empleados con el mismo email, usar el primero
+        const currentEmployee = currentEmployees[0];
+        console.log('Found employees with same email:', currentEmployees.length);
+        console.log('Using employee:', currentEmployee.name, currentEmployee.lastName, 'ID:', currentEmployee.id);
+        
+
+        
+        console.log('Current employee found:', currentEmployee.name, currentEmployee.lastName, 'ID:', currentEmployee.id);
         
         // Filtrar asignaciones que incluyan al empleado actual
         const filteredAssignments = assignments.filter(assignment => {
-            return assignment.employeeId && assignment.employeeId.includes(currentEmployee.id);
+            // Manejar diferentes tipos de datos que pueden llegar desde la BD
+            let employeeIds: string[] = [];
+            
+            if (Array.isArray(assignment.employeeId)) {
+                employeeIds = assignment.employeeId;
+            } else if (typeof assignment.employeeId === 'string') {
+                // Si es un string, intentar parsearlo como JSON
+                try {
+                    employeeIds = JSON.parse(assignment.employeeId);
+                } catch {
+                    // Si no es JSON válido, tratarlo como un array con un solo elemento
+                    employeeIds = [assignment.employeeId];
+                }
+            } else if (assignment.employeeId) {
+                // Si es otro tipo, convertirlo a string y crear array
+                employeeIds = [String(assignment.employeeId)];
+            }
+            
+            return employeeIds.includes(currentEmployee.id);
         });
         
         console.log('Filtered assignments for employee:', filteredAssignments.length);
@@ -236,36 +315,36 @@ export default function MyTasksPage() {
             }
         } catch (error) {
             console.error('Unexpected error updating assignment:', error);
-        }
     }
+  }
   
-    const searchFilter = (assignment: Assignment) => {
-        const task = getTaskById(assignment.taskId, tasks);
-        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-        if (!task) return false;
+  const searchFilter = (assignment: Assignment) => {
+      const task = getTaskById(assignment.taskId, tasks);
+      const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+      if (!task) return false;
 
-        const searchTermLower = searchTerm.toLowerCase();
-        
-        return (
-            task.title.toLowerCase().includes(searchTermLower) ||
-            (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
-            (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
-            (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
-        );
-    };
-    
-    const activeAssignments = myAssignments
-        .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
-        .filter(searchFilter)
-        .filter(a => statusFilter === 'all' || a.status === statusFilter);
-        
-    const completedAssignments = myAssignments
-        .filter(a => a.status === 'completed')
-        .filter(searchFilter);
+      const searchTermLower = searchTerm.toLowerCase();
+      
+      return (
+          task.title.toLowerCase().includes(searchTermLower) ||
+          (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
+          (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
+          (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
+      );
+  };
+  
+  const activeAssignments = myAssignments
+      .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+      .filter(searchFilter)
+      .filter(a => statusFilter === 'all' || a.status === statusFilter);
+      
+  const completedAssignments = myAssignments
+      .filter(a => a.status === 'completed')
+      .filter(searchFilter);
 
-    const filterableStatuses = Object.entries(statusMap).filter(
-        ([key]) => key !== 'completed' && key !== 'cancelled'
-    );
+  const filterableStatuses = Object.entries(statusMap).filter(
+    ([key]) => key !== 'completed' && key !== 'cancelled'
+  );
 
     const isLoading = assignmentsLoading || tasksLoading || clientsLoading || employeesLoading;
     const hasError = assignmentsError || tasksError || clientsError || employeesError;
@@ -302,35 +381,35 @@ export default function MyTasksPage() {
         );
     }
 
-    return (
-        <AppLayout>
-            <div className="flex flex-col gap-8">
-                <header>
-                    <h1 className="font-headline text-3xl font-bold tracking-tight">
-                        Mis Tareas
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Aquí están las tareas que te han sido asignadas.
-                    </p>
-                </header>
+  return (
+    <AppLayout>
+      <div className="flex flex-col gap-8">
+        <header>
+          <h1 className="font-headline text-3xl font-bold tracking-tight">
+            Mis Tareas
+          </h1>
+          <p className="text-muted-foreground">
+            Aquí están las tareas que te han sido asignadas.
+          </p>
+        </header>
 
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
+              <Input
                                 placeholder="Buscar tareas..."
-                                value={searchTerm}
+                value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
-                            />
-                        </div>
+              />
+            </div>
                         <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as AssignmentStatus | "all")}>
                             <SelectTrigger className="w-full sm:w-[200px]">
-                                <SelectValue placeholder="Filtrar por estado" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
                                 {filterableStatuses.map(([key, config]) => (
                                     <SelectItem key={key} value={key}>
                                         <div className="flex items-center gap-2">
@@ -338,10 +417,10 @@ export default function MyTasksPage() {
                                             {config.text}
                                         </div>
                                     </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                ))}
+              </SelectContent>
+            </Select>
+        </div>
 
                     <Tabs defaultValue="active" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
@@ -351,7 +430,7 @@ export default function MyTasksPage() {
                             <TabsTrigger value="completed">
                                 Completadas ({completedAssignments.length})
                             </TabsTrigger>
-                        </TabsList>
+            </TabsList>
                         <TabsContent value="active" className="space-y-4">
                             {activeAssignments.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground">
@@ -359,11 +438,11 @@ export default function MyTasksPage() {
                                 </div>
                             ) : (
                                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    {activeAssignments.map((assignment) => {
-                                        const task = getTaskById(assignment.taskId, tasks);
+                    {activeAssignments.map((assignment) => {
+                        const task = getTaskById(assignment.taskId, tasks);
                                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                                         
-                                        if (!task) return null;
+                        if (!task) return null;
                                         
                                         return (
                                             <TaskCard
@@ -374,10 +453,10 @@ export default function MyTasksPage() {
                                                 updateAssignmentStatus={updateAssignmentStatus}
                                             />
                                         );
-                                    })}
-                                </div>
-                            )}
-                        </TabsContent>
+                    })}
+                </div>
+                )}
+            </TabsContent>
                         <TabsContent value="completed" className="space-y-4">
                             {completedAssignments.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground">
@@ -385,11 +464,11 @@ export default function MyTasksPage() {
                                 </div>
                             ) : (
                                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    {completedAssignments.map((assignment) => {
-                                        const task = getTaskById(assignment.taskId, tasks);
+                    {completedAssignments.map((assignment) => {
+                        const task = getTaskById(assignment.taskId, tasks);
                                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                                         
-                                        if (!task) return null;
+                        if (!task) return null;
                                         
                                         return (
                                             <TaskCard
@@ -400,13 +479,13 @@ export default function MyTasksPage() {
                                                 updateAssignmentStatus={updateAssignmentStatus}
                                             />
                                         );
-                                    })}
-                                </div>
-                            )}
-                        </TabsContent>
-                    </Tabs>
+                    })}
                 </div>
-            </div>
-        </AppLayout>
-    )
+                )}
+            </TabsContent>
+        </Tabs>
+                </div>
+      </div>
+    </AppLayout>
+  )
 }
