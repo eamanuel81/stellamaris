@@ -43,6 +43,7 @@ import {
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
+import { useAvatar } from "@/contexts/avatar-context"
 
 const adminNavItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
@@ -59,7 +60,8 @@ const employeeNavItems = [
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { role, logout, isLoading, avatarKey } = useAuth()
+  const { role, logout, isLoading } = useAuth()
+  const { avatarKey } = useAvatar()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -105,9 +107,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href={item.href}>
                   <SidebarMenuButton
                     isActive={pathname.startsWith(item.href)}
-                    icon={item.icon}
                     tooltip={{ children: item.label }}
                   >
+                    {item.icon}
                     {item.label}
                   </SidebarMenuButton>
                 </Link>
@@ -119,7 +121,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <SidebarMenu>
             <SidebarMenuItem>
               <Link href="/settings">
-                <SidebarMenuButton icon={<Settings />} tooltip={{ children: "Configuración" }} isActive={pathname === '/settings'}>
+                <SidebarMenuButton tooltip={{ children: "Configuración" }} isActive={pathname === '/settings'}>
+                  <Settings />
                   Configuración
                 </SidebarMenuButton>
               </Link>
@@ -127,9 +130,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={handleLogout}
-                icon={<LogOut />}
                 tooltip={{ children: "Cerrar Sesión" }}
               >
+                <LogOut />
                 Cerrar Sesión
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -139,7 +142,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:justify-between">
           <SidebarTrigger className="sm:hidden" />
-           <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2">
               <SidebarTrigger />
               <h1 className="font-semibold text-lg">
                 {navItems.find(item => pathname.startsWith(item.href))?.label}

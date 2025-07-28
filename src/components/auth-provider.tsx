@@ -1,5 +1,5 @@
 "use client"
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Employee } from '@/lib/data';
 
@@ -23,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [subrole, setSubrole] = useState<Subrole>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [avatarKey, setAvatarKey] = useState<string>('default');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const isInitialized = useRef(false);
 
   // Obtiene el perfil del usuario autenticado
   const fetchProfile = async (userId: string, email: string) => {
@@ -46,17 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (employee.subrole === 'admin') {
           console.log('User is admin based on subrole');
           setRole('admin');
-          return; // No necesitamos verificar profiles si ya sabemos que es admin
         }
       } else {
         console.log('No employee found, setting subrole to null');
         setSubrole(null);
       }
       
-      // 2. Intentar obtener rol desde profiles (solo si no es admin por subrole)
+      // 2. Intentar obtener rol y avatar desde profiles
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, avatar_url')
         .eq('id', userId)
         .single();
       
@@ -72,45 +73,93 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('No profile found and not admin email');
           setRole(null);
         }
+        // Usar el ID del usuario como avatar key por defecto
+        setAvatarKey(userId);
       } else if (profile) {
         console.log('Profile found, role:', profile.role);
         setRole(profile.role === 'Administrador' ? 'admin' : 'employee');
+        
+        // Usar el avatar_url del perfil si existe, sino usar el ID del usuario
+        if (profile.avatar_url) {
+          setAvatarKey(profile.avatar_url);
+        } else {
+          setAvatarKey(userId);
+        }
       } else {
         console.log('No profile data returned');
         setRole(null);
+        setAvatarKey(userId);
       }
       
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       setRole(null);
       setSubrole(null);
+      setAvatarKey(userId);
     }
+  };
+
+  // Limpiar estado cuando el usuario cambia
+  const clearAuthState = () => {
+    setRole(null);
+    setSubrole(null);
+    setAvatarKey('default');
+    setCurrentUserId(null);
   };
 
   // Efecto para mantener la sesión y el rol/subrol sincronizados
   useEffect(() => {
+    if (isInitialized.current) return;
+    isInitialized.current = true;
+
     const getSessionAndProfile = async () => {
       setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       console.log('Session:', session);
       
       if (session?.user) {
+        // Verificar si el usuario cambió
+        if (currentUserId && currentUserId !== session.user.id) {
+          console.log('User changed, clearing state');
+          clearAuthState();
+        }
+        
+        setCurrentUserId(session.user.id);
         await fetchProfile(session.user.id, session.user.email!);
-        setAvatarKey(session.user.id); // Usa el id como avatarKey por defecto
       } else {
-        setRole(null);
-        setSubrole(null);
-        setAvatarKey('default');
+        clearAuthState();
       }
       setIsLoading(false);
     };
+    
     getSessionAndProfile();
+    
     // Suscribirse a cambios de sesión
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      getSessionAndProfile();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Usuario inició sesión
+        setCurrentUserId(session.user.id);
+        await fetchProfile(session.user.id, session.user.email!);
+        setIsLoading(false);
+      } else if (event === 'SIGNED_OUT') {
+        // Usuario cerró sesión
+        clearAuthState();
+        setIsLoading(false);
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        // Token refrescado, verificar si el usuario cambió
+        if (currentUserId !== session.user.id) {
+          console.log('User changed on token refresh');
+          clearAuthState();
+          setCurrentUserId(session.user.id);
+          await fetchProfile(session.user.id, session.user.email!);
+        }
+      }
     });
+    
     return () => {
-      listener?.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -123,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: error.message };
     }
     if (data.user) {
+      setCurrentUserId(data.user.id);
       await fetchProfile(data.user.id, data.user.email!);
     }
     setIsLoading(false);
@@ -131,9 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Logout
   const logout = async () => {
     await supabase.auth.signOut();
-    setRole(null);
-    setSubrole(null);
-    setAvatarKey('default');
+    clearAuthState();
   };
 
   return (

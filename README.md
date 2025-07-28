@@ -38,8 +38,12 @@ Ejecuta el script `setup-profiles-table.sql` en el SQL Editor de Supabase para c
 - `full_name` (TEXT) - Apodo o nombre completo
 - `email` (TEXT) - Email del empleado
 - `role` (TEXT) - Rol del usuario (Empleado, Administrador, etc.)
+- `avatar_url` (TEXT) - Clave para generar el avatar del usuario
 - `created_at` (TIMESTAMP) - Fecha de creación
 - `updated_at` (TIMESTAMP) - Fecha de última actualización
+
+**Para agregar el campo avatar_url (si no existe):**
+Ejecuta el script `add-avatar-to-profiles.sql` en el SQL Editor de Supabase.
 
 ### Funcionalidades
 

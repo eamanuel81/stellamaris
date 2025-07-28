@@ -25,22 +25,37 @@ export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+  const [hasAttemptedLogin, setHasAttemptedLogin] = React.useState(false);
 
   React.useEffect(() => {
-    if (role === "admin") {
-      router.push("/dashboard");
-    } else if (role === "employee") {
-      router.push("/my-tasks");
+    // Solo redirigir si el usuario ya intentó hacer login o si ya está autenticado
+    if (hasAttemptedLogin && role) {
+      if (role === "admin") {
+        router.push("/dashboard");
+      } else if (role === "employee") {
+        router.push("/my-tasks");
+      }
     }
-  }, [role, router]);
+  }, [role, router, hasAttemptedLogin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setHasAttemptedLogin(true);
+    
     const result = await login(email, password);
     if (result && result.error) {
       setError(result.error);
     }
+  };
+
+  const handleLogout = async () => {
+    const { supabase } = await import('@/lib/supabaseClient');
+    await supabase.auth.signOut();
+    setHasAttemptedLogin(false);
+    setEmail("");
+    setPassword("");
+    setError(null);
   };
 
   return (
@@ -59,19 +74,47 @@ export default function LoginPage() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="empleado@stellamaris.com" required value={email} onChange={e => setEmail(e.target.value)} />
+              <Input 
+                id="email" 
+                type="email" 
+                placeholder="empleado@stellamaris.com" 
+                required 
+                value={email} 
+                onChange={e => setEmail(e.target.value)}
+                autoComplete="email"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
+              <Input 
+                id="password" 
+                type="password" 
+                required 
+                value={password} 
+                onChange={e => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
             </div>
             {error && <div className="text-red-500 text-sm">{error}</div>}
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? "Ingresando..." : "Ingresar"}</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Ingresando..." : "Ingresar"}
+            </Button>
             <Button variant="link" size="sm" className="w-full font-normal text-muted-foreground">
               ¿Olvidó su contraseña?
             </Button>
+            {role && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                className="w-full" 
+                onClick={handleLogout}
+              >
+                Cerrar Sesión
+              </Button>
+            )}
           </CardFooter>
         </form>
       </Card>
