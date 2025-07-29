@@ -8,15 +8,12 @@ export function useTasks() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchTasks = useCallback(async () => {
-    console.log('=== FETCHING TASKS START ===');
     setIsLoading(true);
     setError(null);
     
     try {
       // Verificar si el usuario está autenticado
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id, user?.email);
-      console.log('User error:', userError);
       
       if (userError) {
         console.error('Error getting user:', userError);
@@ -27,30 +24,19 @@ export function useTasks() {
       }
       
       if (!user) {
-        console.log('No authenticated user, skipping task fetch');
         setTasks([]);
         setIsLoading(false);
         return;
       }
 
-      console.log('Attempting to fetch tasks from database...');
-      
       // Primero verificar si la tabla existe
       const { data: tableCheck, error: tableError } = await supabase
         .from('tasks')
         .select('count')
         .limit(1);
       
-      console.log('Table check result:', { tableCheck, tableError });
-      
       if (tableError) {
         console.error('Error checking tasks table:', tableError);
-        console.error('Table error details:', {
-          message: tableError.message,
-          details: tableError.details,
-          hint: tableError.hint,
-          code: tableError.code
-        });
         setError(`Error accediendo a la tabla tasks: ${tableError.message}`);
         setTasks([]);
         setIsLoading(false);
@@ -62,35 +48,20 @@ export function useTasks() {
         .select('*')
         .order('id', { ascending: false });
         
-      console.log('Supabase response:', { data, error });
-      console.log('Data type:', typeof data);
-      console.log('Data length:', data?.length);
-      console.log('Error type:', typeof error);
-        
       if (error) {
         console.error('Error fetching tasks:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
         setError(`Error cargando tareas: ${error.message}`);
         setTasks([]);
       } else {
-        console.log('Tasks loaded from database:', data?.length || 0, 'tasks');
-        console.log('Tasks data:', data);
-        setTasks(data || []);
+        setTasks((data as Task[]) || []);
         setError(null);
       }
     } catch (err) {
       console.error('Unexpected error fetching tasks:', err);
-      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack available');
       setError(`Error inesperado al cargar las tareas: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setTasks([]);
     } finally {
       setIsLoading(false);
-      console.log('=== FETCHING TASKS END ===');
     }
   }, []);
 
@@ -109,10 +80,9 @@ export function useTasks() {
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
-        console.log('Task added successfully:', data[0]);
-        setTasks(prev => [data[0], ...prev]);
+        setTasks(prev => [data[0] as Task, ...prev]);
         setError(null);
-        return { data: data[0], error: null };
+        return { data: data[0] as Task, error: null };
       }
     } catch (err) {
       console.error('Unexpected error adding task:', err);
@@ -139,10 +109,9 @@ export function useTasks() {
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
-        console.log('Task updated successfully:', data[0]);
-        setTasks(prev => prev.map(t => t.id === task.id ? data[0] : t));
+        setTasks(prev => prev.map(t => t.id === task.id ? data[0] as Task : t));
         setError(null);
-        return { data: data[0], error: null };
+        return { data: data[0] as Task, error: null };
       }
     } catch (err) {
       console.error('Unexpected error updating task:', err);
@@ -164,7 +133,6 @@ export function useTasks() {
         setError(error.message);
         return { error };
       } else {
-        console.log('Task deleted successfully:', id);
         setTasks(prev => prev.filter(t => t.id !== id));
         setError(null);
         return { error: null };
@@ -180,7 +148,6 @@ export function useTasks() {
 
   // Función para recargar datos manualmente
   const refreshTasks = useCallback(() => {
-    console.log('Manually refreshing tasks...');
     fetchTasks();
   }, [fetchTasks]);
 
