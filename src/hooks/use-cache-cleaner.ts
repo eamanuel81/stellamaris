@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { useAuthState } from './use-auth-state';
 
 export function useCacheCleaner() {
+  const { addAuthListener } = useAuthState();
+
   useEffect(() => {
     const handleAuthStateChange = (event: string, session: any) => {
       console.log('Auth state changed, clearing cache:', event);
@@ -19,10 +21,10 @@ export function useCacheCleaner() {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    const removeListener = addAuthListener(handleAuthStateChange);
 
     return () => {
-      subscription.unsubscribe();
+      removeListener();
     };
   }, []);
 } 

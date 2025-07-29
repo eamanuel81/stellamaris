@@ -1,22 +1,14 @@
-import { createClient } from '@supabase/supabase-js';
+import { initializeSupabase, initializeSupabaseAdmin, resetSupabaseInstances } from './init-supabase';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!;
+// Exportar solo la instancia principal inicializada
+export const supabase = initializeSupabase();
 
-// Cliente principal para operaciones normales
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false // Evita auto-login
-  }
-});
+// Función para obtener la instancia admin solo cuando se necesite
+export function getSupabaseAdmin() {
+  return initializeSupabaseAdmin();
+}
 
-// Cliente admin para operaciones privilegiadas
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+// Función para resetear en desarrollo
+export function resetSupabaseClients() {
+  resetSupabaseInstances();
+}

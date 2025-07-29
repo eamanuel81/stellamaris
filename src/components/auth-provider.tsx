@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Employee } from '@/lib/data';
+import { useAuthState } from '@/hooks/use-auth-state';
 
 export type Role = 'admin' | 'employee' | null;
 export type Subrole = 'empleado' | 'encargado' | 'admin' | null;
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [avatarKey, setAvatarKey] = useState<string>('default');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const isInitialized = useRef(false);
+  const { addAuthListener } = useAuthState();
 
   // Obtiene el perfil del usuario autenticado
   const fetchProfile = async (userId: string, email: string) => {
@@ -42,10 +44,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (!employeeError && employee) {
         console.log('Employee found, subrole:', employee.subrole);
-        setSubrole(employee.subrole || 'empleado');
+        const subrole = employee.subrole && typeof employee.subrole === 'string' ? employee.subrole as Subrole : 'empleado';
+        setSubrole(subrole);
         
         // Si el subrole es 'admin', establecer el rol como admin
-        if (employee.subrole === 'admin') {
+        if (subrole === 'admin') {
           console.log('User is admin based on subrole');
           setRole('admin');
         }
@@ -80,11 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRole(profile.role === 'Administrador' ? 'admin' : 'employee');
         
         // Usar el avatar_url del perfil si existe, sino usar el ID del usuario
-        if (profile.avatar_url) {
-          setAvatarKey(profile.avatar_url);
-        } else {
-          setAvatarKey(userId);
-        }
+        const avatarUrl = profile.avatar_url && typeof profile.avatar_url === 'string' ? profile.avatar_url : userId;
+        setAvatarKey(avatarUrl);
       } else {
         console.log('No profile data returned');
         setRole(null);
@@ -134,8 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     getSessionAndProfile();
     
-    // Suscribirse a cambios de sesión
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Usar el listener centralizado en lugar de crear una nueva suscripción
+    const removeListener = addAuthListener(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
       if (event === 'SIGNED_IN' && session?.user) {
@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     
     return () => {
-      subscription.unsubscribe();
+      removeListener();
     };
   }, []);
 

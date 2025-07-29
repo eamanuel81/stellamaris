@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from './supabaseClient';
+import { supabase, getSupabaseAdmin } from './supabaseClient';
 
 export interface PasswordChangeResult {
   success: boolean;
@@ -29,7 +29,7 @@ export async function changeUserPassword(newPassword: string): Promise<PasswordC
     // Si falla con el cliente normal, intentar con el admin client
     console.log('Fallback to admin client for password change');
     
-    const { error: adminError } = await supabaseAdmin.auth.admin.updateUserById(
+    const { error: adminError } = await getSupabaseAdmin().auth.admin.updateUserById(
       user.id,
       { password: newPassword }
     );

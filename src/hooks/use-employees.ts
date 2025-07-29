@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase, supabaseAdmin } from '@/lib/supabaseClient';
+import { supabase, getSupabaseAdmin } from '@/lib/supabaseClient';
 import { Employee } from '@/lib/data';
 
 export function useEmployees() {
@@ -61,14 +61,14 @@ export function useEmployees() {
         
         // Verificar subroles
         const employeesBySubrole = data?.reduce((acc, emp) => {
-          const subrole = emp.subrole || 'sin_subrole';
-          acc[subrole] = (acc[subrole] || 0) + 1;
+          const subrole = (emp as any).subrole || 'sin_subrole';
+          acc[subrole] = ((acc[subrole] as number) || 0) + 1;
           return acc;
         }, {} as Record<string, number>);
         
         console.log('Employees by subrole:', employeesBySubrole);
         
-        setEmployees(data || []);
+        setEmployees((data as Employee[]) || []);
         setError(null);
       }
     } catch (err) {
@@ -124,7 +124,7 @@ export function useEmployees() {
       // 1. Crear usuario en Auth de Supabase usando el cliente de administración
       const password = `${employee.name.charAt(0).toUpperCase() + employee.name.slice(1)}${employee.dni}`;
       
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      const { data: authData, error: authError } = await getSupabaseAdmin().auth.admin.createUser({
         email: employee.email,
         password: password,
         email_confirm: true,
@@ -168,7 +168,7 @@ export function useEmployees() {
         console.error('Error creando perfil:', profileError);
         // Intentar eliminar el usuario de Auth si falla la creación del perfil
         try {
-          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+          await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
         } catch (deleteError) {
           console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
         }
@@ -190,7 +190,7 @@ export function useEmployees() {
         // Intentar limpiar: eliminar perfil y usuario de Auth
         try {
           await supabase.from('profiles').delete().eq('id', authData.user.id);
-          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+          await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
         } catch (cleanupError) {
           console.error('Error en limpieza después de fallo:', cleanupError);
         }
@@ -201,7 +201,7 @@ export function useEmployees() {
 
       if (employeeData && employeeData.length > 0) {
         console.log('Employee created successfully:', employeeData[0]);
-        setEmployees(prev => [employeeData[0], ...prev]);
+        setEmployees(prev => [(employeeData[0] as Employee), ...prev]);
         setError(null);
         setIsLoading(false);
         return { data: employeeData[0], error: null };
@@ -234,7 +234,7 @@ export function useEmployees() {
         return { data: null, error };
       } else if (data && data.length > 0) {
         console.log('Employee updated successfully:', data[0]);
-        setEmployees(prev => prev.map(e => e.id === employee.id ? data[0] : e));
+        setEmployees(prev => prev.map(e => e.id === employee.id ? (data[0] as Employee) : e));
         setError(null);
         return { data: data[0], error: null };
       }

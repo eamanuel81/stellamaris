@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { useAuthState } from '@/hooks/use-auth-state';
 
 interface AvatarContextType {
   avatarKey: string;
@@ -17,6 +18,7 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const isInitialized = useRef(false);
+  const { addAuthListener } = useAuthState();
 
   // Cargar avatar del usuario actual
   const loadAvatar = async () => {
@@ -43,7 +45,7 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
         .eq('id', user.id)
         .single();
 
-      if (profile?.avatar_url) {
+      if (profile?.avatar_url && typeof profile.avatar_url === 'string') {
         setAvatarKey(profile.avatar_url);
       } else {
         setAvatarKey(user.id);
@@ -86,8 +88,8 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
 
     loadAvatar();
 
-    // Suscribirse a cambios de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Usar el listener centralizado en lugar de crear una nueva suscripción
+    const removeListener = addAuthListener((event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       
       if (event === 'SIGNED_IN' && session?.user) {
@@ -109,7 +111,7 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
     });
 
     return () => {
-      subscription.unsubscribe();
+      removeListener();
     };
   }, []);
 

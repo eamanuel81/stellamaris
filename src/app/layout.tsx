@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import { AuthProvider } from '@/components/auth-provider';
 import { AvatarProvider } from '@/contexts/avatar-context';
 import { CacheCleaner } from '@/components/cache-cleaner';
+import { AppInitializer } from '@/components/app-initializer';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
+        <AppInitializer />
         <AuthProvider>
           <AvatarProvider>
             <CacheCleaner />
