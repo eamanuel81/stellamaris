@@ -72,23 +72,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
     const { clients, refetch: refetchClients } = useClients();
 
-    // Logging para debugging
-    React.useEffect(() => {
-        console.log('AssignTaskDialog - Employees data:', {
-            employees: employees?.length || 0,
-            isLoading: employeesLoading,
-            error: employeesError
-        });
-        console.log('AssignTaskDialog - Tasks data:', {
-            tasks: tasks?.length || 0,
-            isLoading: tasksLoading,
-            error: tasksError
-        });
-        console.log('AssignTaskDialog - Clients data:', {
-            clients: clients?.length || 0
-        });
-    }, [employees, employeesLoading, employeesError, tasks, tasksLoading, tasksError, clients]);
-
     // Definir getEmployeeById usando los empleados reales:
     const getEmployeeById = (id: string) => employees.find(e => e.id === id);
     // Definir getClientById usando los clientes reales:
@@ -453,17 +436,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
         ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
         : employees;
-    
-    // Logging adicional para debugging
-    console.log('AssignTaskDialog - Qualified employees:', {
-        selectedTask: selectedTask?.title,
-        qualifiedEmployeeIds: selectedTask?.qualifiedEmployeeIds,
-        totalEmployees: employees?.length || 0,
-        qualifiedEmployees: qualifiedEmployees?.length || 0,
-        employeesData: employees
-    });
-    
-
     
     const selectedClient = selectedClientId ? getClientById(selectedClientId) : null;
     const hasExtras = selectedTask && selectedTask.extras && selectedTask.extras.length > 0;
