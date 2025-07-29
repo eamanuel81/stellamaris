@@ -38,13 +38,6 @@ import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
 
-const chartData = [
-  { name: "Juan P.", hours: 45 },
-  { name: "Maria G.", hours: 52 },
-  { name: "Carlos R.", hours: 38 },
-  { name: "Ana L.", hours: 60 },
-]
-
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string, employees: Employee[]) => employees.find(e => e.id === id)
 
@@ -80,6 +73,53 @@ export default function DashboardPage() {
   }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
   const completedToday = todayAssignments.filter(a => a.status === 'completed').length;
+
+  // Calcular horas trabajadas por empleado en la última semana
+  const calculateEmployeeHours = () => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    oneWeekAgo.setHours(0, 0, 0, 0);
+
+    const employeeHours: { [key: string]: number } = {};
+
+    // Filtrar asignaciones de la última semana que estén completadas
+    const recentAssignments = assignmentsWithDates.filter(a => {
+      const assignmentDate = new Date(a.startTime);
+      assignmentDate.setHours(0, 0, 0, 0);
+      return assignmentDate >= oneWeekAgo && a.status === 'completed';
+    });
+
+    // Calcular horas por empleado
+    recentAssignments.forEach(assignment => {
+      if (assignment.employeeId && assignment.employeeId.length > 0) {
+        const employeeId = assignment.employeeId[0];
+        const startTime = new Date(assignment.startTime);
+        const endTime = new Date(assignment.endTime);
+        
+        // Calcular diferencia en horas
+        const hoursDiff = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+        
+        if (!employeeHours[employeeId]) {
+          employeeHours[employeeId] = 0;
+        }
+        employeeHours[employeeId] += hoursDiff;
+      }
+    });
+
+    // Convertir a formato para el gráfico
+    const chartData = employees
+      .filter(employee => employeeHours[employee.id])
+      .map(employee => ({
+        name: `${employee.name} ${employee.lastName}`,
+        hours: Math.round(employeeHours[employee.id] * 10) / 10 // Redondear a 1 decimal
+      }))
+      .sort((a, b) => b.hours - a.hours) // Ordenar por horas descendente
+      .slice(0, 10); // Mostrar solo los top 10
+
+    return chartData;
+  };
+
+  const chartData = calculateEmployeeHours();
 
   return (
     <AppLayout>
@@ -151,19 +191,25 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Horas por Empleado</CardTitle>
               <CardDescription>
-                Horas trabajadas en la última semana.
+                Horas trabajadas en la última semana (Tareas terminadas).
               </CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-              <ChartContainer config={{ hours: { label: 'Horas', color: 'hsl(var(--primary))' } }} className="h-[300px] w-full">
-                <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                  <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                   <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                  <Bar dataKey="hours" fill="var(--color-hours)" radius={4} />
-                </BarChart>
-              </ChartContainer>
+              {chartData.length > 0 ? (
+                <ChartContainer config={{ hours: { label: 'Horas', color: 'hsl(var(--primary))' } }} className="h-[300px] w-full">
+                  <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                     <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <Bar dataKey="hours" fill="var(--color-hours)" radius={4} />
+                  </BarChart>
+                </ChartContainer>
+              ) : (
+                <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+                  No hay datos de horas trabajadas en la última semana
+                </div>
+              )}
             </CardContent>
           </Card>
 
