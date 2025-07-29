@@ -1,6 +1,5 @@
-
 "use client"
-import React from "react"
+import React, { useMemo, useCallback } from "react"
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import {
   Activity,
@@ -38,6 +37,7 @@ import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
 
+// Mover funciones helper fuera del componente para evitar recrearlas
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 const getEmployeeById = (id: string, employees: Employee[]) => employees.find(e => e.id === id)
 
@@ -51,31 +51,114 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
   cancelled: { text: "Cancelada", variant: "destructive" },
 }
 
+// Componente memoizado para las métricas
+const MetricCard = React.memo(({ 
+  title, 
+  value, 
+  description, 
+  icon: Icon 
+}: { 
+  title: string;
+  value: number;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <Icon className="h-4 w-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </CardContent>
+  </Card>
+));
+
+MetricCard.displayName = 'MetricCard';
+
+// Componente memoizado para la tabla de tareas recientes
+const RecentTasksTable = React.memo(({ 
+  assignments, 
+  tasks, 
+  employees 
+}: { 
+  assignments: Assignment[];
+  tasks: Task[];
+  employees: Employee[];
+}) => (
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Tarea</TableHead>
+        <TableHead>Empleado</TableHead>
+        <TableHead>Estado</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {assignments.slice(0, 5).map((assignment) => {
+        const task = getTaskById(assignment.taskId, tasks);
+        const employee = assignment.employeeId && assignment.employeeId.length > 0 
+          ? getEmployeeById(assignment.employeeId[0], employees) 
+          : null;
+        return (
+          <TableRow key={assignment.id}>
+            <TableCell className="font-medium">{task?.title || 'Tarea no encontrada'}</TableCell>
+            <TableCell>{employee ? `${employee.name} ${employee.lastName}` : 'Sin asignar'}</TableCell>
+            <TableCell>
+              <Badge variant={statusMap[assignment.status]?.variant || 'outline'}>
+                {statusMap[assignment.status]?.text || 'Desconocido'}
+              </Badge>
+            </TableCell>
+          </TableRow>
+        );
+      })}
+    </TableBody>
+  </Table>
+));
+
+RecentTasksTable.displayName = 'RecentTasksTable';
+
 export default function DashboardPage() {
   const { assignments } = useAssignments();
   const { tasks } = useTasks();
   const { clients } = useClients();
   const { employees } = useEmployees();
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Memoizar la fecha de hoy para evitar recrearla constantemente
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
 
-  const assignmentsWithDates = assignments.map(a => ({
-    ...a,
-    startTime: new Date(a.startTime),
-    endTime: new Date(a.endTime),
-  }));
+  // Memoizar las asignaciones con fechas parseadas
+  const assignmentsWithDates = useMemo(() => 
+    assignments.map(a => ({
+      ...a,
+      startTime: new Date(a.startTime),
+      endTime: new Date(a.endTime),
+    })), [assignments]
+  );
 
-  const todayAssignments = assignmentsWithDates.filter(a => {
+  // Memoizar las asignaciones de hoy
+  const todayAssignments = useMemo(() => 
+    assignmentsWithDates.filter(a => {
       const assignmentDate = new Date(a.startTime);
       assignmentDate.setHours(0, 0, 0, 0);
       return assignmentDate.getTime() === today.getTime();
-  }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()),
+    [assignmentsWithDates, today]
+  );
 
-  const completedToday = todayAssignments.filter(a => a.status === 'completed').length;
+  // Memoizar las tareas completadas hoy
+  const completedToday = useMemo(() => 
+    todayAssignments.filter(a => a.status === 'completed').length,
+    [todayAssignments]
+  );
 
-  // Calcular horas trabajadas por empleado en la última semana
-  const calculateEmployeeHours = () => {
+  // Memoizar el cálculo de horas por empleado
+  const chartData = useMemo(() => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     oneWeekAgo.setHours(0, 0, 0, 0);
@@ -107,7 +190,7 @@ export default function DashboardPage() {
     });
 
     // Convertir a formato para el gráfico
-    const chartData = employees
+    return employees
       .filter(employee => employeeHours[employee.id])
       .map(employee => ({
         name: `${employee.name} ${employee.lastName}`,
@@ -115,11 +198,7 @@ export default function DashboardPage() {
       }))
       .sort((a, b) => b.hours - a.hours) // Ordenar por horas descendente
       .slice(0, 10); // Mostrar solo los top 10
-
-    return chartData;
-  };
-
-  const chartData = calculateEmployeeHours();
+  }, [assignmentsWithDates, employees]);
 
   return (
     <AppLayout>
@@ -134,56 +213,30 @@ export default function DashboardPage() {
         </header>
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Tareas Totales (Hoy)
-              </CardTitle>
-              <ClipboardList className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{todayAssignments.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Tareas asignadas para hoy
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Empleados Activos</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{employees.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Empleados registrados
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Clientes</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{clients.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Clientes registrados
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Actividad Reciente</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completedToday}</div>
-              <p className="text-xs text-muted-foreground">
-                Tareas completadas hoy
-              </p>
-            </CardContent>
-          </Card>
+          <MetricCard
+            title="Tareas Totales (Hoy)"
+            value={todayAssignments.length}
+            description="Tareas asignadas para hoy"
+            icon={ClipboardList}
+          />
+          <MetricCard
+            title="Empleados Activos"
+            value={employees.length}
+            description="Empleados registrados"
+            icon={Users}
+          />
+          <MetricCard
+            title="Clientes"
+            value={clients.length}
+            description="Clientes registrados"
+            icon={Users}
+          />
+          <MetricCard
+            title="Actividad Reciente"
+            value={completedToday}
+            description="Tareas completadas hoy"
+            icon={Activity}
+          />
         </section>
 
         <section className="grid grid-cols-1 gap-8 lg:grid-cols-5">
@@ -201,7 +254,7 @@ export default function DashboardPage() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
                     <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                     <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
                     <Bar dataKey="hours" fill="var(--color-hours)" radius={4} />
                   </BarChart>
                 </ChartContainer>
@@ -221,34 +274,11 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tarea</TableHead>
-                    <TableHead>Empleado</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {assignmentsWithDates.slice(0, 5).map((assignment) => {
-                    const task = getTaskById(assignment.taskId, tasks);
-                    const employee = assignment.employeeId && assignment.employeeId.length > 0 
-                      ? getEmployeeById(assignment.employeeId[0], employees) 
-                      : null;
-                    return (
-                      <TableRow key={assignment.id}>
-                        <TableCell className="font-medium">{task?.title || 'Tarea no encontrada'}</TableCell>
-                        <TableCell>{employee ? `${employee.name} ${employee.lastName}` : 'Sin asignar'}</TableCell>
-                        <TableCell>
-                           <Badge variant={statusMap[assignment.status]?.variant || 'outline'}>
-                            {statusMap[assignment.status]?.text || 'Desconocido'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+              <RecentTasksTable 
+                assignments={assignmentsWithDates}
+                tasks={tasks}
+                employees={employees}
+              />
             </CardContent>
           </Card>
         </section>

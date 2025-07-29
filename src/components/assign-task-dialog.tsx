@@ -1,7 +1,6 @@
-
 "use client"
 
-import React from "react"
+import React, { useMemo, useCallback, useRef } from "react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +54,72 @@ import { useEmployees } from '@/hooks/use-employees';
 import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 
+// Hook personalizado para debounce
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  React.useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// Componentes memoizados para inputs pesados
+const OptimizedInput = React.memo(({ 
+  value, 
+  onChange, 
+  debounceMs = 0,
+  ...props 
+}: { 
+  value: string; 
+  onChange: (value: string) => void; 
+  debounceMs?: number;
+  [key: string]: any; 
+}) => {
+  const [localValue, setLocalValue] = React.useState(value);
+  const debouncedValue = useDebounce(localValue, debounceMs);
+
+  // Sincronizar el valor debounced con el onChange parent
+  React.useEffect(() => {
+    if (debouncedValue !== value && debounceMs > 0) {
+      onChange(debouncedValue);
+    }
+  }, [debouncedValue, onChange, value, debounceMs]);
+
+  // Sincronizar cuando el valor externo cambia
+  React.useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    
+    // Si no hay debounce, actualizar inmediatamente
+    if (debounceMs === 0) {
+      onChange(newValue);
+    }
+  }, [onChange, debounceMs]);
+
+  return <Input {...props} value={localValue} onChange={handleChange} />;
+});
+
+OptimizedInput.displayName = 'OptimizedInput';
+
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
 
 const statusOptions: { value: AssignmentStatus; label: string }[] = [
@@ -72,37 +137,63 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
     const { clients, refetch: refetchClients } = useClients();
 
-    // Definir getEmployeeById usando los empleados reales:
-    const getEmployeeById = (id: string) => employees.find(e => e.id === id);
-    // Definir getClientById usando los clientes reales:
-    const getClientById = (id: string) => clients.find(c => c.id === id);
+    // Memoizar funciones de búsqueda
+    const getEmployeeById = useCallback((id: string) => employees.find(e => e.id === id), [employees]);
+    const getClientById = useCallback((id: string) => clients.find(c => c.id === id), [clients]);
 
-    const firstAssignment = isEditMode ? assignmentToEdit : null;
-
-    const [selectedTaskId, setSelectedTaskId] = React.useState<string>(firstAssignment?.taskId || "");
-    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>(isEditMode && assignmentToEdit?.employeeId ? assignmentToEdit.employeeId : []);
-    const [selectedClientId, setSelectedClientId] = React.useState<string | undefined>(firstAssignment?.clientId);
-    const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>(firstAssignment?.boatIds || []);
-    const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>(firstAssignment?.selectedExtras || []);
-    const [status, setStatus] = React.useState<AssignmentStatus>(firstAssignment?.status || 'pending');
-    const [startTime, setStartTime] = React.useState(firstAssignment? new Date(firstAssignment.startTime).toTimeString().substring(0,5) : "09:00");
-    const [endTime, setEndTime] = React.useState(firstAssignment? new Date(firstAssignment.endTime).toTimeString().substring(0,5) : "10:00");
+    const [selectedTaskId, setSelectedTaskId] = React.useState<string>("");
+    const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
+    const [selectedClientId, setSelectedClientId] = React.useState<string | undefined>(undefined);
+    const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>([]);
+    const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>([]);
+    const [status, setStatus] = React.useState<AssignmentStatus>('pending');
+    const [startTime, setStartTime] = React.useState("09:00");
+    const [endTime, setEndTime] = React.useState("10:00");
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
     const [isCreateClientOpen, setIsCreateClientOpen] = React.useState(false);
     const [isEndTimeManual, setIsEndTimeManual] = React.useState(false);
     const [timeConflictWarning, setTimeConflictWarning] = React.useState<string>('');
     
-    const formatDateForInput = (date: Date) => {
+    const formatDateForInput = useCallback((date: Date) => {
         const d = new Date(date);
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
         return `${yyyy}-${mm}-${dd}`;
-    }
+    }, []);
 
-    const [date, setDate] = React.useState(firstAssignment ? formatDateForInput(firstAssignment.startTime) : formatDateForInput(new Date()));
+    const [date, setDate] = React.useState(formatDateForInput(new Date()));
 
-    const selectedTask = getTaskById(selectedTaskId, tasks);
+    // Memoizar tarea seleccionada
+    const selectedTask = useMemo(() => getTaskById(selectedTaskId, tasks), [selectedTaskId, tasks]);
+
+    // Memoizar empleados cualificados
+    const qualifiedEmployees = useMemo(() => {
+        return selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
+            ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
+            : employees;
+    }, [selectedTask, employees]);
+
+    // Memoizar cliente seleccionado
+    const selectedClient = useMemo(() => 
+        selectedClientId ? getClientById(selectedClientId) : null, 
+        [selectedClientId, getClientById]
+    );
+
+    // Memoizar costo total de extras
+    const totalExtrasCost = useMemo(() => {
+        if (!selectedTask || !selectedTask.extras) return 0;
+        return selectedExtras.reduce((total, selected) => {
+            const extraDetails = selectedTask.extras?.find(e => e.id === selected.extraId);
+            if (!extraDetails) return total;
+            return total + (extraDetails.price * selected.quantity);
+        }, 0);
+    }, [selectedExtras, selectedTask]);
+
+    const hasExtras = useMemo(() => 
+        selectedTask && selectedTask.extras && selectedTask.extras.length > 0, 
+        [selectedTask]
+    );
 
     React.useEffect(() => {
         if (isEditMode && assignmentToEdit) {
@@ -115,31 +206,30 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             setEndTime(new Date(assignmentToEdit.endTime).toTimeString().substring(0,5));
             setDate(formatDateForInput(new Date(assignmentToEdit.startTime)));
             setStatus(assignmentToEdit.status);
-            setIsEndTimeManual(false); // Reset on edit
+            setIsEndTimeManual(false);
         } else {
-             // Reset form for new assignment
+            // Limpiar completamente todos los campos
             setSelectedTaskId("");
             setSelectedEmployees([]);
             setSelectedClientId(undefined);
             setSelectedBoatIds([]);
             setSelectedExtras([]);
             setStartTime("09:00");
-            const initialTask = getTaskById("", tasks);
-            if (initialTask) {
-                const duration = initialTask.duration;
-                const newEndTime = new Date(new Date().setHours(9,0) + duration * 60000);
-                setEndTime(newEndTime.toTimeString().substring(0,5));
-            } else {
-                setEndTime("10:00");
-            }
+            setEndTime("10:00");
             setDate(formatDateForInput(new Date()));
             setStatus('pending');
             setIsEndTimeManual(false);
+            setTimeConflictWarning('');
         }
-    }, [assignmentToEdit, isEditMode, tasks]);
+    }, [assignmentToEdit, isEditMode, formatDateForInput]);
 
-     React.useEffect(() => {
-        if (!isEndTimeManual && selectedTask && startTime && date) {
+    // Debounce para el cálculo automático de hora de fin
+    const debouncedStartTime = useDebounce(startTime, 300);
+    const debouncedDate = useDebounce(date, 300);
+
+        // Calcular hora de fin automáticamente cuando cambia la tarea o la hora de inicio
+    React.useEffect(() => {
+        if (!isEndTimeManual && selectedTask && startTime && date && selectedTaskId) {
             const taskDuration = selectedTask.duration;
             
             const startDate = new Date(`${date}T${startTime}`);
@@ -150,48 +240,50 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             const endHour = String(endDate.getHours()).padStart(2, '0');
             const endMinute = String(endDate.getMinutes()).padStart(2, '0');
             
-            setEndTime(`${endHour}:${endMinute}`);
+                         const newEndTime = `${endHour}:${endMinute}`;
+             setEndTime(newEndTime);
         }
-    }, [selectedTask, startTime, date, isEndTimeManual]);
+    }, [selectedTask, startTime, date, isEndTimeManual, selectedTaskId]);
 
-    const handleTaskSelectChange = (taskId: string) => {
+    
+
+    // Handlers memoizados
+    const handleTaskSelectChange = useCallback((taskId: string) => {
         setSelectedTaskId(taskId);
         setSelectedEmployees([]); 
         setSelectedExtras([]); 
-    };
+    }, []);
 
-    const handleEmployeeSelect = (employeeId: string) => {
+    const handleEmployeeSelect = useCallback((employeeId: string) => {
         setSelectedEmployees(prev =>
             prev.includes(employeeId)
                 ? prev.filter(id => id !== employeeId)
                 : [...prev, employeeId]
         );
-    };
+    }, []);
 
-    const handleSelectAllEmployees = () => {
-        // Si todos están seleccionados, deseleccionar todos
+    const handleSelectAllEmployees = useCallback(() => {
         if (selectedEmployees.length === qualifiedEmployees.length) {
             setSelectedEmployees([]);
         } else {
-            // Si no todos están seleccionados, seleccionar todos
             setSelectedEmployees(qualifiedEmployees.map(emp => emp.id));
         }
-    };
+    }, [selectedEmployees.length, qualifiedEmployees]);
 
-    const handleClientSelectChange = (clientId: string) => {
+    const handleClientSelectChange = useCallback((clientId: string) => {
         setSelectedClientId(clientId === "none" ? undefined : clientId);
         setSelectedBoatIds([]); 
-    };
+    }, []);
 
-    const handleBoatSelect = (boatId: string) => {
+    const handleBoatSelect = useCallback((boatId: string) => {
         setSelectedBoatIds(prev =>
             prev.includes(boatId)
                 ? prev.filter(id => id !== boatId)
                 : [...prev, boatId]
         );
-    }
+    }, []);
 
-    const handleExtraQuantityChange = (extraId: string, quantityStr: string) => {
+    const handleExtraQuantityChange = useCallback((extraId: string, quantityStr: string) => {
         const quantity = Number(quantityStr);
         if (isNaN(quantity) || quantity < 0) return;
 
@@ -207,27 +299,55 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             }
             return prev;
         });
-    }
+    }, []);
 
-    const totalExtrasCost = React.useMemo(() => {
-        if (!selectedTask || !selectedTask.extras) return 0;
-        return selectedExtras.reduce((total, selected) => {
-            const extraDetails = selectedTask.extras?.find(e => e.id === selected.extraId);
-            if (!extraDetails) return total;
-            return total + (extraDetails.price * selected.quantity);
-        }, 0);
-    }, [selectedExtras, selectedTask]);
+    // Función para validar conflictos de horarios - memoizada
+    const checkTimeConflicts = useCallback((employeeId: string, startDate: Date, endDate: Date, excludeAssignmentId?: string): { hasConflict: boolean; conflictingAssignments: Assignment[] } => {
+        const conflictingAssignments = assignments.filter(assignment => {
+            if (excludeAssignmentId && assignment.id === excludeAssignmentId) {
+                return false;
+            }
+            
+            if (!assignment.employeeId.includes(employeeId)) {
+                return false;
+            }
+            
+            const assignmentStart = new Date(assignment.startTime);
+            const assignmentEnd = new Date(assignment.endTime);
+            
+            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const assignmentStartOnly = new Date(assignmentStart.getFullYear(), assignmentStart.getMonth(), assignmentStart.getDate());
+            
+            if (startDateOnly.getTime() !== assignmentStartOnly.getTime()) {
+                return false;
+            }
+            
+            return (
+                (startDate >= assignmentStart && startDate < assignmentEnd) ||
+                (endDate > assignmentStart && endDate <= assignmentEnd) ||
+                (startDate <= assignmentStart && endDate >= assignmentEnd)
+            );
+        });
+        
+        return {
+            hasConflict: conflictingAssignments.length > 0,
+            conflictingAssignments
+        };
+    }, [assignments]);
     
-    // Verificar conflictos en tiempo real
-    const checkRealTimeConflicts = () => {
-        if (selectedEmployees.length === 0 || !startTime || !endTime || !date) {
+    // Verificar conflictos en tiempo real - debounced
+    const debouncedEmployees = useDebounce(selectedEmployees, 500);
+    const debouncedEndTime = useDebounce(endTime, 500);
+
+    const checkRealTimeConflicts = useCallback(() => {
+        if (debouncedEmployees.length === 0 || !debouncedStartTime || !debouncedEndTime || !debouncedDate) {
             setTimeConflictWarning('');
             return;
         }
         
-        const [startHour, startMinute] = startTime.split(':').map(Number);
-        const [endHour, endMinute] = endTime.split(':').map(Number);
-        const assignmentDate = new Date(date + 'T00:00:00');
+        const [startHour, startMinute] = debouncedStartTime.split(':').map(Number);
+        const [endHour, endMinute] = debouncedEndTime.split(':').map(Number);
+        const assignmentDate = new Date(debouncedDate + 'T00:00:00');
         const startDate = new Date(assignmentDate.getTime());
         startDate.setHours(startHour, startMinute, 0, 0);
         const endDate = new Date(assignmentDate.getTime());
@@ -235,7 +355,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         
         const conflicts: string[] = [];
         
-        for (const employeeId of selectedEmployees) {
+        for (const employeeId of debouncedEmployees) {
             const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, isEditMode && assignmentToEdit ? assignmentToEdit.id : undefined);
             if (hasConflict) {
                 const employee = getEmployeeById(employeeId);
@@ -253,58 +373,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         } else {
             setTimeConflictWarning('');
         }
-    };
+    }, [debouncedEmployees, debouncedStartTime, debouncedEndTime, debouncedDate, checkTimeConflicts, isEditMode, assignmentToEdit, getEmployeeById, tasks]);
     
-    // Verificar conflictos cuando cambien los horarios o empleados
     React.useEffect(() => {
         checkRealTimeConflicts();
-    }, [selectedEmployees, startTime, endTime, date, assignments]);
+    }, [checkRealTimeConflicts]);
     
-    // Función para validar conflictos de horarios
-    const checkTimeConflicts = (employeeId: string, startDate: Date, endDate: Date, excludeAssignmentId?: string): { hasConflict: boolean; conflictingAssignments: Assignment[] } => {
-        const conflictingAssignments = assignments.filter(assignment => {
-            // Excluir la asignación actual si estamos editando
-            if (excludeAssignmentId && assignment.id === excludeAssignmentId) {
-                return false;
-            }
-            
-            // Solo verificar asignaciones del mismo empleado
-            if (!assignment.employeeId.includes(employeeId)) {
-                return false;
-            }
-            
-            // Verificar que las tareas sean del mismo día
-            const assignmentStart = new Date(assignment.startTime);
-            const assignmentEnd = new Date(assignment.endTime);
-            
-            // Comparar solo las fechas (sin considerar la hora)
-            const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-            const assignmentStartOnly = new Date(assignmentStart.getFullYear(), assignmentStart.getMonth(), assignmentStart.getDate());
-            
-            // Si no es el mismo día, no hay conflicto
-            if (startDateOnly.getTime() !== assignmentStartOnly.getTime()) {
-                return false;
-            }
-            
-            // Si es el mismo día, verificar si hay solapamiento de horarios
-            // Hay conflicto si:
-            // 1. La nueva tarea empieza durante una tarea existente
-            // 2. La nueva tarea termina durante una tarea existente
-            // 3. La nueva tarea contiene completamente una tarea existente
-            return (
-                (startDate >= assignmentStart && startDate < assignmentEnd) ||
-                (endDate > assignmentStart && endDate <= assignmentEnd) ||
-                (startDate <= assignmentStart && endDate >= assignmentEnd)
-            );
-        });
-        
-        return {
-            hasConflict: conflictingAssignments.length > 0,
-            conflictingAssignments
-        };
-    };
-    
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         if (!selectedTaskId) {
             alert("Por favor seleccione una tarea.");
             return;
@@ -317,14 +392,11 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         const endDate = new Date(assignmentDate.getTime());
         endDate.setHours(endHour, endMinute, 0, 0);
         
-
-        
         if (isEditMode && assignmentToEdit) {
-            // Editar una sola asignación
             const assignmentData = {
                 id: assignmentToEdit.id,
                 taskId: selectedTaskId,
-                employeeId: selectedEmployees.slice(), // Usar los empleados seleccionados actualmente
+                employeeId: selectedEmployees.slice(),
                 startTime: startDate,
                 endTime: endDate,
                 clientId: selectedClientId,
@@ -335,7 +407,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             
             // Validar conflictos para edición
             if (selectedEmployees && selectedEmployees.length > 0) {
-                // Verificar conflictos para cada empleado seleccionado actualmente
                 for (const employeeId of selectedEmployees) {
                     const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, assignmentToEdit.id);
                     if (hasConflict) {
@@ -351,7 +422,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                     }
                 }
             }
-            
 
             if (onSave) {
                 await onSave(assignmentData);
@@ -360,7 +430,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 setOpen(false);
             }
         } else if (selectedEmployees.length === 0) {
-            // Permitir asignaciones sin empleado (no incluir employeeId)
             const assignmentData: any = {
                 taskId: selectedTaskId,
                 startTime: startDate,
@@ -378,7 +447,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 setOpen(false);
             }
         } else {
-            // Crear una sola asignación con múltiples empleados
             // Verificar conflictos para todos los empleados seleccionados
             for (const employeeId of selectedEmployees) {
                 const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
@@ -391,14 +459,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                     }).join('\n');
                     
                     alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede asignar esta tarea.`);
-                    return; // Salir si hay un conflicto
+                    return;
                 }
             }
             
-            // Si no hay conflictos, crear una sola asignación con todos los empleados
             const assignmentData = {
                 taskId: selectedTaskId,
-                employeeId: selectedEmployees.slice(), // Crear una copia del array para evitar referencias
+                employeeId: selectedEmployees.slice(),
                 startTime: startDate,
                 endTime: endDate,
                 clientId: selectedClientId,
@@ -412,33 +479,40 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             } else {
                 const result = await addAssignment(assignmentData);
                 if (result.data && !result.error) {
-                    // Esperar un poco para que se complete el refresh
                     setTimeout(() => {
                         setOpen(false);
                     }, 500);
                 }
             }
         }
-    };
+    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, setOpen, addAssignment]);
 
-    const handleTaskCreated = (newTask: Task) => {
-        // onTaskCreated(newTask); // This was removed from props
+    const handleTaskCreated = useCallback((newTask: Task) => {
         setSelectedTaskId(newTask.id); 
         setIsCreateTaskOpen(false); 
-    }
+    }, []);
 
-    const handleClientCreated = async (newClient: Client) => {
+    const handleClientCreated = useCallback(async (newClient: Client) => {
         await refetchClients();
         setSelectedClientId(newClient.id); 
         setIsCreateClientOpen(false); 
-    }
+    }, [refetchClients]);
 
-    const qualifiedEmployees = selectedTask?.qualifiedEmployeeIds && selectedTask.qualifiedEmployeeIds.length > 0
-        ? employees.filter(emp => selectedTask.qualifiedEmployeeIds!.includes(emp.id))
-        : employees;
-    
-    const selectedClient = selectedClientId ? getClientById(selectedClientId) : null;
-    const hasExtras = selectedTask && selectedTask.extras && selectedTask.extras.length > 0;
+    // Función para limpiar el formulario
+    const handleCancel = useCallback(() => {
+        setSelectedTaskId("");
+        setSelectedEmployees([]);
+        setSelectedClientId(undefined);
+        setSelectedBoatIds([]);
+        setSelectedExtras([]);
+        setStartTime("09:00");
+        setEndTime("10:00");
+        setDate(formatDateForInput(new Date()));
+        setStatus('pending');
+        setIsEndTimeManual(false);
+        setTimeConflictWarning('');
+        setOpen(false);
+    }, [formatDateForInput, setOpen]);
 
     return (
         <DialogContent className="sm:max-w-lg">
@@ -562,9 +636,6 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
 
                         <div className="grid gap-2">
                           <Label>Empleado(s)</Label>
-                          
-
-                          
                            <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" className="flex justify-between items-center font-normal">
@@ -620,17 +691,39 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                         
                         <div className="grid gap-2">
                             <Label htmlFor="date">Fecha</Label>
-                            <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+                            <OptimizedInput 
+                                id="date" 
+                                type="date" 
+                                value={date} 
+                                onChange={setDate}
+                                debounceMs={300}
+                            />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="startTime">Hora de Inicio</Label>
-                                <Input id="startTime" type="time" value={startTime} onChange={e => {setStartTime(e.target.value); setIsEndTimeManual(false);}} disabled={!selectedTaskId} />
+                                <OptimizedInput 
+                                    id="startTime" 
+                                    type="time" 
+                                    value={startTime} 
+                                    onChange={(value) => {
+                                        setStartTime(value); 
+                                        setIsEndTimeManual(false);
+                                    }}
+                                    disabled={!selectedTaskId}
+                                    debounceMs={300}
+                                />
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="endTime">Hora de Fin (auto)</Label>
-                                <Input id="endTime" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} disabled={!isEndTimeManual} />
-                            </div>
+                                                         <div className="grid gap-2">
+                                 <Label htmlFor="endTime">Hora de Fin (auto)</Label>
+                                 <Input 
+                                     id="endTime" 
+                                     type="time" 
+                                     value={endTime} 
+                                     onChange={(e) => setEndTime(e.target.value)}
+                                     disabled={!isEndTimeManual}
+                                 />
+                             </div>
                         </div>
                          <div className="flex items-center space-x-2">
                             <Checkbox 
@@ -674,7 +767,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                     <TabsContent value="extras">
                         <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
                             <div className="space-y-4">
-                                {selectedTask.extras!.map((extra: TaskExtra) => {
+                                {selectedTask!.extras!.map((extra: TaskExtra) => {
                                     const currentQuantity = selectedExtras.find(se => se.extraId === extra.id)?.quantity || 0;
                                     const subtotal = (extra.price || 0) * currentQuantity;
                                     return (
@@ -685,14 +778,15 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                                                     {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extra.price || 0)} c/u
                                                 </p>
                                             </div>
-                                            <Input
+                                            <OptimizedInput
                                                 id={`extra-${extra.id}`}
                                                 type="number"
                                                 min="0"
-                                                value={currentQuantity}
-                                                onChange={(e) => handleExtraQuantityChange(extra.id, e.target.value)}
+                                                value={currentQuantity.toString()}
+                                                onChange={(value) => handleExtraQuantityChange(extra.id, value)}
                                                 className="w-24"
                                                 placeholder="0"
+                                                debounceMs={500}
                                             />
                                             <div className="w-28 text-right font-medium">
                                                 {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(subtotal)}
@@ -741,7 +835,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                  )}
                  {!isEditMode && <div></div>}
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+                    <Button type="button" variant="outline" onClick={handleCancel}>Cancelar</Button>
                     <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Asignar'}</Button>
                 </div>
             </DialogFooter>
