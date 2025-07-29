@@ -90,8 +90,6 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
 
     // Usar el listener centralizado en lugar de crear una nueva suscripción
     const removeListener = addAuthListener((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      
       if (event === 'SIGNED_IN' && session?.user) {
         // Usuario inició sesión, cargar su avatar
         setCurrentUserId(session.user.id);
