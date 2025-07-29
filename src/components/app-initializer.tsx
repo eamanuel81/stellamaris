@@ -23,8 +23,6 @@ export function AppInitializer() {
     isInitialized.current = true;
     isAppInitialized = true;
 
-    console.log('AppInitializer: Initializing application');
-
     // Agregar un listener básico para mantener la suscripción activa
     const removeListener = addAuthListener((event, session) => {
       // Este listener se mantiene activo para evitar que se limpie la suscripción

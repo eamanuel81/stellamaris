@@ -30,8 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Obtiene el perfil del usuario autenticado
   const fetchProfile = async (userId: string, email: string) => {
-    console.log('Fetching profile for user:', userId, email);
-    
     try {
       // 1. Primero intentar obtener el subrol desde employees (por email)
       const { data: employee, error: employeeError } = await supabase
@@ -40,20 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('email', email)
         .single();
       
-      console.log('Employee data:', employee, 'Employee error:', employeeError);
-      
       if (!employeeError && employee) {
-        console.log('Employee found, subrole:', employee.subrole);
         const subrole = employee.subrole && typeof employee.subrole === 'string' ? employee.subrole as Subrole : 'empleado';
         setSubrole(subrole);
         
         // Si el subrole es 'admin', establecer el rol como admin
         if (subrole === 'admin') {
-          console.log('User is admin based on subrole');
           setRole('admin');
         }
       } else {
-        console.log('No employee found, setting subrole to null');
         setSubrole(null);
       }
       
@@ -64,29 +57,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
       
-      console.log('Profile data:', profile, 'Profile error:', profileError);
-      
       if (profileError) {
-        console.log('No profile found or policy error, checking if user is admin by email...');
         // Si no hay perfil, verificar si es un administrador por email
         if (email === 'admin@stellamaris.com' || email.includes('admin')) {
-          console.log('User appears to be admin by email');
           setRole('admin');
         } else {
-          console.log('No profile found and not admin email');
           setRole(null);
         }
         // Usar el ID del usuario como avatar key por defecto
         setAvatarKey(userId);
       } else if (profile) {
-        console.log('Profile found, role:', profile.role);
         setRole(profile.role === 'Administrador' ? 'admin' : 'employee');
         
         // Usar el avatar_url del perfil si existe, sino usar el ID del usuario
         const avatarUrl = profile.avatar_url && typeof profile.avatar_url === 'string' ? profile.avatar_url : userId;
         setAvatarKey(avatarUrl);
       } else {
-        console.log('No profile data returned');
         setRole(null);
         setAvatarKey(userId);
       }
@@ -115,12 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const getSessionAndProfile = async () => {
       setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Session:', session);
       
       if (session?.user) {
         // Verificar si el usuario cambió
         if (currentUserId && currentUserId !== session.user.id) {
-          console.log('User changed, clearing state');
           clearAuthState();
         }
         
@@ -136,8 +120,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Usar el listener centralizado en lugar de crear una nueva suscripción
     const removeListener = addAuthListener(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      
       if (event === 'SIGNED_IN' && session?.user) {
         // Usuario inició sesión
         setCurrentUserId(session.user.id);
@@ -150,7 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
         // Token refrescado, verificar si el usuario cambió
         if (currentUserId !== session.user.id) {
-          console.log('User changed on token refresh');
           clearAuthState();
           setCurrentUserId(session.user.id);
           await fetchProfile(session.user.id, session.user.email!);
