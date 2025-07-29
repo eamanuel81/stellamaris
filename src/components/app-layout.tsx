@@ -168,11 +168,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <Link href="/settings"><DropdownMenuItem>Mi Perfil</DropdownMenuItem></Link>
-                  <Link href="/settings"><DropdownMenuItem>Configuración</DropdownMenuItem></Link>
+                  {/* <Link href="/settings"><DropdownMenuItem>Mi Perfil</DropdownMenuItem></Link> */}
+                  <Link href="/settings"><DropdownMenuItem className="cursor-pointer">Configuración</DropdownMenuItem></Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   Cerrar Sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
