@@ -167,10 +167,10 @@ export default function TasksPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEditClick(task)}>Editar</DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(task)}>Editar</DropdownMenuItem>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
                                             Eliminar
                                         </DropdownMenuItem>
                                     </AlertDialogTrigger>

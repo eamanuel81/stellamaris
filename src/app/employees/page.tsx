@@ -197,13 +197,13 @@ export default function EmployeesPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         {subrole !== 'encargado' && (
-                          <DropdownMenuItem onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
                         )}
-                        <DropdownMenuItem onClick={() => handleViewTasksClick(employee)}>Ver Tareas</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer" onClick={() => handleViewTasksClick(employee)}>Ver Tareas</DropdownMenuItem>
                         {subrole !== 'encargado' && (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                              <DropdownMenuItem  onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
                                 Eliminar
                               </DropdownMenuItem>
                             </AlertDialogTrigger>

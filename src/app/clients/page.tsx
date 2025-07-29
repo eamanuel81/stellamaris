@@ -190,12 +190,12 @@ export default function ClientsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         {subrole !== 'encargado' && (
-                          <DropdownMenuItem onClick={() => handleEditClick(client)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(client)}>Editar</DropdownMenuItem >
                         )}
                         {subrole !== 'encargado' && (
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
                                     Eliminar
                                 </DropdownMenuItem>
                             </AlertDialogTrigger>
