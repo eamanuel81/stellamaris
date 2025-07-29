@@ -11,7 +11,7 @@ let supabaseAdminInstance: ReturnType<typeof createClient> | null = null;
 // Función para inicializar Supabase solo una vez
 export function initializeSupabase() {
   if (!supabaseInstance) {
-    console.log('Initializing Supabase client (first time only)');
+    //console.log('Initializing Supabase client (first time only)');
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
@@ -40,7 +40,7 @@ export function initializeSupabaseAdmin() {
 // Función para resetear en desarrollo
 export function resetSupabaseInstances() {
   if (process.env.NODE_ENV === 'development') {
-    console.log('Resetting Supabase instances for HMR');
+   // console.log('Resetting Supabase instances for HMR');
     supabaseInstance = null;
     supabaseAdminInstance = null;
   }
