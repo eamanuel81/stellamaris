@@ -8,15 +8,12 @@ export function useEmployees() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchEmployees = useCallback(async () => {
-    console.log('=== FETCHING EMPLOYEES START ===');
     setIsLoading(true);
     setError(null);
     
     try {
       // Verificar si el usuario está autenticado
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('Current user for employees:', user?.id, user?.email);
-      console.log('User error:', userError);
       
       if (userError) {
         console.error('Error getting user:', userError);
@@ -27,58 +24,30 @@ export function useEmployees() {
       }
       
       if (!user) {
-        console.log('No authenticated user, skipping employees fetch');
         setEmployees([]);
         setIsLoading(false);
         return;
       }
 
-      console.log('Attempting to fetch employees from database...');
-      
       const { data, error } = await supabase
         .from('employees')
         .select('*')
         .order('name', { ascending: true });
         
-      console.log('Employees response:', { data, error });
-      console.log('Data type:', typeof data);
-      console.log('Data length:', data?.length);
-      console.log('Error type:', typeof error);
-        
       if (error) {
         console.error('Error fetching employees:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
         setError(`Error cargando empleados: ${error.message}`);
         setEmployees([]);
       } else {
-        console.log('Employees loaded from database:', data?.length || 0, 'employees');
-        console.log('Employees data:', data);
-        
-        // Verificar subroles
-        const employeesBySubrole = data?.reduce((acc, emp) => {
-          const subrole = (emp as any).subrole || 'sin_subrole';
-          acc[subrole] = ((acc[subrole] as number) || 0) + 1;
-          return acc;
-        }, {} as Record<string, number>);
-        
-        console.log('Employees by subrole:', employeesBySubrole);
-        
         setEmployees((data as Employee[]) || []);
         setError(null);
       }
     } catch (err) {
       console.error('Unexpected error fetching employees:', err);
-      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack available');
       setError(`Error inesperado al cargar los empleados: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setEmployees([]);
     } finally {
       setIsLoading(false);
-      console.log('=== FETCHING EMPLOYEES END ===');
     }
   }, []);
 
@@ -100,7 +69,6 @@ export function useEmployees() {
         return false;
       }
       
-      console.log('Estructura de profiles verificada:', data);
       return true;
     } catch (err) {
       console.error('Error inesperado verificando profiles:', err);
@@ -157,8 +125,6 @@ export function useEmployees() {
         role: 'Empleado'
       };
 
-      console.log('Intentando crear perfil con datos:', profileData);
-
       const { data: profileResult, error: profileError } = await supabase
         .from('profiles')
         .insert([profileData])
@@ -200,11 +166,10 @@ export function useEmployees() {
       }
 
       if (employeeData && employeeData.length > 0) {
-        console.log('Employee created successfully:', employeeData[0]);
         setEmployees(prev => [(employeeData[0] as Employee), ...prev]);
         setError(null);
         setIsLoading(false);
-        return { data: employeeData[0], error: null };
+        return { data: employeeData[0] as Employee, error: null };
       }
 
     } catch (error) {
@@ -233,10 +198,9 @@ export function useEmployees() {
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
-        console.log('Employee updated successfully:', data[0]);
         setEmployees(prev => prev.map(e => e.id === employee.id ? (data[0] as Employee) : e));
         setError(null);
-        return { data: data[0], error: null };
+        return { data: data[0] as Employee, error: null };
       }
     } catch (err) {
       console.error('Unexpected error updating employee:', err);
@@ -258,7 +222,6 @@ export function useEmployees() {
         setError(error.message);
         return { error };
       } else {
-        console.log('Employee deleted successfully:', id);
         setEmployees(prev => prev.filter(e => e.id !== id));
         setError(null);
         return { error: null };
@@ -274,7 +237,6 @@ export function useEmployees() {
 
   // Función para recargar datos manualmente
   const refreshEmployees = useCallback(() => {
-    console.log('Manually refreshing employees...');
     fetchEmployees();
   }, [fetchEmployees]);
 
