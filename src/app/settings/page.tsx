@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabaseClient"
 import { useAvatar } from "@/contexts/avatar-context"
 import { changeUserPassword, validatePassword } from "@/lib/auth-utils"
 import { updateUserProfile } from "@/lib/profile-utils"
+import { useNotifications } from "@/hooks/use-notifications"
+import { useNotificationPreferences } from "@/hooks/use-notification-preferences"
 import {
   Button,
   Card,
@@ -24,6 +26,7 @@ import {
   AvatarFallback,
   Alert,
   AlertDescription,
+  Switch,
 } from "@/components/ui"
 import { useToast } from "@/hooks/use-toast"
 
@@ -53,6 +56,8 @@ export default function SettingsPage() {
   const { role, logout } = useAuth();
   const { avatarKey, updateAvatar, refreshAvatar } = useAvatar();
   const { toast } = useToast();
+  const { clearAllNotifications } = useNotifications();
+  const { preferences, toggleNotifications, isLoading: preferencesLoading } = useNotificationPreferences();
   
   const [profile, setProfile] = React.useState<UserProfile | null>(null);
   const [employee, setEmployee] = React.useState<EmployeeData | null>(null);
@@ -76,6 +81,7 @@ export default function SettingsPage() {
   });
   
   const [errors, setErrors] = React.useState<{[key: string]: string}>({});
+
 
   // Cargar datos del usuario
   React.useEffect(() => {
@@ -516,6 +522,74 @@ export default function SettingsPage() {
                 <p className="text-sm text-muted-foreground">{employee.dni}</p>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Notificaciones</CardTitle>
+            <CardDescription>
+              Configura tus preferencias de notificaciones.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Notificaciones de tareas</Label>
+                <p className="text-sm text-muted-foreground">
+                  Recibe notificaciones cuando se te asignen nuevas tareas o se modifiquen las existentes.
+                </p>
+              </div>
+              <Switch
+                checked={preferences.enabled}
+                onCheckedChange={async (enabled) => {
+                  const result = await toggleNotifications(enabled);
+                  if (result.error) {
+                    toast({
+                      title: "Error",
+                      description: "No se pudo actualizar la configuración de notificaciones.",
+                      variant: "destructive",
+                    });
+                  } else {
+                    toast({
+                      title: "Configuración actualizada",
+                      description: `Las notificaciones han sido ${enabled ? 'activadas' : 'desactivadas'}.`,
+                    });
+                  }
+                }}
+                disabled={preferencesLoading}
+              />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-sm font-medium">Limpiar todas las notificaciones</Label>
+                <p className="text-sm text-muted-foreground">
+                  Elimina todas las notificaciones existentes.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const result = await clearAllNotifications();
+                  if (result.error) {
+                    toast({
+                      title: "Error",
+                      description: "No se pudieron eliminar las notificaciones.",
+                      variant: "destructive",
+                    });
+                  } else {
+                    toast({
+                      title: "Notificaciones eliminadas",
+                      description: "Todas las notificaciones han sido eliminadas.",
+                    });
+                  }
+                }}
+              >
+                Limpiar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

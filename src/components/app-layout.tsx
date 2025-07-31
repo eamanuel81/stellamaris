@@ -44,6 +44,7 @@ import {
 
 import { useAuth } from "./auth-provider"
 import { useAvatar } from "@/contexts/avatar-context"
+import { NotificationsDialog } from "./notifications-dialog"
 
 const adminNavItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
@@ -149,10 +150,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </h1>
             </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-              <span className="sr-only">Notificaciones</span>
-            </Button>
+            <NotificationsDialog />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-10 w-10 rounded-full">

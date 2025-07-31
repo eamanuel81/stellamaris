@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { Assignment } from '@/lib/data';
+import { useNotifications } from './use-notifications';
 
 export function useAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { createNotification } = useNotifications();
   
   // Usar ref para evitar llamadas duplicadas
   const fetchingRef = useRef(false);
@@ -101,10 +103,76 @@ export function useAssignments() {
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
+        const newAssignment = data[0] as Assignment;
         // Optimización: usar función callback para evitar stale closures
-        setAssignments(prev => [data[0] as Assignment, ...prev]);
+        setAssignments(prev => [newAssignment, ...prev]);
         setError(null);
-        return { data: data[0] as Assignment, error: null };
+
+        // Crear notificaciones para los empleados asignados
+        if (assignment.employeeId && assignment.employeeId.length > 0) {
+          for (const employeeId of assignment.employeeId) {
+            // Obtener información del empleado
+            const { data: employeeData } = await supabase
+              .from('employees')
+              .select('name, lastName, email')
+              .eq('id', employeeId)
+              .single();
+
+            if (employeeData && employeeData.email) {
+              // Obtener información de la tarea
+              const { data: taskData } = await supabase
+                .from('tasks')
+                .select('title')
+                .eq('id', assignment.taskId)
+                .single();
+
+              // Obtener el userId del empleado
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', employeeData.email)
+                .single();
+
+              if (profileData && taskData && typeof taskData.title === 'string') {
+                console.log('Creating notification for employee:', {
+                  employeeId,
+                  employeeEmail: employeeData.email,
+                  profileId: profileData.id,
+                  taskTitle: taskData.title,
+                  assignmentId: newAssignment.id
+                });
+                
+                const notificationResult = await createNotification({
+                  userid: profileData.id as string, // Changed from userId to userid
+                  title: 'Nueva tarea asignada',
+                  message: `Se te ha asignado la tarea "${taskData.title}" para el ${new Date(assignment.startTime).toLocaleDateString('es-ES')}`,
+                  type: 'task_assigned',
+                  isread: false, // Changed from isRead to isread
+                  data: {
+                    assignmentId: newAssignment.id,
+                    taskId: assignment.taskId,
+                    employeeId: employeeId
+                  }
+                });
+                
+                if (notificationResult.error) {
+                  console.error('Failed to create notification for employee:', employeeId, notificationResult.error);
+                } else {
+                  console.log('Notification created successfully for employee:', employeeId);
+                }
+              } else {
+                console.error('Missing data for notification:', {
+                  profileData: !!profileData,
+                  taskData: !!taskData,
+                  taskTitle: taskData?.title,
+                  employeeEmail: employeeData?.email
+                });
+              }
+            }
+          }
+        }
+
+        return { data: newAssignment, error: null };
       }
     } catch (err) {
       console.error('Unexpected error creating assignment:', err);
@@ -113,10 +181,17 @@ export function useAssignments() {
     }
     
     return { data: null, error: new Error('No se pudo crear la asignación') };
-  }, []);
+  }, [createNotification]);
 
   const updateAssignment = useCallback(async (assignment: Assignment) => {
     try {
+      // Obtener la asignación anterior para comparar
+      const { data: oldAssignmentData } = await supabase
+        .from('assignments')
+        .select('*')
+        .eq('id', assignment.id)
+        .single();
+
       const { data, error } = await supabase
         .from('assignments')
         .update(assignment)
@@ -128,10 +203,82 @@ export function useAssignments() {
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
+        const updatedAssignment = data[0] as Assignment;
         // Usar función callback para actualización eficiente
-        setAssignments(prev => prev.map(a => a.id === assignment.id ? data[0] as Assignment : a));
+        setAssignments(prev => prev.map(a => a.id === assignment.id ? updatedAssignment : a));
         setError(null);
-        return { data: data[0] as Assignment, error: null };
+
+        // Crear notificaciones si los empleados cambiaron
+        if (oldAssignmentData && assignment.employeeId && assignment.employeeId.length > 0) {
+          const oldEmployeeIds = oldAssignmentData.employeeId || [];
+          const newEmployeeIds = assignment.employeeId;
+          
+          // Encontrar empleados que fueron agregados
+          const addedEmployees = newEmployeeIds.filter(id => !(oldEmployeeIds as string[]).includes(id));
+          
+          for (const employeeId of addedEmployees) {
+            // Obtener información del empleado
+            const { data: employeeData } = await supabase
+              .from('employees')
+              .select('name, lastName, email')
+              .eq('id', employeeId)
+              .single();
+
+            if (employeeData && employeeData.email) {
+              // Obtener información de la tarea
+              const { data: taskData } = await supabase
+                .from('tasks')
+                .select('title')
+                .eq('id', assignment.taskId)
+                .single();
+
+              // Obtener el userId del empleado
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', employeeData.email)
+                .single();
+
+              if (profileData && taskData && typeof taskData.title === 'string') {
+                console.log('Creating notification for modified assignment:', {
+                  employeeId,
+                  employeeEmail: employeeData.email,
+                  profileId: profileData.id,
+                  taskTitle: taskData.title,
+                  assignmentId: updatedAssignment.id
+                });
+                
+                const notificationResult = await createNotification({
+                  userid: profileData.id as string, // Changed from userId to userid
+                  title: 'Tarea modificada',
+                  message: `Se te ha asignado la tarea "${taskData.title}" para el ${new Date(assignment.startTime).toLocaleDateString('es-ES')}`,
+                  type: 'task_modified',
+                  isread: false, // Changed from isRead to isread
+                  data: {
+                    assignmentId: updatedAssignment.id,
+                    taskId: assignment.taskId,
+                    employeeId: employeeId
+                  }
+                });
+                
+                if (notificationResult.error) {
+                  console.error('Failed to create notification for employee:', employeeId, notificationResult.error);
+                } else {
+                  console.log('Notification created successfully for employee:', employeeId);
+                }
+              } else {
+                console.error('Missing data for notification in update:', {
+                  profileData: !!profileData,
+                  taskData: !!taskData,
+                  taskTitle: taskData?.title,
+                  employeeEmail: employeeData?.email
+                });
+              }
+            }
+          }
+        }
+
+        return { data: updatedAssignment, error: null };
       }
     } catch (err) {
       console.error('Unexpected error updating assignment:', err);
@@ -140,7 +287,7 @@ export function useAssignments() {
     }
     
     return { data: null, error: new Error('No se pudo actualizar la asignación') };
-  }, []);
+  }, [createNotification]);
 
   const deleteAssignment = useCallback(async (id: string) => {
     try {
