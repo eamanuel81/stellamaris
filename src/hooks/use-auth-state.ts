@@ -15,11 +15,9 @@ export function useAuthState() {
 
     // Inicializar la suscripción global solo una vez
     if (!isGlobalInitialized) {
-     // console.log('Initializing global auth subscription');
       isGlobalInitialized = true;
       
       globalAuthSubscription = supabase.auth.onAuthStateChange((event, session) => {
-      //  console.log('Global auth state changed:', event, session?.user?.id);
         
         // Notificar a todos los listeners
         authListeners.forEach(listener => {
@@ -48,7 +46,6 @@ export function useAuthState() {
 // Función para limpiar la suscripción global
 export function cleanupAuthSubscription() {
   if (globalAuthSubscription) {
-    console.log('Cleaning up global auth subscription');
     globalAuthSubscription.data.subscription.unsubscribe();
     globalAuthSubscription = null;
     authListeners.clear();

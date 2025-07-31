@@ -27,9 +27,7 @@ export async function changeUserPassword(newPassword: string): Promise<PasswordC
     }
 
     // Si falla con el cliente normal, intentar con el admin client
-    console.log('Fallback to admin client for password change');
-    
-    const { error: adminError } = await getSupabaseAdmin().auth.admin.updateUserById(
+    const { error: adminError } = await supabase.auth.admin.updateUserById(
       user.id,
       { password: newPassword }
     );
@@ -95,5 +93,4 @@ export function validatePassword(password: string): { isValid: boolean; error?: 
 export function clearAvatarState() {
   // Esta función puede ser llamada desde el contexto del avatar
   // para limpiar el estado cuando se detecta un cambio de usuario
-  console.log('Clearing avatar state due to user change');
 } 

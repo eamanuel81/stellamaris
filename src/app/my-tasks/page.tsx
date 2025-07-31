@@ -163,8 +163,6 @@ export default function MyTasksPage() {
                 const { data: { user }, error } = await supabase.auth.getUser();
                 if (user && !error && user.email) {
                     setCurrentUserEmail(user.email);
-                    console.log('Current user email:', user.email);
-                    console.log('Current user ID:', user.id);
                     
                     // Verificar si el usuario existe en la tabla de empleados
                     const { data: employee, error: employeeError } = await supabase
@@ -174,28 +172,17 @@ export default function MyTasksPage() {
                         .single();
                     
                     if (employeeError) {
-                        console.log('Employee not found in database for email:', user.email);
-                        console.log('Employee error:', employeeError);
+                        // Employee not found, handle silently
                     } else {
-                        console.log('Employee found in database:', employee);
+                        // Employee found, handle silently
                     }
                 }
             } catch (error) {
-                console.error('Error getting user email:', error);
+                // Handle error silently
             }
         };
         getUserEmail();
     }, []);
-
-    console.log('MyTasksPage - Current user email:', currentUserEmail, 'role:', role, 'subrole:', subrole);
-    console.log('MyTasksPage - Data loaded:', {
-        assignments: assignments?.length || 0,
-        tasks: tasks?.length || 0,
-        clients: clients?.length || 0,
-        employees: employees?.length || 0
-    });
-    
-
 
     // Filtrar asignaciones del empleado actual
     const myAssignments = React.useMemo(() => {
@@ -203,13 +190,11 @@ export default function MyTasksPage() {
         
         // Si es admin, mostrar todas las asignaciones
         if (role === 'admin' || subrole === 'admin') {
-            console.log('Admin user - showing all assignments');
             return assignments;
         }
         
         // Para empleados, filtrar solo sus asignaciones
         if (!currentUserEmail) {
-            console.log('No user email found');
             return [];
         }
         
@@ -217,9 +202,6 @@ export default function MyTasksPage() {
         const currentEmployees = employees.filter(emp => emp.email === currentUserEmail);
         
         if (currentEmployees.length === 0) {
-            console.log('Current user not found in employees list');
-            console.log('Current user email:', currentUserEmail);
-            console.log('Available employees:', employees.map(emp => ({ id: emp.id, name: emp.name, email: emp.email })));
             
             // Intentar buscar por email parcial o similar
             const similarEmployee = employees.find(emp => 
@@ -228,8 +210,7 @@ export default function MyTasksPage() {
             );
             
             if (similarEmployee) {
-                console.log('Found similar employee:', similarEmployee);
-                console.log('Using similar employee for filtering');
+                
                 const filteredAssignments = assignments.filter(assignment => {
                     let employeeIds: string[] = [];
                     
@@ -246,11 +227,9 @@ export default function MyTasksPage() {
                     }
                     
                     const hasEmployee = employeeIds.includes(similarEmployee.id);
-                    console.log(`Assignment ${assignment.id}: employeeId=${assignment.employeeId}, parsed=${employeeIds}, includes similar employee=${hasEmployee}`);
                     return hasEmployee;
                 });
                 
-                console.log('Filtered assignments for similar employee:', filteredAssignments.length);
                 return filteredAssignments;
             }
             
@@ -259,12 +238,8 @@ export default function MyTasksPage() {
         
         // Si hay múltiples empleados con el mismo email, usar el primero
         const currentEmployee = currentEmployees[0];
-        console.log('Found employees with same email:', currentEmployees.length);
-        console.log('Using employee:', currentEmployee.name, currentEmployee.lastName, 'ID:', currentEmployee.id);
         
 
-        
-        console.log('Current employee found:', currentEmployee.name, currentEmployee.lastName, 'ID:', currentEmployee.id);
         
         // Filtrar asignaciones que incluyan al empleado actual
         const filteredAssignments = assignments.filter(assignment => {
@@ -289,12 +264,10 @@ export default function MyTasksPage() {
             return employeeIds.includes(currentEmployee.id);
         });
         
-        console.log('Filtered assignments for employee:', filteredAssignments.length);
         return filteredAssignments;
     }, [assignments, role, subrole, currentUserEmail, employees]);
 
     const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
-        console.log('Updating assignment status:', assignmentId, 'to', newStatus);
         
         try {
             // Buscar la asignación actual
@@ -309,12 +282,12 @@ export default function MyTasksPage() {
             const result = await updateAssignment(updatedAssignment);
             
             if (result.error) {
-                console.error('Error updating assignment:', result.error);
+                // Handle error silently
             } else {
-                console.log('Assignment updated successfully');
+                // Assignment updated successfully
             }
         } catch (error) {
-            console.error('Unexpected error updating assignment:', error);
+            // Handle unexpected error silently
     }
   }
   

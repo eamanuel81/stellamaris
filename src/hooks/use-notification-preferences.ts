@@ -28,7 +28,6 @@ export function useNotificationPreferences() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       if (userError) {
-        console.error('Error getting user:', userError);
         setError('Error de autenticación');
         setIsLoading(false);
         return;
@@ -39,8 +38,6 @@ export function useNotificationPreferences() {
         return;
       }
 
-      console.log('Fetching preferences for user:', user.id);
-
       // Intentar obtener preferencias desde la tabla user_preferences
       const { data, error } = await supabase
         .from('user_preferences')
@@ -49,17 +46,8 @@ export function useNotificationPreferences() {
         .single();
         
       if (error) {
-        console.error('Error fetching notification preferences:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        
         // Si hay error PGRST116 (no rows found), usar valores por defecto
         if (error.code === 'PGRST116') {
-          console.log('No preferences found for user, using defaults');
           setPreferences({
             enabled: true,
             taskAssignments: true,
@@ -69,7 +57,6 @@ export function useNotificationPreferences() {
           } as NotificationPreferences);
           setError(null);
         } else if (error.code === '406') {
-          console.log('Using default preferences due to 406 error');
           setPreferences({
             enabled: true,
             taskAssignments: true,
@@ -79,7 +66,6 @@ export function useNotificationPreferences() {
           } as NotificationPreferences);
           setError(null);
         } else {
-          console.log('Using default preferences due to error:', error.code);
           setPreferences({
             enabled: true,
             taskAssignments: true,
@@ -90,12 +76,10 @@ export function useNotificationPreferences() {
           setError(null);
         }
       } else if (data && data.notification_preferences) {
-        console.log('Preferences loaded successfully:', data.notification_preferences);
         setPreferences(data.notification_preferences as NotificationPreferences);
         setError(null);
       } else {
         // Si no hay datos, usar los valores por defecto
-        console.log('No preferences found, using defaults');
         setPreferences({
           enabled: true,
           taskAssignments: true,
@@ -106,12 +90,6 @@ export function useNotificationPreferences() {
         setError(null);
       }
     } catch (err) {
-      console.error('Unexpected error fetching notification preferences:', err);
-      console.error('Error type:', typeof err);
-      console.error('Error message:', err instanceof Error ? err.message : 'No message');
-      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
-      console.error('Full error object:', JSON.stringify(err, null, 2));
-      
       // En caso de cualquier error inesperado, usar valores por defecto
       setPreferences({
         enabled: true,
@@ -150,7 +128,6 @@ export function useNotificationPreferences() {
         });
         
       if (error) {
-        console.error('Error updating notification preferences:', error);
         setError(error.message);
         return { error };
       } else {
@@ -159,7 +136,6 @@ export function useNotificationPreferences() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error updating notification preferences:', err);
       setError('Error inesperado al actualizar las preferencias');
       return { error: new Error('Error inesperado') };
     }

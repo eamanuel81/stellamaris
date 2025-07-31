@@ -90,76 +90,34 @@ export default function SettingsPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        console.log('Loading user data for:', user.id, user.email);
+        if (user && user.email) {
+            // Load user data silently
+            const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
 
-        // Cargar perfil desde profiles
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+            const { data: employeeData, error: employeeError } = await supabase
+                .from('employees')
+                .select('*')
+                .eq('email', user.email)
+                .single();
 
-        console.log('Profile data:', profileData, 'Profile error:', profileError);
+            // Set initial form data based on available information
+            const initialFormData = {
+                name: (profileData?.firstName || employeeData?.name || user.user_metadata?.firstName || '') as string,
+                lastName: (profileData?.lastName || employeeData?.lastName || user.user_metadata?.lastName || '') as string,
+                nickname: (employeeData?.nickname || '') as string,
+                phone: (profileData?.phone || employeeData?.phone || '') as string,
+                address: (profileData?.address || employeeData?.address || '') as string
+            };
 
-        // Cargar datos de empleado
-        const { data: employeeData, error: employeeError } = await supabase
-          .from('employees')
-          .select('*')
-          .eq('email', user.email)
-          .single();
-
-        console.log('Employee data:', employeeData, 'Employee error:', employeeError);
-
-        // Inicializar formData con valores por defecto
-        let initialFormData = {
-          name: '',
-          lastName: '',
-          nickname: '',
-          phone: '',
-          address: '',
-        };
-
-        // Si hay perfil, usar esos datos
-        if (profileData) {
-          setProfile(profileData);
-          initialFormData = {
-            name: profileData.name || '',
-            lastName: profileData.last_name || '',
-            nickname: profileData.full_name || '',
-            phone: '',
-            address: '',
-          };
+            setFormData(initialFormData);
         }
-
-        // Si hay empleado, usar esos datos (prioridad sobre profile)
-        if (employeeData) {
-          setEmployee(employeeData);
-          initialFormData = {
-            name: employeeData.name || initialFormData.name,
-            lastName: employeeData.lastName || initialFormData.lastName,
-            nickname: employeeData.nickname || initialFormData.nickname,
-            phone: employeeData.phone || '',
-            address: employeeData.address || '',
-          };
-        }
-
-        // Si no hay ni profile ni employee, usar datos del usuario autenticado
-        if (!profileData && !employeeData) {
-          console.log('No profile or employee found, using auth user data');
-          initialFormData = {
-            name: user.user_metadata?.name || '',
-            lastName: user.user_metadata?.last_name || '',
-            nickname: user.user_metadata?.full_name || '',
-            phone: '',
-            address: '',
-          };
-        }
-
-        setFormData(initialFormData);
-        console.log('Final form data:', initialFormData);
 
       } catch (error) {
-        console.error('Error loading user data:', error);
+        // Handle error silently
       } finally {
         setIsLoading(false);
       }
@@ -184,7 +142,7 @@ export default function SettingsPage() {
       }
 
     } catch (error) {
-      console.error('Error updating avatar:', error);
+      // Handle error silently
       toast({
         title: "Error",
         description: "No se pudo actualizar el avatar. Inténtalo de nuevo.",
@@ -248,20 +206,10 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuario no autenticado');
 
-      console.log('Saving profile for user:', user.id, user.email);
-      console.log('Form data:', formData);
-
       const result = await updateUserProfile(user.id, user.email!, formData);
 
       if (result.success) {
-        // Actualizar estado local con los datos actualizados
-        if (result.updatedProfile) {
-          setProfile(result.updatedProfile);
-        }
-        if (result.updatedEmployee) {
-          setEmployee(result.updatedEmployee);
-        }
-
+        // Profile updated successfully
         toast({
           title: "Perfil actualizado",
           description: "Tu información ha sido guardada exitosamente.",
@@ -271,7 +219,7 @@ export default function SettingsPage() {
       }
 
     } catch (error) {
-      console.error('Error saving profile:', error);
+      // Handle error silently
       
       let errorMessage = "No se pudo actualizar el perfil. Inténtalo de nuevo.";
       
@@ -318,7 +266,7 @@ export default function SettingsPage() {
       }
 
     } catch (error) {
-      console.error('Error changing password:', error);
+      // Handle error silently
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "No se pudo cambiar la contraseña. Inténtalo de nuevo.",

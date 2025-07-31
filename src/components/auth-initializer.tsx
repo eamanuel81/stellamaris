@@ -15,22 +15,25 @@ export function AuthInitializer() {
   useDevCleanup();
 
   useEffect(() => {
-    // Evitar múltiples inicializaciones
-    if (isInitialized.current || isGlobalInitialized) return;
-    
-    isInitialized.current = true;
-    isGlobalInitialized = true;
+    // Initialize global auth state
+    const initializeAuth = async () => {
+      // Evitar múltiples inicializaciones
+      if (isInitialized.current || isGlobalInitialized) return;
+      
+      isInitialized.current = true;
+      isGlobalInitialized = true;
 
-    console.log('AuthInitializer: Initializing global auth state');
+      // Agregar un listener básico para mantener la suscripción activa
+      const removeListener = addAuthListener((event, session) => {
+        // Este listener se mantiene activo para evitar que se limpie la suscripción
+      });
 
-    // Agregar un listener básico para mantener la suscripción activa
-    const removeListener = addAuthListener((event, session) => {
-      // Este listener se mantiene activo para evitar que se limpie la suscripción
-    });
-
-    return () => {
-      removeListener();
+      return () => {
+        removeListener();
+      };
     };
+
+    initializeAuth();
   }, [addAuthListener]);
 
   return null; // Este componente no renderiza nada

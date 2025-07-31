@@ -30,7 +30,6 @@ export function useNotifications() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('Error getting user:', userError);
         setError('Error de autenticación');
         setNotifications([]);
         setIsLoading(false);
@@ -38,39 +37,27 @@ export function useNotifications() {
       }
       
       if (!user) {
-        console.log('No user found, setting empty notifications');
         setNotifications([]);
         setIsLoading(false);
         return;
       }
 
-      console.log('Fetching notifications for user:', user.id);
-      
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('userid', user.id) // Changed from userId to userid
-        .order('createdat', { ascending: false }); // Changed from createdAt to createdat
+        .eq('userid', user.id)
+        .order('createdat', { ascending: false });
         
       if (error) {
-        console.error('Error fetching notifications:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        setError(`Error cargando notificaciones: ${error.message} (${error.code})`);
+        setError(`Error cargando notificaciones: ${error.message}`);
         setNotifications([]);
       } else {
-        console.log('Notifications fetched successfully:', data);
         const notificationsData = (data as unknown as Notification[]) || [];
         setNotifications(notificationsData);
-        setUnreadCount(notificationsData.filter(n => !n.isread).length); // Changed from isRead to isread
+        setUnreadCount(notificationsData.filter(n => !n.isread).length);
         setError(null);
       }
     } catch (err) {
-      console.error('Unexpected error fetching notifications:', err);
       setError(`Error inesperado al cargar las notificaciones: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setNotifications([]);
     } finally {
@@ -97,7 +84,6 @@ export function useNotifications() {
         .eq('id', notificationId);
         
       if (error) {
-        console.error('Error marking notification as read:', error);
         return { error };
       } else {
         setNotifications(prev => 
@@ -107,7 +93,6 @@ export function useNotifications() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error marking notification as read:', err);
       return { error: new Error('Error inesperado') };
     }
   }, []);
@@ -124,7 +109,6 @@ export function useNotifications() {
         .eq('isread', false); // Changed from isRead to isread
         
       if (error) {
-        console.error('Error marking all notifications as read:', error);
         return { error };
       } else {
         setNotifications(prev => prev.map(n => ({ ...n, isread: true }))); // Changed from isRead to isread
@@ -132,51 +116,39 @@ export function useNotifications() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error marking all notifications as read:', err);
       return { error: new Error('Error inesperado') };
     }
   }, []);
 
   const createNotification = useCallback(async (notification: Omit<Notification, 'id' | 'createdat'>) => { // Changed from createdAt to createdat
     try {
-      console.log('Creating notification:', notification);
       
       // Validar que todos los campos requeridos estén presentes
       if (!notification.userid) {
-        console.error('Error: userid is missing');
         return { data: null, error: new Error('userid is required') };
       }
       
       if (!notification.title) {
-        console.error('Error: title is missing');
         return { data: null, error: new Error('title is required') };
       }
       
       if (!notification.message) {
-        console.error('Error: message is missing');
         return { data: null, error: new Error('message is required') };
       }
       
       if (!notification.type) {
-        console.error('Error: type is missing');
         return { data: null, error: new Error('type is required') };
       }
-      
-      console.log('Notification data validated, inserting into database...');
       
       // Verificar autenticación antes de insertar
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) {
-        console.error('Auth error before insert:', authError);
         return { data: null, error: authError };
       }
       
       if (!user) {
-        console.error('No authenticated user found');
         return { data: null, error: new Error('No authenticated user') };
       }
-      
-      console.log('User authenticated:', user.id);
       
       const { data, error } = await supabase
         .from('notifications')
@@ -184,29 +156,18 @@ export function useNotifications() {
         .select();
         
       if (error) {
-        console.error('Error creating notification:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
         return { data: null, error };
       } else if (data && data.length > 0) {
         const newNotification = data[0] as unknown as Notification;
-        console.log('Notification created successfully:', newNotification);
         setNotifications(prev => [newNotification, ...prev]);
         if (!newNotification.isread) { // Changed from isRead to isread
           setUnreadCount(prev => prev + 1);
         }
         return { data: newNotification, error: null };
       } else {
-        console.error('No data returned from insert');
         return { data: null, error: new Error('No data returned from insert') };
       }
     } catch (err) {
-      console.error('Unexpected error creating notification:', err);
-      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace');
       return { data: null, error: new Error('Error inesperado') };
     }
     
@@ -221,7 +182,6 @@ export function useNotifications() {
         .eq('id', notificationId);
         
       if (error) {
-        console.error('Error deleting notification:', error);
         return { error };
       } else {
         const notification = notifications.find(n => n.id === notificationId);
@@ -232,7 +192,6 @@ export function useNotifications() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error deleting notification:', err);
       return { error: new Error('Error inesperado') };
     }
   }, [notifications]);
@@ -248,7 +207,6 @@ export function useNotifications() {
         .eq('userid', user.id); // Changed from userId to userid
         
       if (error) {
-        console.error('Error clearing all notifications:', error);
         return { error };
       } else {
         setNotifications([]);
@@ -256,7 +214,6 @@ export function useNotifications() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error clearing all notifications:', err);
       return { error: new Error('Error inesperado') };
     }
   }, []);

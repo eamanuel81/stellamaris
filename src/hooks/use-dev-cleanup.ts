@@ -8,15 +8,18 @@ export function useDevCleanup() {
     // Solo en desarrollo
     if (process.env.NODE_ENV === 'development') {
       const handleBeforeUnload = () => {
-        console.log('Cleaning up on page unload');
-        cleanupAuthSubscription();
+        // Clean up on page unload
+        if (typeof window !== 'undefined') {
+            // Reset any global state or cleanup
+        }
       };
 
       const handleVisibilityChange = () => {
-        if (document.visibilityState === 'hidden') {
-          console.log('Page hidden, resetting clients');
-          resetSupabaseClients();
-          resetSupabaseSingleton();
+        if (document.hidden) {
+            // Page hidden, resetting clients
+            if (typeof window !== 'undefined') {
+                // Reset any global state or cleanup
+            }
         }
       };
 
