@@ -117,15 +117,12 @@ export function useAssignments() {
               .eq('id', assignment.taskId)
               .single();
 
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('email', (employeeData as any)?.email)
-              .single();
-
-            if (profileData && taskData && typeof taskData.title === 'string') {
+            // Usar el auth_id del empleado (UUID del usuario autenticado)
+            const userid = (employeeData as any)?.auth_id;
+            
+            if (userid && taskData && typeof taskData.title === 'string') {
               const notificationResult = await createNotification({
-                userid: profileData.id as string,
+                userid: userid as string,
                 title: 'Nueva tarea asignada',
                 message: `Se te ha asignado la tarea "${taskData.title}" para el ${new Date(assignment.startTime).toLocaleDateString('es-ES')}`,
                 type: 'task_assigned',
@@ -191,15 +188,12 @@ export function useAssignments() {
               .eq('id', assignment.taskId)
               .single();
 
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('email', (employeeData as any)?.email)
-              .single();
-
-            if (profileData && taskData && typeof taskData.title === 'string') {
+            // Usar el auth_id del empleado (UUID del usuario autenticado)
+            const userid = (employeeData as any)?.auth_id;
+            
+            if (userid && taskData && typeof taskData.title === 'string') {
               const notificationResult = await createNotification({
-                userid: profileData.id as string,
+                userid: userid as string,
                 title: 'Tarea modificada',
                 message: `Has sido agregado a la tarea "${taskData.title}" para el ${new Date(assignment.startTime).toLocaleDateString('es-ES')}`,
                 type: 'task_modified',

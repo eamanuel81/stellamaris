@@ -23,16 +23,17 @@ export function useNotificationPreferences() {
   const fetchPreferences = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
+    
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-
+      
       if (userError) {
+        console.error('Error getting user:', userError);
         setError('Error de autenticación');
         setIsLoading(false);
         return;
       }
-
+      
       if (!user) {
         setIsLoading(false);
         return;
@@ -45,60 +46,29 @@ export function useNotificationPreferences() {
         .eq('user_id', user.id)
         .single();
         
-      if (error) {
-        // Si hay error PGRST116 (no rows found), usar valores por defecto
-        if (error.code === 'PGRST116') {
-          setPreferences({
-            enabled: true,
-            taskAssignments: true,
-            taskModifications: true,
-            taskCompletions: true,
-            systemNotifications: true,
-          } as NotificationPreferences);
-          setError(null);
-        } else if (error.code === '406') {
-          setPreferences({
-            enabled: true,
-            taskAssignments: true,
-            taskModifications: true,
-            taskCompletions: true,
-            systemNotifications: true,
-          } as NotificationPreferences);
-          setError(null);
-        } else {
-          setPreferences({
-            enabled: true,
-            taskAssignments: true,
-            taskModifications: true,
-            taskCompletions: true,
-            systemNotifications: true,
-          } as NotificationPreferences);
-          setError(null);
-        }
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching notification preferences:', error);
+        setError(`Error cargando preferencias: ${error.message}`);
       } else if (data && data.notification_preferences) {
-        setPreferences(data.notification_preferences as NotificationPreferences);
-        setError(null);
-      } else {
-        // Si no hay datos, usar los valores por defecto
-        setPreferences({
-          enabled: true,
-          taskAssignments: true,
-          taskModifications: true,
-          taskCompletions: true,
-          systemNotifications: true,
-        } as NotificationPreferences);
-        setError(null);
+        // Verificar que notification_preferences tiene la estructura correcta
+        const prefs = data.notification_preferences as any;
+        if (prefs && typeof prefs === 'object' && 'enabled' in prefs) {
+          setPreferences(prefs as NotificationPreferences);
+        } else {
+          // Si la estructura no es correcta, usar valores por defecto
+          setPreferences({
+            enabled: true,
+            taskAssignments: true,
+            taskModifications: true,
+            taskCompletions: true,
+            systemNotifications: true,
+          });
+        }
       }
+      // Si no hay datos, usar los valores por defecto
     } catch (err) {
-      // En caso de cualquier error inesperado, usar valores por defecto
-      setPreferences({
-        enabled: true,
-        taskAssignments: true,
-        taskModifications: true,
-        taskCompletions: true,
-        systemNotifications: true,
-      } as NotificationPreferences);
-      setError(null);
+      console.error('Unexpected error fetching notification preferences:', err);
+      setError(`Error inesperado al cargar las preferencias: ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       setIsLoading(false);
     }
@@ -128,6 +98,7 @@ export function useNotificationPreferences() {
         });
         
       if (error) {
+        console.error('Error updating notification preferences:', error);
         setError(error.message);
         return { error };
       } else {
@@ -136,6 +107,7 @@ export function useNotificationPreferences() {
         return { error: null };
       }
     } catch (err) {
+      console.error('Unexpected error updating notification preferences:', err);
       setError('Error inesperado al actualizar las preferencias');
       return { error: new Error('Error inesperado') };
     }
