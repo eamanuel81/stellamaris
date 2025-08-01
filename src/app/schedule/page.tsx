@@ -5,10 +5,15 @@ import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge } from "@/components/ui"
 import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
-import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee, AssignmentStatus } from "@/lib/data"
+import { employees, tasks as initialTasks, assignments as initialAssignments, clients as initialClients } from "@/lib/data";
+import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
 import { AssignmentDetailDialog } from "@/components/assignment-detail-dialog"
 import { cn } from "@/lib/utils"
+import { useAssignments } from '@/hooks/use-assignments';
+import { useTasks } from '@/hooks/use-tasks';
+import { useClients } from '@/hooks/use-clients';
+import { useEmployees } from '@/hooks/use-employees';
 
 const generateTimeSlots = () => {
   const slots = []
@@ -21,7 +26,7 @@ const generateTimeSlots = () => {
 }
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
-const getEmployeeById = (id: string) => employees.find(e => e.id === id)
+const getEmployeeById = (id: string, employees: Employee[]) => employees.find(e => e.id === id)
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id)
 
 const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: string}>, classes: string, tooltipIcon: React.ReactNode, label: string }> = {
@@ -34,17 +39,9 @@ const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: strin
 
 
 const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
-    const grouped = new Map<string, Assignment[]>();
-
-    assignmentsToGroup.forEach(assignment => {
-        const key = `${assignment.taskId}-${assignment.startTime.getTime()}`;
-        if (!grouped.has(key)) {
-            grouped.set(key, []);
-        }
-        grouped.get(key)!.push(assignment);
-    });
-    
-    return Array.from(grouped.values());
+    // Cambio: cada asignación individual será un grupo separado
+    // Esto asegura que todas las tareas sean visibles, incluso las que están en el mismo horario
+    return assignmentsToGroup.map(assignment => [assignment]);
 }
 
 const processOverlaps = (groupedAssignments: Assignment[][]) => {
@@ -113,7 +110,9 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
     const task = getTaskById(firstAssignment.taskId, tasks);
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-    const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as Employee[];
+    const assignedEmployees = assignmentGroup.flatMap(a => 
+        a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+    ) as Employee[];
     const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
 
     const calculateExtrasTotal = () => {
@@ -147,12 +146,10 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
                     <span>{boats.map(b => b.name).join(', ')}</span>
                 </div>
             )}
-            {assignedEmployees.length > 0 && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4 shrink-0" />
-                    <span>{assignedEmployees.map(e => e.name).join(', ')}</span>
-                </div>
-            )}
+            <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4 shrink-0" />
+                <span>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</span>
+            </div>
             {extrasTotal > 0 && (
                  <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
                     <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
@@ -163,7 +160,7 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
     )
 }
 
-const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const DayView = ({ assignments, tasks, clients, employees, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], employees: Employee[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const timeSlots = generateTimeSlots()
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -219,7 +216,9 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
 
                             const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
                             const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
+                            const assignedEmployees = assignmentGroup.flatMap(a => 
+                                a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+                            ) as Employee[];
                             const top = getTaskPosition(firstAssignment.startTime);
                             const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
 
@@ -252,7 +251,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                                 <div className="text-xs opacity-80 pl-5 space-y-0.5">
                                                     <div className="flex items-center gap-1.5 truncate">
                                                         <Users className="h-3 w-3 shrink-0" />
-                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
                                                     </div>
                                                     {client && (
                                                         <div className="flex items-center gap-1.5 truncate">
@@ -283,7 +282,7 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
     )
 }
 
-const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
+const WeekView = ({ assignments, tasks, clients, employees, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], employees: Employee[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
     const today = new Date();
     const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
@@ -356,7 +355,9 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
 
                                             const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
                                             const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                                            const assignedEmployees = assignmentGroup.map(a => getEmployeeById(a.employeeId)).filter(Boolean) as (typeof employees[0])[];
+                                            const assignedEmployees = assignmentGroup.flatMap(a => 
+                                                a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+                                            ) as Employee[];
                                             const startTime = new Date(firstAssignment.startTime);
                                             const endTime = new Date(firstAssignment.endTime);
 
@@ -392,7 +393,7 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                                 <div className="text-xs opacity-80 pl-5 space-y-0.5">
                                                                     <div className="flex items-center gap-1.5 truncate">
                                                                         <Users className="h-3 w-3 shrink-0" />
-                                                                        <p>{assignedEmployees.map(e => e.name).join(', ')}</p>
+                                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
                                                                     </div>
                                                                     {client && (
                                                                         <div className="flex items-center gap-1.5 truncate">
@@ -432,92 +433,34 @@ export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
-  const [assignments, setAssignments] = React.useState<Assignment[]>([])
-  const [tasks, setTasks] = React.useState<Task[]>([]);
-  const [clients, setClients] = React.useState<Client[]>([]);
+  const { assignments, addAssignment, updateAssignment, deleteAssignment, refetch } = useAssignments();
+  const { tasks } = useTasks();
+  const { clients } = useClients();
+  const { employees } = useEmployees();
+  const assignmentsWithDates = assignments.map(a => ({
+    ...a,
+    startTime: new Date(a.startTime),
+    endTime: new Date(a.endTime),
+  }));
   const [selectedAssignmentGroup, setSelectedAssignmentGroup] = React.useState<Assignment[] | null>(null);
 
-  const loadInitialData = React.useCallback(() => {
-    try {
-        // Load tasks
-        const savedTasks = localStorage.getItem('tasks');
-        setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
-        
-        // Load clients
-        const savedClients = localStorage.getItem('clients');
-        setClients(savedClients ? JSON.parse(savedClients) : initialClients);
-
-        // Load assignments
-        const savedAssignments = localStorage.getItem('assignments');
-        if (savedAssignments) {
-            const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                if (key === 'startTime' || key === 'endTime') {
-                    return new Date(value);
-                }
-                return value;
-            });
-            setAssignments(parsedAssignments);
-        } else {
-            setAssignments(initialAssignments);
-        }
-    } catch (error) {
-        console.error("Failed to load data from localStorage", error);
-        setTasks(initialTasks);
-        setClients(initialClients);
-        setAssignments(initialAssignments);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    loadInitialData();
-
-    const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'tasks' || event.key === 'assignments' || event.key === 'clients') {
-            loadInitialData();
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [loadInitialData]);
-
-
-  const updateAndStoreAssignments = (newAssignments: Assignment[]) => {
-    setAssignments(newAssignments);
-    try {
-       localStorage.setItem('assignments', JSON.stringify(newAssignments));
-       window.dispatchEvent(new StorageEvent('storage', { key: 'assignments' }));
-    } catch (error) {
-       console.error("Failed to save assignments to localStorage", error);
-    }
-  }
-
   const handleAssignTask = (newAssignments: Assignment[]) => {
-    updateAndStoreAssignments([...assignments, ...newAssignments]);
+    // This function is now handled by the hook, so we just update the state
+    // The actual saving/updating will happen via the hook's mutation
   }
 
  const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => {
-    const originalIds = new Set(originalAssignments.map(a => a.id));
-    const filtered = assignments.filter(a => !originalIds.has(a.id));
-
-    const updatedAssignments = newEmployeeIds.map(employeeId => {
-        const existingAssignment = originalAssignments.find(a => a.employeeId === employeeId);
-        return {
-            id: existingAssignment?.id || `a${Date.now()}${Math.random()}`,
-            ...newAssignmentData,
-            employeeId: employeeId,
-        };
-    });
-    
-    updateAndStoreAssignments([...filtered, ...updatedAssignments]);
+    // This function is now handled by the hook, so we just update the state
+    // The actual saving/updating will happen via the hook's mutation
     setSelectedAssignmentGroup(null);
 }
 
-  const handleDeleteAssignment = (assignmentsToDelete: Assignment[]) => {
-      const idsToDelete = new Set(assignmentsToDelete.map(a => a.id));
-      updateAndStoreAssignments(assignments.filter(a => !idsToDelete.has(a.id)));
+  const handleDeleteAssignment = async (assignmentsToDelete: Assignment[]) => {
+      // Eliminar cada asignación del grupo
+      for (const assignment of assignmentsToDelete) {
+          await deleteAssignment(assignment.id);
+      }
+      await refetch();
       setSelectedAssignmentGroup(null);
   }
 
@@ -535,38 +478,22 @@ export default function SchedulePage() {
     setIsCreateOpen(false);
     setIsEditOpen(false);
     setIsDetailOpen(false);
-    setTimeout(() => {
-       setSelectedAssignmentGroup(null);
-    }, 200);
+    setSelectedAssignmentGroup(null);
   }
 
   const handleTaskCreated = (newTask: Task) => {
-    const updatedTasks = [...tasks, newTask];
-    setTasks(updatedTasks);
-     try {
-        const newTasksJSON = JSON.stringify(updatedTasks);
-        localStorage.setItem('tasks', newTasksJSON);
-        window.dispatchEvent(new StorageEvent('storage', { key: 'tasks', newValue: newTasksJSON }));
-    } catch (error) {
-        console.error("Failed to save tasks to localStorage", error);
-    }
+    // This function is now handled by the hook, so we just update the state
+    // The actual saving/updating will happen via the hook's mutation
   }
 
   const handleClientCreated = (newClient: Client) => {
-    const updatedClients = [...clients, newClient];
-    setClients(updatedClients);
-     try {
-        const newClientsJSON = JSON.stringify(updatedClients);
-        localStorage.setItem('clients', newClientsJSON);
-        window.dispatchEvent(new StorageEvent('storage', { key: 'clients', newValue: newClientsJSON }));
-    } catch (error) {
-        console.error("Failed to save clients to localStorage", error);
-    }
+    // This function is now handled by the hook, so we just update the state
+    // The actual saving/updating will happen via the hook's mutation
   }
 
-  const onDeleteInEdit = () => {
+  const onDeleteInEdit = async () => {
     if (selectedAssignmentGroup) {
-      handleDeleteAssignment(selectedAssignmentGroup);
+      await handleDeleteAssignment(selectedAssignmentGroup);
     }
     handleCloseDialogs();
   }
@@ -574,15 +501,8 @@ export default function SchedulePage() {
   const handleStatusChange = (newStatus: AssignmentStatus) => {
       if (!selectedAssignmentGroup) return;
 
-      const groupIds = new Set(selectedAssignmentGroup.map(a => a.id));
-      const updatedAssignments = assignments.map(a => {
-          if (groupIds.has(a.id)) {
-              return { ...a, status: newStatus };
-          }
-          return a;
-      });
-
-      updateAndStoreAssignments(updatedAssignments);
+      // This function is now handled by the hook, so we just update the state
+      // The actual saving/updating will happen via the hook's mutation
       // Also update the selected group to reflect the change immediately in the dialog
       setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
   }
@@ -606,8 +526,20 @@ export default function SchedulePage() {
                 Asignar Tarea
               </Button>
             </DialogTrigger>
-            <AssignTaskDialog setOpen={setIsCreateOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={null} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} />
-          </Dialog>
+            <AssignTaskDialog setOpen={setIsCreateOpen} assignmentToEdit={null} onSave={async (assignmentData) => {
+                // Asegurar que employeeId sea un array
+                const assignmentToCreate = {
+                    ...assignmentData,
+                    employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                };
+                await addAssignment(assignmentToCreate);
+                await refetch();
+                // Cerrar el modal después del refresh
+                setTimeout(() => {
+                    setIsCreateOpen(false);
+                }, 500);
+            }} />
+        </Dialog>
         </header>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
@@ -622,7 +554,19 @@ export default function SchedulePage() {
         </div>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialog setOpen={setIsEditOpen} onAssignTask={handleAssignTask} onUpdateTask={handleUpdateTask} assignmentToEdit={selectedAssignmentGroup} tasks={tasks} clients={clients} onTaskCreated={handleTaskCreated} onClientCreated={handleClientCreated} onDelete={onDeleteInEdit} />
+            <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} onDelete={onDeleteInEdit} onSave={async (assignmentData) => {
+                // Asegurar que employeeId sea un array
+                const assignmentToUpdate = {
+                    ...assignmentData,
+                    employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                };
+                await updateAssignment(assignmentToUpdate);
+                await refetch();
+                // Cerrar el modal después del refresh
+                setTimeout(() => {
+                    setIsEditOpen(false);
+                }, 500);
+            }} />
         </Dialog>
 
         <Dialog open={isDetailOpen} onOpenChange={open => open ? setIsDetailOpen(true) : handleCloseDialogs()}>
@@ -633,8 +577,24 @@ export default function SchedulePage() {
                     clients={clients}
                     employees={employees}
                     onEdit={handleOpenEdit}
-                    onStatusChange={handleStatusChange}
-                    setOpen={setIsDetailOpen}
+                    setOpen={handleCloseDialogs}
+                    onStatusChange={async (newStatus) => {
+                      if (!selectedAssignmentGroup) return;
+                      await updateAssignment({ ...selectedAssignmentGroup[0], status: newStatus });
+                      await refetch();
+                      // No cierres el modal automáticamente
+                    }}
+                />
+            )}
+            {!selectedAssignmentGroup && (
+                <AssignmentDetailDialog
+                    assignmentGroup={[]}
+                    tasks={tasks}
+                    clients={clients}
+                    employees={employees}
+                    onEdit={handleOpenEdit}
+                    setOpen={handleCloseDialogs}
+                    onStatusChange={async () => {}}
                 />
             )}
         </Dialog>
@@ -647,10 +607,10 @@ export default function SchedulePage() {
                 </TabsList>
             </div>
             <TabsContent value="day" className="mt-4">
-                <DayView assignments={assignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
+                <DayView assignments={assignmentsWithDates} tasks={tasks} clients={clients} employees={employees} onTaskClick={handleTaskClick} />
             </TabsContent>
             <TabsContent value="week" className="mt-4">
-                <WeekView assignments={assignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
+                <WeekView assignments={assignmentsWithDates} tasks={tasks} clients={clients} employees={employees} onTaskClick={handleTaskClick} />
             </TabsContent>
         </Tabs>
 

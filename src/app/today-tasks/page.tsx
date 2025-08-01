@@ -29,9 +29,13 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui"
-import { assignments as initialAssignments, tasks as initialTasks, clients as initialClients, employees, Assignment, AssignmentStatus, Task, Client, Employee } from "@/lib/data"
+import { useAssignments } from '@/hooks/use-assignments';
+import { useTasks } from '@/hooks/use-tasks';
+import { useClients } from '@/hooks/use-clients';
+import { useEmployees } from '@/hooks/use-employees';
 import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays, ChevronDown, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
 const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id);
@@ -54,98 +58,64 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 
 
 export default function TodayTasksPage() {
-    const [assignments, setAssignments] = React.useState<Assignment[]>([]);
-    const [tasks, setTasks] = React.useState<Task[]>([]);
-    const [clients, setClients] = React.useState<Client[]>([]);
+    const { assignments, updateAssignment, refetch } = useAssignments();
+    const { tasks } = useTasks();
+    const { clients } = useClients();
+    const { employees } = useEmployees();
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
 
 
-    const loadData = React.useCallback(() => {
-        try {
-            const savedAssignments = localStorage.getItem('assignments');
-            if (savedAssignments) {
-                const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                    if (key === 'startTime' || key === 'endTime') {
-                        return new Date(value);
-                    }
-                    return value;
-                });
-                setAssignments(parsedAssignments);
-            } else {
-                setAssignments(initialAssignments);
-            }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-            const savedTasks = localStorage.getItem('tasks');
-            setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
+    const assignmentsWithDates = assignments.map(a => ({
+      ...a,
+      startTime: new Date(a.startTime),
+      endTime: new Date(a.endTime),
+    }));
 
-            const savedClients = localStorage.getItem('clients');
-            setClients(savedClients ? JSON.parse(savedClients) : initialClients);
+    const todayAssignments = assignmentsWithDates.filter(a => {
+        const assignmentDate = new Date(a.startTime);
+        assignmentDate.setHours(0, 0, 0, 0);
+        return assignmentDate.getTime() === today.getTime();
+    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-        } catch (error) {
-            console.error("Failed to load data from localStorage", error);
-            setAssignments(initialAssignments);
-            setTasks(initialTasks);
-            setClients(initialClients);
-        }
-    }, []);
 
-    React.useEffect(() => {
-        loadData();
-        window.addEventListener('storage', loadData);
-        return () => window.removeEventListener('storage', loadData);
-    }, [loadData]);
+    const searchFilter = (assignment: Assignment) => {
+        const task = getTaskById(assignment.taskId, tasks);
+        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+        if (!task) return false;
 
-    const updateAssignmentStatus = (assignmentId: string, newStatus: AssignmentStatus) => {
-        const updatedAssignments = assignments.map(a =>
-            a.id === assignmentId ? { ...a, status: newStatus } : a
+        const searchTermLower = searchTerm.toLowerCase();
+        
+        return (
+            task.title.toLowerCase().includes(searchTermLower) ||
+            (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
+            (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
+            (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
         );
-        setAssignments(updatedAssignments);
-        try {
-            localStorage.setItem('assignments', JSON.stringify(updatedAssignments));
-            window.dispatchEvent(new StorageEvent('storage', { key: 'assignments' }));
-        } catch (e) {
-            console.error("Failed to save assignments to localStorage", e);
-        }
-    }
+    };
+    
+    const activeAssignments = todayAssignments
+        .filter(a => a.status !== 'completed')
+        .filter(searchFilter)
+        .filter(a => statusFilter === 'all' || a.status === statusFilter);
+        
+    const completedAssignments = todayAssignments
+        .filter(a => a.status === 'completed')
+        .filter(searchFilter);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const filterableStatuses = Object.entries(statusMap).filter(
+      ([key]) => key !== 'completed'
+    );
 
-  const todayAssignments = assignments.filter(a => {
-      const assignmentDate = new Date(a.startTime);
-      assignmentDate.setHours(0, 0, 0, 0);
-      return assignmentDate.getTime() === today.getTime();
-  }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-
-
-  const searchFilter = (assignment: Assignment) => {
-      const task = getTaskById(assignment.taskId, tasks);
-      const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
-      if (!task) return false;
-
-      const searchTermLower = searchTerm.toLowerCase();
-      
-      return (
-          task.title.toLowerCase().includes(searchTermLower) ||
-          (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
-          (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
-          (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
-      );
-  };
-  
-  const activeAssignments = todayAssignments
-      .filter(a => a.status !== 'completed')
-      .filter(searchFilter)
-      .filter(a => statusFilter === 'all' || a.status === statusFilter);
-      
-  const completedAssignments = todayAssignments
-      .filter(a => a.status === 'completed')
-      .filter(searchFilter);
-
-  const filterableStatuses = Object.entries(statusMap).filter(
-    ([key]) => key !== 'completed'
-  );
+    const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
+        const assignment = assignments.find(a => a.id === assignmentId);
+        if (!assignment) return;
+        await updateAssignment({ ...assignment, status: newStatus });
+        await refetch();
+    };
 
   return (
     <AppLayout>
@@ -195,9 +165,10 @@ export default function TodayTasksPage() {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
 
-                        const employee = getEmployeeById(assignment.employeeId, employees);
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                         const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
+                        const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
                         
                         return (
@@ -319,9 +290,10 @@ export default function TodayTasksPage() {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
 
-                        const employee = getEmployeeById(assignment.employeeId, employees);
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                         const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
+                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
+                        const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
                         
                         return (

@@ -29,6 +29,7 @@ import {
 import { Car, ChevronDown, PlusCircle, Trash2 } from "lucide-react"
 import { employees, Task, TaskExtra } from "@/lib/data"
 import { Badge } from "@/components/ui/badge"
+import { useEmployees } from '@/hooks/use-employees';
 
 export const TaskDialog = ({ 
     open, 
@@ -49,6 +50,9 @@ export const TaskDialog = ({
     const [requiresDriving, setRequiresDriving] = React.useState(false);
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
     const [extras, setExtras] = React.useState<TaskExtra[]>([]);
+
+    const { employees, isLoading } = useEmployees();
+    const qualifiedEmployees = employees.filter(e => e.subrole === 'empleado');
 
     React.useEffect(() => {
         if (isEditMode && taskToEdit) {
@@ -79,10 +83,10 @@ export const TaskDialog = ({
     }
     
     const handleSelectAllEmployees = () => {
-        if (selectedEmployees.length === employees.length) {
+        if (selectedEmployees.length === qualifiedEmployees.length) {
             setSelectedEmployees([]);
         } else {
-            setSelectedEmployees(employees.map(emp => emp.id));
+            setSelectedEmployees(qualifiedEmployees.map(emp => emp.id));
         }
     }
 
@@ -110,18 +114,22 @@ export const TaskDialog = ({
             alert("Por favor complete Título, Descripción y Duración.");
             return;
         }
-
-        const taskData: Task = {
-            id: isEditMode ? taskToEdit!.id : `t${Date.now()}`,
+        const baseTaskData = {
             title,
             description,
             duration: Number(duration),
             type,
             requiresDriving,
             qualifiedEmployeeIds: selectedEmployees,
-            extras: extras.filter(e => e.name.trim() !== "") // only save extras with a name
+            extras: extras.filter(e => e.name.trim() !== "")
         };
-
+        let taskData: Task;
+        if (isEditMode) {
+            taskData = { ...baseTaskData, id: taskToEdit!.id } as Task;
+        } else {
+            // No enviar id, lo genera Supabase
+            taskData = baseTaskData as Task;
+        }
         onTaskSave(taskData);
         setOpen(false);
     }
@@ -173,8 +181,8 @@ export const TaskDialog = ({
                                         <Button variant="outline" className="flex justify-between items-center font-normal">
                                             <span className="truncate">
                                                 {selectedEmployees.length === 0 && "Seleccione empleados (opcional)"}
-                                                {selectedEmployees.length === employees.length && "Todos los empleados seleccionados"}
-                                                {selectedEmployees.length > 0 && selectedEmployees.length < employees.length && `${selectedEmployees.length} empleados seleccionados`}
+                                                {selectedEmployees.length === qualifiedEmployees.length && "Todos los empleados seleccionados"}
+                                                {selectedEmployees.length > 0 && selectedEmployees.length < qualifiedEmployees.length && `${selectedEmployees.length} empleados seleccionados`}
                                             </span>
                                             <ChevronDown className="h-4 w-4 opacity-50" />
                                         </Button>
@@ -183,13 +191,13 @@ export const TaskDialog = ({
                                         <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuCheckboxItem
-                                            checked={selectedEmployees.length === employees.length}
+                                            checked={selectedEmployees.length === qualifiedEmployees.length}
                                             onCheckedChange={handleSelectAllEmployees}
                                         >
                                             Seleccionar Todos
                                         </DropdownMenuCheckboxItem>
                                         <DropdownMenuSeparator />
-                                        {employees.map(emp => (
+                                        {qualifiedEmployees.map(emp => (
                                             <DropdownMenuCheckboxItem
                                                 key={emp.id}
                                                 checked={selectedEmployees.includes(emp.id)}

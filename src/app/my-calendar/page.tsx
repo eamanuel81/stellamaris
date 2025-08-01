@@ -5,9 +5,15 @@ import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge } from "@/components/ui"
 import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
-import { employees, tasks as initialTasks, assignments as initialAssignments, Assignment, Task, Client, clients as initialClients, Employee, AssignmentStatus } from "@/lib/data"
+import { Assignment, Task, Client, AssignmentStatus } from "@/lib/data"
 import { MyTaskDetailDialog } from "@/components/my-task-detail-dialog"
 import { cn } from "@/lib/utils"
+import { useAssignments } from "@/hooks/use-assignments"
+import { useTasks } from "@/hooks/use-tasks"
+import { useClients } from "@/hooks/use-clients"
+import { useEmployees } from "@/hooks/use-employees"
+import { useAuth } from "@/hooks/use-auth-state"
+import { supabase } from "@/lib/supabaseClient"
 
 const generateTimeSlots = () => {
   const slots = []
@@ -368,64 +374,51 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
 
 export default function MyCalendarPage() {
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
-  const [assignments, setAssignments] = React.useState<Assignment[]>([])
-  const [tasks, setTasks] = React.useState<Task[]>([]);
-  const [clients, setClients] = React.useState<Client[]>([]);
   const [selectedAssignment, setSelectedAssignment] = React.useState<Assignment | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
+  const [currentEmployee, setCurrentEmployee] = React.useState<any>(null);
 
-  const loadInitialData = React.useCallback(() => {
-    try {
-        const savedTasks = localStorage.getItem('tasks');
-        setTasks(savedTasks ? JSON.parse(savedTasks) : initialTasks);
-        
-        const savedClients = localStorage.getItem('clients');
-        setClients(savedClients ? JSON.parse(savedClients) : initialClients);
+  // Usar hooks de la base de datos
+  const { assignments, updateAssignment, isLoading: assignmentsLoading } = useAssignments();
+  const { tasks, isLoading: tasksLoading } = useTasks();
+  const { clients, isLoading: clientsLoading } = useClients();
+  const { employees, isLoading: employeesLoading } = useEmployees();
 
-        const savedAssignments = localStorage.getItem('assignments');
-        if (savedAssignments) {
-            const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                if (key === 'startTime' || key === 'endTime') {
-                    return new Date(value);
-                }
-                return value;
-            });
-            setAssignments(parsedAssignments);
-        } else {
-            setAssignments(initialAssignments);
+  // Obtener el email del usuario actual
+  React.useEffect(() => {
+    const getUserEmail = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (user && !error && user.email) {
+          setCurrentUserEmail(user.email);
+          
+          // Verificar si el usuario existe en la tabla de empleados
+          const { data: employee, error: employeeError } = await supabase
+            .from('employees')
+            .select('*')
+            .eq('email', user.email)
+            .single();
+          
+          if (!employeeError && employee) {
+            setCurrentEmployee(employee);
+          }
         }
-    } catch (error) {
-        console.error("Failed to load data from localStorage", error);
-        setTasks(initialTasks);
-        setClients(initialClients);
-        setAssignments(initialAssignments);
-    }
+      } catch (error) {
+        // Handle error silently
+      }
+    };
+    getUserEmail();
   }, []);
 
-  React.useEffect(() => {
-    loadInitialData();
-
-    const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'tasks' || event.key === 'assignments' || event.key === 'clients') {
-            loadInitialData();
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [loadInitialData]);
-
-
-  const updateAndStoreAssignments = (newAssignments: Assignment[]) => {
-    setAssignments(newAssignments);
-    try {
-       localStorage.setItem('assignments', JSON.stringify(newAssignments));
-       window.dispatchEvent(new StorageEvent('storage', { key: 'assignments' }));
-    } catch (error) {
-       console.error("Failed to save assignments to localStorage", error);
-    }
-  }
+  // Filtrar asignaciones del empleado actual
+  const myAssignments = React.useMemo(() => {
+    if (!assignments || assignments.length === 0 || !currentEmployee) return [];
+    
+    return assignments.filter(assignment => {
+      if (!assignment.employeeId || !Array.isArray(assignment.employeeId)) return false;
+      return assignment.employeeId.includes(currentEmployee.id);
+    });
+  }, [assignments, currentEmployee]);
 
   const handleTaskClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
@@ -439,17 +432,48 @@ export default function MyCalendarPage() {
     }, 200);
   }
 
-  const handleStatusChange = (newStatus: AssignmentStatus) => {
-      if (!selectedAssignment) return;
-      const updatedAssignments = assignments.map(a => 
-          a.id === selectedAssignment.id ? { ...a, status: newStatus } : a
-      );
-      updateAndStoreAssignments(updatedAssignments);
-      setSelectedAssignment(prev => prev ? { ...prev, status: newStatus } : null);
+  const handleStatusChange = async (newStatus: AssignmentStatus) => {
+    if (!selectedAssignment) return;
+    
+    try {
+      const updatedAssignment = { ...selectedAssignment, status: newStatus };
+      const result = await updateAssignment(updatedAssignment);
+      
+      if (result.error) {
+        console.error('Error updating assignment status:', result.error);
+      } else {
+        setSelectedAssignment(prev => prev ? { ...prev, status: newStatus } : null);
+      }
+    } catch (error) {
+      console.error('Error updating assignment status:', error);
+    }
   }
 
-  // Simulate employee with ID '1' is logged in
-  const myAssignments = assignments.filter(a => a.employeeId === '1');
+  // Mostrar loading si los datos están cargando
+  if (assignmentsLoading || tasksLoading || clientsLoading || employeesLoading) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col gap-8">
+          <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="font-headline text-3xl font-bold tracking-tight">
+                Mi Calendario
+              </h1>
+              <p className="text-muted-foreground">
+                Vista de calendario de tus tareas asignadas.
+              </p>
+            </div>
+          </header>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Cargando calendario...</p>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -480,7 +504,7 @@ export default function MyCalendarPage() {
                 <MyTaskDetailDialog
                     assignment={selectedAssignment}
                     task={getTaskById(selectedAssignment.taskId, tasks)!}
-                    client={selectedAssignment.clientId ? getClientById(selectedAssignment.clientId, clients) : null}
+                    client={selectedAssignment.clientId ? getClientById(selectedAssignment.clientId, clients) || null : null}
                     onStatusChange={handleStatusChange}
                     setOpen={setIsDetailOpen}
                 />

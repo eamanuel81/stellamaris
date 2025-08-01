@@ -36,62 +36,19 @@ import { employees as initialEmployees, assignments as initialAssignments, Emplo
 import { Car, MoreHorizontal, PlusCircle, Search } from "lucide-react"
 import { EmployeeDialog } from "@/components/employee-dialog"
 import { EmployeeTasksDialog } from "@/components/employee-tasks-dialog"
+import { useEmployees } from '@/hooks/use-employees';
+import { useAuth } from '@/components/auth-provider';
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = React.useState<Employee[]>([]);
-  const [assignments, setAssignments] = React.useState<Assignment[]>([]);
+  const { employees, isLoading, error, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
+  const { subrole } = useAuth();
   const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = React.useState(false);
   const [isTasksDialogOpen, setIsTasksDialogOpen] = React.useState(false);
   const [selectedEmployee, setSelectedEmployee] = React.useState<Employee | null>(null);
   const [employeeToEdit, setEmployeeToEdit] = React.useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
-
-  const loadData = React.useCallback(() => {
-    try {
-      const savedEmployees = localStorage.getItem('employees');
-      setEmployees(savedEmployees ? JSON.parse(savedEmployees) : initialEmployees);
-      const savedAssignments = localStorage.getItem('assignments');
-       if (savedAssignments) {
-            const parsedAssignments = JSON.parse(savedAssignments, (key, value) => {
-                if (key === 'startTime' || key === 'endTime') {
-                    return new Date(value);
-                }
-                return value;
-            });
-            setAssignments(parsedAssignments);
-        } else {
-            setAssignments(initialAssignments);
-        }
-    } catch (error) {
-      console.error("Failed to load data from localStorage", error);
-      setEmployees(initialEmployees);
-      setAssignments(initialAssignments);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    loadData();
-    const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'employees' || event.key === 'assignments') {
-            loadData();
-        }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [loadData]);
-
-  const updateEmployeesAndStorage = (updatedEmployees: Employee[]) => {
-    setEmployees(updatedEmployees);
-    try {
-      const newEmployeesJSON = JSON.stringify(updatedEmployees);
-      localStorage.setItem('employees', newEmployeesJSON);
-      window.dispatchEvent(new StorageEvent('storage', { key: 'employees', newValue: newEmployeesJSON }));
-    } catch (error) {
-      console.error("Failed to save employees to localStorage", error);
-    }
-  };
+  const [actionLoading, setActionLoading] = React.useState(false);
+  const [actionError, setActionError] = React.useState<string | null>(null);
 
   const handleCreateClick = () => {
     setEmployeeToEdit(null);
@@ -106,22 +63,28 @@ export default function EmployeesPage() {
   const handleViewTasksClick = (employee: Employee) => {
     setSelectedEmployee(employee);
     setIsTasksDialogOpen(true);
-  }
-
-  const handleSaveEmployee = (employeeData: Employee) => {
-    const isEditing = employees.some(e => e.id === employeeData.id);
-    let updatedEmployees;
-    if (isEditing) {
-      updatedEmployees = employees.map(e => e.id === employeeData.id ? employeeData : e);
-    } else {
-      updatedEmployees = [...employees, employeeData];
-    }
-    updateEmployeesAndStorage(updatedEmployees);
   };
 
-  const handleDeleteEmployee = (employeeId: string) => {
-    const updatedEmployees = employees.filter(e => e.id !== employeeId);
-    updateEmployeesAndStorage(updatedEmployees);
+  const handleSaveEmployee = async (employeeData: Employee) => {
+    setActionLoading(true);
+    setActionError(null);
+    if (employeeToEdit) {
+      const { error } = await updateEmployee(employeeData);
+      if (error) setActionError(error.message);
+    } else {
+      const { id, ...employeeDataWithoutId } = employeeData;
+      const { error } = await addEmployee(employeeDataWithoutId as Omit<Employee, 'id'>);
+      if (error) setActionError(error.message);
+    }
+    setActionLoading(false);
+  };
+
+  const handleDeleteEmployee = async (employeeId: string) => {
+    setActionLoading(true);
+    setActionError(null);
+    const { error } = await deleteEmployee(employeeId);
+    if (error) setActionError(error.message);
+    setActionLoading(false);
   };
 
   const filteredEmployees = employees.filter(employee => {
@@ -129,8 +92,8 @@ export default function EmployeesPage() {
     return (
       employee.name.toLowerCase().includes(searchTermLower) ||
       employee.lastName.toLowerCase().includes(searchTermLower) ||
-      employee.dni.toLowerCase().includes(searchTermLower) ||
-      employee.nickname.toLowerCase().includes(searchTermLower)
+      (employee.dni || '').toLowerCase().includes(searchTermLower) ||
+      (employee.nickname || '').toLowerCase().includes(searchTermLower)
     );
   });
 
@@ -146,10 +109,12 @@ export default function EmployeesPage() {
               Gestione el personal de la guardería.
             </p>
           </div>
-          <Button onClick={handleCreateClick}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Agregar Empleado
-          </Button>
+          {subrole !== 'encargado' && (
+            <Button onClick={handleCreateClick} disabled={actionLoading}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Agregar Empleado
+            </Button>
+          )}
         </header>
 
         <EmployeeDialog
@@ -158,16 +123,14 @@ export default function EmployeesPage() {
           onSave={handleSaveEmployee}
           employeeToEdit={employeeToEdit}
         />
-
         {selectedEmployee && (
-            <EmployeeTasksDialog
-                open={isTasksDialogOpen}
-                setOpen={setIsTasksDialogOpen}
-                employee={selectedEmployee}
-                assignments={assignments.filter(a => a.employeeId === selectedEmployee.id)}
-            />
+          <EmployeeTasksDialog
+            open={isTasksDialogOpen}
+            setOpen={setIsTasksDialogOpen}
+            employee={selectedEmployee}
+            assignments={[]}
+          />
         )}
-
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -179,7 +142,11 @@ export default function EmployeesPage() {
           />
         </div>
 
-        <Card className="overflow-hidden">
+        {isLoading || actionLoading ? (
+          <div className="text-center py-8">Cargando empleados...</div>
+        ) : error || actionError ? (
+          <div className="text-center text-red-500 py-8">Error: {error || actionError}</div>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
@@ -229,27 +196,31 @@ export default function EmployeesPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleViewTasksClick(employee)}>Ver Tareas</DropdownMenuItem>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                              Eliminar
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado y sus datos asociados.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteEmployee(employee.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        {subrole !== 'encargado' && (
+                          <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem className="cursor-pointer" onClick={() => handleViewTasksClick(employee)}>Ver Tareas</DropdownMenuItem>
+                        {subrole !== 'encargado' && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem  onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
+                                Eliminar
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado y sus datos asociados.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteEmployee(employee.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -257,8 +228,8 @@ export default function EmployeesPage() {
               ))}
             </TableBody>
           </Table>
-        </Card>
+        )}
       </div>
     </AppLayout>
-  )
+  );
 }
