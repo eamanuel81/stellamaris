@@ -108,16 +108,22 @@ const TooltipDetail = ({ assignment, tasks, clients }: { assignment: Assignment,
             </div>
             {client && (
                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <User className="h-4 w-4 shrink-0" />
-                    <span>{client.firstName} {client.lastName}</span>
-                </div>
-            )}
-            {boats.length > 0 && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Ship className="h-4 w-4 shrink-0" />
-                    <span>{boats.map(b => b.name).join(', ')}</span>
-                </div>
-            )}
+                     <User className="h-4 w-4 shrink-0" />
+                     <span>{client.firstName} {client.lastName}</span>
+                 </div>
+             )}
+             {client && client.responsibles && client.responsibles.length > 0 && (
+                 <div className="flex items-center gap-2 text-muted-foreground">
+                     <Users className="h-4 w-4 shrink-0" />
+                     <span>{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
+                 </div>
+             )}
+             {boats.length > 0 && (
+                 <div className="flex items-center gap-2 text-muted-foreground">
+                     <Ship className="h-4 w-4 shrink-0" />
+                     <span>{boats.map(b => b.name).join(', ')}</span>
+                 </div>
+             )}
         </div>
     )
 }
@@ -204,6 +210,28 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                                             <div className="flex items-start gap-1.5">
                                                 <Icon className="h-3 w-3 shrink-0 mt-0.5" />
                                                 <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
+                                                {(client || boats.length > 0 || (client && client.responsibles && client.responsibles.length > 0)) && (
+                                                    <div className="text-xs opacity-80 flex items-center gap-1 ml-auto">
+                                                        {client && (
+                                                            <div className="flex items-center gap-1">
+                                                                <User className="h-3 w-3 shrink-0" />
+                                                                <span className="leading-tight truncate">{client.firstName} {client.lastName}</span>
+                                                            </div>
+                                                        )}
+                                                        {client && client.responsibles && client.responsibles.length > 0 && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Users className="h-3 w-3 shrink-0" />
+                                                                <span className="leading-tight truncate">{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
+                                                            </div>
+                                                        )}
+                                                        {boats.length > 0 && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Ship className="h-3 w-3 shrink-0" />
+                                                                <span className="leading-tight truncate">{boats.map(b => b.name).join(', ')}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </TooltipTrigger>
