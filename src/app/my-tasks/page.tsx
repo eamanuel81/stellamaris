@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui"
 import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, Package, Search } from "lucide-react"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -102,6 +102,24 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                                     <span>{boat.name}</span>
                                 </div>
                             ))}
+                            {client.responsibles && client.responsibles.length > 0 && (
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="h-4 w-4" />
+                                        <span className="font-medium text-foreground">Otros Responsables:</span>
+                                    </div>
+                                    {client.responsibles.map((responsible, index) => (
+                                        <div key={responsible.id || index} className="flex items-center gap-2 pl-6">
+                                            <User className="h-4 w-4" />
+                                            <span className="text-sm">{responsible.firstName} {responsible.lastName}</span>
+                                            <span className="text-xs text-muted-foreground">DNI: {responsible.dni}</span>
+                                            {responsible.phone && (
+                                                <span className="text-xs text-muted-foreground">({responsible.phone})</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
 
