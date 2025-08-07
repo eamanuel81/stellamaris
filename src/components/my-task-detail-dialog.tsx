@@ -36,6 +36,12 @@ export const MyTaskDetailDialog = ({
     setOpen
 }: MyTaskDetailDialogProps) => {
 
+    const [currentStatus, setCurrentStatus] = React.useState<AssignmentStatus>(assignment.status);
+
+    React.useEffect(() => {
+        setCurrentStatus(assignment.status);
+    }, [assignment.status]);
+
     if (!assignment || !task) return null;
 
     const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
@@ -128,24 +134,40 @@ export const MyTaskDetailDialog = ({
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline">
-                        Cambiar Estado
+                        {currentStatus === 'pending' && 'Pendiente'}
+                        {currentStatus === 'accepted' && 'Aceptada'}
+                        {currentStatus === 'completed' && 'Completada'}
+                        {currentStatus === 'rejected' && 'Rechazada'}
+                        {currentStatus === 'cancelled' && 'Cancelada'}
                         <ChevronDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => onStatusChange('accepted')}>
+                        <DropdownMenuItem disabled={currentStatus === 'accepted'} onClick={() => {
+                            onStatusChange('accepted');
+                            setCurrentStatus('accepted');
+                        }}>
                             <Check className="mr-2 h-4 w-4" />
                             Aceptar Tarea
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => onStatusChange('completed')}>
+                        <DropdownMenuItem disabled={currentStatus === 'completed'} onClick={() => {
+                            onStatusChange('completed');
+                            setCurrentStatus('completed');
+                        }}>
                             <CheckCheck className="mr-2 h-4 w-4" />
                             Marcar como Terminada
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onStatusChange('rejected')}>
+                        <DropdownMenuItem onClick={() => {
+                            onStatusChange('rejected');
+                            setCurrentStatus('rejected');
+                        }}>
                              <Ban className="mr-2 h-4 w-4" />
                             Rechazar Tarea
                         </DropdownMenuItem>
-                        <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => onStatusChange('pending')}>
+                        <DropdownMenuItem disabled={currentStatus === 'pending'} onClick={() => {
+                            onStatusChange('pending');
+                            setCurrentStatus('pending');
+                        }}>
                              <Hourglass className="mr-2 h-4 w-4" />
                             Marcar como Pendiente
                         </DropdownMenuItem>
