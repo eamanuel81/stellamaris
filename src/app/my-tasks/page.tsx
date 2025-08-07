@@ -77,7 +77,11 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                         <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             <span>
-                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                {new Date(assignment.startTime).toLocaleDateString('es-ES', { 
+                                    weekday: 'short', 
+                                    day: '2-digit', 
+                                    month: '2-digit' 
+                                })} - {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} a {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -154,6 +158,7 @@ export default function MyTasksPage() {
     const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
+    const [sortOrder, setSortOrder] = React.useState<"oldest" | "newest">("oldest");
     const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
 
     // Obtener el email del usuario actual
@@ -309,11 +314,21 @@ export default function MyTasksPage() {
   const activeAssignments = myAssignments
       .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
       .filter(searchFilter)
-      .filter(a => statusFilter === 'all' || a.status === statusFilter);
+      .filter(a => statusFilter === 'all' || a.status === statusFilter)
+      .sort((a, b) => {
+          const dateA = new Date(a.startTime).getTime();
+          const dateB = new Date(b.startTime).getTime();
+          return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+      });
       
   const completedAssignments = myAssignments
       .filter(a => a.status === 'completed')
-      .filter(searchFilter);
+      .filter(searchFilter)
+      .sort((a, b) => {
+          const dateA = new Date(a.startTime).getTime();
+          const dateB = new Date(b.startTime).getTime();
+          return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+      });
 
   const filterableStatuses = Object.entries(statusMap).filter(
     ([key]) => key !== 'completed' && key !== 'cancelled'
@@ -391,6 +406,15 @@ export default function MyTasksPage() {
                                         </div>
                                     </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+                        <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as "oldest" | "newest")}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Ordenar por fecha" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oldest">Más antiguas primero</SelectItem>
+                <SelectItem value="newest">Más recientes primero</SelectItem>
               </SelectContent>
             </Select>
         </div>
