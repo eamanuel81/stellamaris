@@ -33,7 +33,7 @@ import { useAssignments } from '@/hooks/use-assignments';
 import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
-import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Ship, Package, CalendarDays, ChevronDown, Search } from "lucide-react"
+import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 
@@ -160,7 +160,7 @@ export default function TodayTasksPage() {
             </TabsList>
             <TabsContent value="assigned" className="mt-4">
                 {activeAssignments.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {activeAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
@@ -191,7 +191,11 @@ export default function TodayTasksPage() {
                                         <div className="flex items-center gap-2">
                                             <Clock className="h-4 w-4" />
                                             <span>
-                                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                {new Date(assignment.startTime).toLocaleDateString('es-ES', { 
+                                                    weekday: 'short', 
+                                                    day: '2-digit', 
+                                                    month: '2-digit' 
+                                                })} - {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} a {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -224,6 +228,28 @@ export default function TodayTasksPage() {
                                                     <span>{boat.name}</span>
                                                 </div>
                                             ))}
+                                            {client.responsibles && client.responsibles.length > 0 && (
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Users className="h-4 w-4" />
+                                                        <span className="font-medium text-foreground">Otros Responsables:</span>
+                                                    </div>
+                                                    {client.responsibles.map((responsible, index) => (
+                                                        <div key={responsible.id || index} className="pl-6 space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <User className="h-4 w-4 shrink-0" />
+                                                                <span className="text-sm truncate">{responsible.firstName} {responsible.lastName}</span>
+                                                            </div>
+                                                            <div className="flex flex-wrap items-center gap-2 pl-6">
+                                                                <span className="text-xs text-muted-foreground">DNI: {responsible.dni}</span>
+                                                                {responsible.phone && (
+                                                                    <span className="text-xs text-muted-foreground">({responsible.phone})</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -248,19 +274,19 @@ export default function TodayTasksPage() {
                                     )}
                             </div>
                             </CardContent>
-                            <CardFooter className="flex justify-between items-center">
-                            <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
+                            <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
+                            <Badge variant="outline" className={cn("flex items-center gap-1", currentStatus.classes)}>
                                     {currentStatus.icon}
                                     <span className="ml-1.5">{currentStatus.text}</span>
                             </Badge>
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm">
+                                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
                                     Cambiar Estado
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="w-[200px]">
                                     <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
                                     <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
                                     <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
@@ -285,7 +311,7 @@ export default function TodayTasksPage() {
             </TabsContent>
             <TabsContent value="completed" className="mt-4">
                  {completedAssignments.length > 0 ? (
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {completedAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
                         if (!task) return null;
@@ -316,7 +342,11 @@ export default function TodayTasksPage() {
                                         <div className="flex items-center gap-2">
                                             <Clock className="h-4 w-4" />
                                             <span>
-                                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                {new Date(assignment.startTime).toLocaleDateString('es-ES', { 
+                                                    weekday: 'short', 
+                                                    day: '2-digit', 
+                                                    month: '2-digit' 
+                                                })} - {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} a {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -349,6 +379,28 @@ export default function TodayTasksPage() {
                                                     <span>{boat.name}</span>
                                                 </div>
                                             ))}
+                                            {client.responsibles && client.responsibles.length > 0 && (
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Users className="h-4 w-4" />
+                                                        <span className="font-medium text-foreground">Otros Responsables:</span>
+                                                    </div>
+                                                    {client.responsibles.map((responsible, index) => (
+                                                        <div key={responsible.id || index} className="pl-6 space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <User className="h-4 w-4 shrink-0" />
+                                                                <span className="text-sm truncate">{responsible.firstName} {responsible.lastName}</span>
+                                                            </div>
+                                                            <div className="flex flex-wrap items-center gap-2 pl-6">
+                                                                <span className="text-xs text-muted-foreground">DNI: {responsible.dni}</span>
+                                                                {responsible.phone && (
+                                                                    <span className="text-xs text-muted-foreground">({responsible.phone})</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
@@ -373,19 +425,19 @@ export default function TodayTasksPage() {
                                     )}
                             </div>
                             </CardContent>
-                            <CardFooter className="flex justify-between items-center">
-                            <Badge variant="outline" className={cn("font-normal", currentStatus.classes)}>
+                            <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
+                            <Badge variant="outline" className={cn("flex items-center gap-1", currentStatus.classes)}>
                                     {currentStatus.icon}
                                     <span className="ml-1.5">{currentStatus.text}</span>
                             </Badge>
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm">
+                                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
                                     Cambiar Estado
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="w-[200px]">
                                     <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
                                     <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
                                     <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
