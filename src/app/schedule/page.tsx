@@ -147,6 +147,12 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
                     <span>{client.firstName} {client.lastName}</span>
                 </div>
             )}
+            {client && client.responsibles && client.responsibles.length > 0 && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <PlusCircle className="h-4 w-4 shrink-0" />
+                    <span>{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
+                </div>
+            )}
             {boats.length > 0 && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <Ship className="h-4 w-4 shrink-0" />

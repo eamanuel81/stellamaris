@@ -1,6 +1,6 @@
 import React from "react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui"
-import { Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
+import { Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban, PlusCircle } from "lucide-react"
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 import { cn } from "@/lib/utils"
 
@@ -116,6 +116,12 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
                  <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="h-4 w-4 shrink-0" />
                     <span>{client.firstName} {client.lastName}</span>
+                </div>
+            )}
+            {client && client.responsibles && client.responsibles.length > 0 && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <PlusCircle className="h-4 w-4 shrink-0" />
+                    <span>{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
                 </div>
             )}
             {boats.length > 0 && (
@@ -263,7 +269,7 @@ export const WeekView = React.memo(({
                                                         <div
                                                             onClick={() => onTaskClick(assignmentGroup)}
                                                             className={cn(
-                                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
+                                                                "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
                                                                 statusInfo.classes
                                                             )}
                                                             style={{
@@ -273,29 +279,9 @@ export const WeekView = React.memo(({
                                                                 left: `calc(${left}% + 2px)`,
                                                             }}
                                                         >
-                                                            <div className="space-y-0.5">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Icon className="h-3 w-3 shrink-0" />
-                                                                    <p className="font-bold text-sm truncate">{task.title}</p>
-                                                                </div>
-                                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
-                                                                    <div className="flex items-center gap-1.5 truncate">
-                                                                        <Users className="h-3 w-3 shrink-0" />
-                                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
-                                                                    </div>
-                                                                    {client && (
-                                                                        <div className="flex items-center gap-1.5 truncate">
-                                                                            <User className="h-3 w-3 shrink-0" />
-                                                                            <p>{client.firstName} {client.lastName}</p>
-                                                                        </div>
-                                                                    )}
-                                                                    {boats.length > 0 && (
-                                                                        <div className="flex items-center gap-1.5 truncate">
-                                                                            <Ship className="h-3 w-3 shrink-0" />
-                                                                            <p>{boats.map(b => b.name).join(', ')}</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                                            <div className="flex items-start gap-1.5">
+                                                                <Icon className="h-3 w-3 shrink-0 mt-0.5" />
+                                                                <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>
