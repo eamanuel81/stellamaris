@@ -213,7 +213,9 @@ export default function MyTasksPage() {
 
     // Filtrar asignaciones del empleado actual
     const myAssignments = React.useMemo(() => {
-        if (!assignments || assignments.length === 0) return [];
+        if (!assignments || assignments.length === 0) {
+            return [];
+        }
         
         // Si es admin, mostrar todas las asignaciones
         if (role === 'admin' || subrole === 'admin') {
@@ -229,7 +231,6 @@ export default function MyTasksPage() {
         const currentEmployees = employees.filter(emp => emp.email === currentUserEmail);
         
         if (currentEmployees.length === 0) {
-            
             // Intentar buscar por email parcial o similar
             const similarEmployee = employees.find(emp => 
                 emp.email.toLowerCase().includes(currentUserEmail?.toLowerCase() || '') ||
@@ -237,7 +238,6 @@ export default function MyTasksPage() {
             );
             
             if (similarEmployee) {
-                
                 const filteredAssignments = assignments.filter(assignment => {
                     let employeeIds: string[] = [];
                     
@@ -266,8 +266,6 @@ export default function MyTasksPage() {
         // Si hay múltiples empleados con el mismo email, usar el primero
         const currentEmployee = currentEmployees[0];
         
-
-        
         // Filtrar asignaciones que incluyan al empleado actual
         const filteredAssignments = assignments.filter(assignment => {
             // Manejar diferentes tipos de datos que pueden llegar desde la BD
@@ -288,7 +286,8 @@ export default function MyTasksPage() {
                 employeeIds = [String(assignment.employeeId)];
             }
             
-            return employeeIds.includes(currentEmployee.id);
+            const hasEmployee = employeeIds.includes(currentEmployee.id);
+            return hasEmployee;
         });
         
         return filteredAssignments;
@@ -333,24 +332,24 @@ export default function MyTasksPage() {
       );
   };
   
-  const activeAssignments = myAssignments
-      .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
-      .filter(searchFilter)
-      .filter(a => statusFilter === 'all' || a.status === statusFilter)
-      .sort((a, b) => {
-          const dateA = new Date(a.startTime).getTime();
-          const dateB = new Date(b.startTime).getTime();
-          return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
-      });
-      
-  const completedAssignments = myAssignments
-      .filter(a => a.status === 'completed')
-      .filter(searchFilter)
-      .sort((a, b) => {
-          const dateA = new Date(a.startTime).getTime();
-          const dateB = new Date(b.startTime).getTime();
-          return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
-      });
+    const activeAssignments = myAssignments
+        .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+        .filter(searchFilter)
+        .filter(a => statusFilter === 'all' || a.status === statusFilter)
+        .sort((a, b) => {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+        });
+        
+    const completedAssignments = myAssignments
+        .filter(a => a.status === 'completed')
+        .filter(searchFilter)
+        .sort((a, b) => {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+        });
 
   const filterableStatuses = Object.entries(statusMap).filter(
     ([key]) => key !== 'completed' && key !== 'cancelled'
@@ -358,8 +357,8 @@ export default function MyTasksPage() {
 
     const isLoading = assignmentsLoading || tasksLoading || clientsLoading || employeesLoading;
     const hasError = assignmentsError || tasksError || clientsError || employeesError;
-
-    if (isLoading) {
+    
+        if (isLoading) {
         return (
             <AppLayout>
                 <div className="flex h-screen w-full items-center justify-center">
@@ -402,6 +401,8 @@ export default function MyTasksPage() {
             Aquí están las tareas que te han sido asignadas.
           </p>
         </header>
+
+
 
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-4">

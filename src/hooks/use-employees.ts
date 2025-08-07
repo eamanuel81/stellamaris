@@ -39,7 +39,8 @@ export function useEmployees() {
         setError(`Error cargando empleados: ${error.message}`);
         setEmployees([]);
       } else {
-        setEmployees((data as Employee[]) || []);
+        const employeesData = (data as Employee[]) || [];
+        setEmployees(employeesData);
         setError(null);
       }
     } catch (err) {

@@ -22,14 +22,18 @@ export function useAssignments() {
     };
   }, []);
 
-  const fetchAssignments = useCallback(async () => {
-    // Prevenir llamadas concurrentes y múltiples inicializaciones
-    if (fetchingRef.current || initializedRef.current) {
+  const fetchAssignments = useCallback(async (isPolling = false) => {
+    // Prevenir llamadas concurrentes
+    if (fetchingRef.current) {
       return;
     }
     
     fetchingRef.current = true;
-    setIsLoading(true);
+    
+    // Solo mostrar loading en la carga inicial, no en polling
+    if (!isPolling) {
+      setIsLoading(true);
+    }
     setError(null);
     
     try {
@@ -68,9 +72,9 @@ export function useAssignments() {
         setError(`Error cargando asignaciones: ${error.message}`);
         setAssignments([]);
       } else {
-        setAssignments((data as Assignment[]) || []);
+        const assignmentsData = (data as Assignment[]) || [];
+        setAssignments(assignmentsData);
         setError(null);
-        initializedRef.current = true; // Marcar como inicializado
       }
     } catch (err) {
       console.error('❌ Error inesperado al cargar las asignaciones:', err);
@@ -78,18 +82,31 @@ export function useAssignments() {
       setAssignments([]);
     } finally {
       if (mountedRef.current) {
-        setIsLoading(false);
+        // Solo ocultar loading si no es polling
+        if (!isPolling) {
+          setIsLoading(false);
+        }
       }
       fetchingRef.current = false;
     }
   }, []);
 
-  // Solo ejecutar fetchAssignments una vez al montar
+  // Ejecutar fetchAssignments al montar y configurar polling
   useEffect(() => {
-    if (!initializedRef.current) {
-      fetchAssignments();
-    }
-  }, []); // Remover fetchAssignments de las dependencias
+    console.log('🔄 Iniciando polling de assignments...');
+    fetchAssignments(false); // Carga inicial
+    
+    // Polling para actualizar assignments cada 30 segundos
+    const interval = setInterval(() => {
+      console.log('🔄 Polling: actualizando assignments...');
+      fetchAssignments(true); // Polling
+    }, 30000); // 30 segundos
+    
+    return () => {
+      console.log('🔄 Deteniendo polling de assignments...');
+      clearInterval(interval);
+    };
+  }, [fetchAssignments]);
 
   // Memoizar las funciones CRUD para evitar re-renders
   const addAssignment = useCallback(async (assignment: Omit<Assignment, 'id'>) => {
