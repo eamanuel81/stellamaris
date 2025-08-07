@@ -109,13 +109,17 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                                         <span className="font-medium text-foreground">Otros Responsables:</span>
                                     </div>
                                     {client.responsibles.map((responsible, index) => (
-                                        <div key={responsible.id || index} className="flex items-center gap-2 pl-6">
-                                            <User className="h-4 w-4" />
-                                            <span className="text-sm">{responsible.firstName} {responsible.lastName}</span>
-                                            <span className="text-xs text-muted-foreground">DNI: {responsible.dni}</span>
-                                            {responsible.phone && (
-                                                <span className="text-xs text-muted-foreground">({responsible.phone})</span>
-                                            )}
+                                        <div key={responsible.id || index} className="pl-6 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4 shrink-0" />
+                                                <span className="text-sm truncate">{responsible.firstName} {responsible.lastName}</span>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2 pl-6">
+                                                <span className="text-xs text-muted-foreground">DNI: {responsible.dni}</span>
+                                                {responsible.phone && (
+                                                    <span className="text-xs text-muted-foreground">({responsible.phone})</span>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -138,19 +142,19 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                     )}
                 </div>
             </CardContent>
-            <CardFooter className="flex items-center justify-between pt-6">
+            <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
                 <Badge className={cn("flex items-center gap-1", currentStatus.classes)}>
                     {currentStatus.icon}
                     {currentStatus.text}
                 </Badge>
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
                     Cambiar Estado
                             <ChevronDown className="ml-1 h-3 w-3" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-[200px]">
                         {Object.entries(statusMap).map(([key, config]) => (
                             <DropdownMenuItem
                                 key={key}
@@ -452,7 +456,7 @@ export default function MyTasksPage() {
                                     No hay tareas activas.
                                 </div>
                             ) : (
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {activeAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
                                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
@@ -478,7 +482,7 @@ export default function MyTasksPage() {
                                     No hay tareas completadas.
                                 </div>
                             ) : (
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {completedAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
                                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
