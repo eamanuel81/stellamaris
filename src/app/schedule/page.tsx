@@ -437,75 +437,81 @@ export default function SchedulePage() {
   const { tasks } = useTasks();
   const { clients } = useClients();
   const { employees } = useEmployees();
-  const assignmentsWithDates = assignments.map(a => ({
-    ...a,
-    startTime: new Date(a.startTime),
-    endTime: new Date(a.endTime),
-  }));
+  
+  // Memoizar el procesamiento de assignments para evitar re-renders
+  const assignmentsWithDates = React.useMemo(() => 
+    assignments.map(a => ({
+      ...a,
+      startTime: new Date(a.startTime),
+      endTime: new Date(a.endTime),
+    })), [assignments]
+  );
+  
   const [selectedAssignmentGroup, setSelectedAssignmentGroup] = React.useState<Assignment[] | null>(null);
 
-  const handleAssignTask = (newAssignments: Assignment[]) => {
+  // Memoizar las funciones de manejo para evitar re-renders
+  const handleAssignTask = React.useCallback((newAssignments: Assignment[]) => {
     // This function is now handled by the hook, so we just update the state
     // The actual saving/updating will happen via the hook's mutation
-  }
+  }, []);
 
- const handleUpdateTask = (originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => {
+  const handleUpdateTask = React.useCallback((originalAssignments: Assignment[], newAssignmentData: Omit<Assignment, 'id' | 'employeeId'>, newEmployeeIds: string[]) => {
     // This function is now handled by the hook, so we just update the state
     // The actual saving/updating will happen via the hook's mutation
     setSelectedAssignmentGroup(null);
-}
+  }, []);
 
-  const handleDeleteAssignment = async (assignmentsToDelete: Assignment[]) => {
-      // Eliminar cada asignación del grupo
-      for (const assignment of assignmentsToDelete) {
-          await deleteAssignment(assignment.id);
-      }
-      await refetch();
-      setSelectedAssignmentGroup(null);
-  }
+  const handleDeleteAssignment = React.useCallback(async (assignmentsToDelete: Assignment[]) => {
+    // Eliminar cada asignación del grupo
+    for (const assignment of assignmentsToDelete) {
+      await deleteAssignment(assignment.id);
+    }
+    await refetch();
+    setSelectedAssignmentGroup(null);
+  }, [deleteAssignment, refetch]);
 
-  const handleTaskClick = (assignmentGroup: Assignment[]) => {
+  const handleTaskClick = React.useCallback((assignmentGroup: Assignment[]) => {
     setSelectedAssignmentGroup(assignmentGroup);
     setIsDetailOpen(true);
-  }
+  }, []);
 
-  const handleOpenEdit = () => {
+  const handleOpenEdit = React.useCallback(() => {
     setIsDetailOpen(false);
     setIsEditOpen(true);
-  }
+  }, []);
 
-  const handleCloseDialogs = () => {
+  const handleCloseDialogs = React.useCallback(() => {
     setIsCreateOpen(false);
     setIsEditOpen(false);
     setIsDetailOpen(false);
     setSelectedAssignmentGroup(null);
-  }
+  }, []);
 
-  const handleTaskCreated = (newTask: Task) => {
+  const handleTaskCreated = React.useCallback((newTask: Task) => {
     // This function is now handled by the hook, so we just update the state
     // The actual saving/updating will happen via the hook's mutation
-  }
+  }, []);
 
-  const handleClientCreated = (newClient: Client) => {
+  const handleClientCreated = React.useCallback((newClient: Client) => {
     // This function is now handled by the hook, so we just update the state
     // The actual saving/updating will happen via the hook's mutation
-  }
+  }, []);
 
-  const onDeleteInEdit = async () => {
+  const onDeleteInEdit = React.useCallback(async () => {
     if (selectedAssignmentGroup) {
       await handleDeleteAssignment(selectedAssignmentGroup);
     }
     handleCloseDialogs();
-  }
+  }, [selectedAssignmentGroup, handleDeleteAssignment, handleCloseDialogs]);
 
-  const handleStatusChange = (newStatus: AssignmentStatus) => {
-      if (!selectedAssignmentGroup) return;
+  const handleStatusChange = React.useCallback((newStatus: AssignmentStatus) => {
+    if (!selectedAssignmentGroup) return;
 
-      // This function is now handled by the hook, so we just update the state
-      // The actual saving/updating will happen via the hook's mutation
-      // Also update the selected group to reflect the change immediately in the dialog
-      setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
-  }
+    // This function is now handled by the hook, so we just update the state
+    // The actual saving/updating will happen via the hook's mutation
+    // Also update the selected group to reflect the change immediately in the dialog
+    setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
+  }, [selectedAssignmentGroup]);
 
   return (
     <AppLayout>
