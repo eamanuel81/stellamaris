@@ -93,17 +93,17 @@ export function useAssignments() {
 
   // Ejecutar fetchAssignments al montar y configurar polling
   useEffect(() => {
-    console.log('🔄 Iniciando polling de assignments...');
+    //console.log('🔄 Iniciando polling de assignments...');
     fetchAssignments(false); // Carga inicial
     
     // Polling para actualizar assignments cada 30 segundos
     const interval = setInterval(() => {
-      console.log('🔄 Polling: actualizando assignments...');
+     // console.log('🔄 Polling: actualizando assignments...');
       fetchAssignments(true); // Polling
     }, 30000); // 30 segundos
     
     return () => {
-      console.log('🔄 Deteniendo polling de assignments...');
+      //console.log('🔄 Deteniendo polling de assignments...');
       clearInterval(interval);
     };
   }, [fetchAssignments]);
