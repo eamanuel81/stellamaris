@@ -12,6 +12,7 @@ export function useAssignments() {
   // Usar ref para evitar llamadas duplicadas
   const fetchingRef = useRef(false);
   const mountedRef = useRef(true);
+  const initializedRef = useRef(false);
 
   // Cleanup al desmontar
   useEffect(() => {
@@ -22,18 +23,21 @@ export function useAssignments() {
   }, []);
 
   const fetchAssignments = useCallback(async () => {
-    // Prevenir llamadas concurrentes
-    if (fetchingRef.current) return;
+    // Prevenir llamadas concurrentes y múltiples inicializaciones
+    if (fetchingRef.current || initializedRef.current) {
+      return;
+    }
     
     fetchingRef.current = true;
     setIsLoading(true);
     setError(null);
     
     try {
-      // Verificar si el usuario está autenticado - optimizado
+      // Verificar si el usuario está autenticado
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
+        console.error('❌ Error de autenticación:', userError);
         if (mountedRef.current) {
           setError('Error de autenticación');
           setAssignments([]);
@@ -50,23 +54,26 @@ export function useAssignments() {
         return;
       }
 
-      // Optimizar la query - solo seleccionar campos necesarios si es posible
+      // Query original - seleccionar todas las columnas
       const { data, error } = await supabase
         .from('assignments')
         .select('*')
-        .order('id', { ascending: false });
+        .order('startTime', { ascending: true });
         
       // Solo actualizar estado si el componente está montado
       if (!mountedRef.current) return;
         
       if (error) {
+        console.error('❌ Error cargando asignaciones:', error);
         setError(`Error cargando asignaciones: ${error.message}`);
         setAssignments([]);
       } else {
         setAssignments((data as Assignment[]) || []);
         setError(null);
+        initializedRef.current = true; // Marcar como inicializado
       }
     } catch (err) {
+      console.error('❌ Error inesperado al cargar las asignaciones:', err);
       setError(`Error inesperado al cargar las asignaciones: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setAssignments([]);
     } finally {
@@ -79,8 +86,10 @@ export function useAssignments() {
 
   // Solo ejecutar fetchAssignments una vez al montar
   useEffect(() => {
-    fetchAssignments();
-  }, []); // Dependencias vacías - solo ejecutar una vez
+    if (!initializedRef.current) {
+      fetchAssignments();
+    }
+  }, []); // Remover fetchAssignments de las dependencias
 
   // Memoizar las funciones CRUD para evitar re-renders
   const addAssignment = useCallback(async (assignment: Omit<Assignment, 'id'>) => {
