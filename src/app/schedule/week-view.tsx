@@ -31,11 +31,12 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
 
     const layoutAssignments = assignmentsWithLayout.map(a => ({ ...a, overlaps: [] as any[], column: -1, totalColumns: 1 }));
 
-    // Detect overlaps
+    // Detect overlaps with more precision
     for (let i = 0; i < layoutAssignments.length; i++) {
         for (let j = i + 1; j < layoutAssignments.length; j++) {
             const a = layoutAssignments[i];
             const b = layoutAssignments[j];
+            // Check if tasks overlap in time
             if (a.startTime < b.endTime && a.endTime > b.startTime) {
                 a.overlaps.push(b);
                 b.overlaps.push(a);
@@ -48,7 +49,6 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
     for (const assignment of layoutAssignments) {
         if (assignment.column === -1) {
             const placedInColumn = (colIndex: number) => {
-                 const columns: any[][] = [[]];
                 for(const other of layoutAssignments) {
                     if (other.column === colIndex) {
                         if (assignment.startTime < other.endTime && assignment.endTime > other.startTime) {
@@ -258,8 +258,8 @@ export const WeekView = React.memo(({
 
                                             const height = getTaskHeight(startTime, endTime);
                                             const top = getTaskPosition(startTime);
-                                            const width = 100 / processed.totalColumns;
-                                            const left = width * processed.column;
+                                            const width = 100; // Ancho completo para evitar solapamiento horizontal
+                                            const left = 0; // Siempre a la izquierda
                                             const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
                                             const Icon = statusInfo.icon;
 
@@ -269,8 +269,9 @@ export const WeekView = React.memo(({
                                                         <div
                                                             onClick={() => onTaskClick(assignmentGroup)}
                                                             className={cn(
-                                                                "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
-                                                                statusInfo.classes
+                                                                "absolute rounded-lg p-4 border cursor-pointer flex flex-col justify-start overflow-visible",
+                                                                statusInfo.classes,
+                                                                processed.column > 0 ? "opacity-30 z-10" : "opacity-100 z-20"
                                                             )}
                                                             style={{
                                                                 top: `${top}px`,
@@ -281,7 +282,7 @@ export const WeekView = React.memo(({
                                                         >
                                                             <div className="flex items-start gap-1.5">
                                                                 <Icon className="h-3 w-3 shrink-0 mt-0.5" />
-                                                                <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
+                                                                <p className="font-bold text-sm leading-tight whitespace-nowrap overflow-visible">{task.title}</p>
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>

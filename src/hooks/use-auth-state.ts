@@ -18,6 +18,7 @@ export function useAuthState() {
       isGlobalInitialized = true;
       
       globalAuthSubscription = supabase.auth.onAuthStateChange((event, session) => {
+        //console.log('🔐 Auth state change:', event, session?.user?.id);
         
         // Notificar a todos los listeners
         authListeners.forEach(listener => {

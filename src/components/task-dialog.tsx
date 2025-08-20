@@ -110,8 +110,8 @@ export const TaskDialog = ({
     }
 
     const handleSubmit = () => {
-        if (!title || !description || !duration) {
-            alert("Por favor complete Título, Descripción y Duración.");
+        if (!title || !duration) {
+            alert("Por favor complete Título y Duración.");
             return;
         }
         const baseTaskData = {
@@ -155,7 +155,7 @@ export const TaskDialog = ({
                                 <Input id="title" placeholder="Ej: Limpieza de cubierta" value={title} onChange={e => setTitle(e.target.value)} />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="description">Descripción</Label>
+                                <Label htmlFor="description">Descripción (Opcional)</Label>
                                 <Textarea id="description" placeholder="Describa la tarea en detalle..." value={description} onChange={e => setDescription(e.target.value)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">

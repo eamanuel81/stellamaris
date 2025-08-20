@@ -42,11 +42,12 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
 
     const layoutAssignments = assignmentsWithLayout.map(a => ({ ...a, overlaps: [] as any[], column: -1, totalColumns: 1 }));
 
-    // Detect overlaps
+    // Detect overlaps with more precision
     for (let i = 0; i < layoutAssignments.length; i++) {
         for (let j = i + 1; j < layoutAssignments.length; j++) {
             const a = layoutAssignments[i];
             const b = layoutAssignments[j];
+            // Check if tasks overlap in time
             if (a.startTime < b.endTime && a.endTime > b.startTime) {
                 a.overlaps.push(b);
                 b.overlaps.push(a);
@@ -246,7 +247,7 @@ export const DayView = React.memo(({
                             const top = getTaskPosition(firstAssignment.startTime);
                             const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
 
-                            const width = 100 / processed.totalColumns;
+                            const width = Math.max(100 / processed.totalColumns, 40); // Mínimo 40% de ancho
                             const left = width * processed.column;
                             const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
                             const Icon = statusInfo.icon;

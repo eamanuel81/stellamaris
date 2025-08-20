@@ -38,7 +38,9 @@ export function initializeSupabase() {
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: false,
-          storageKey: 'stellamaris-auth'
+          storageKey: 'stellamaris-auth',
+          flowType: 'pkce',
+          debug: false
         },
         global: {
           headers: {
@@ -46,6 +48,19 @@ export function initializeSupabase() {
           }
         }
       });
+
+      // Configurar interceptores para manejar errores de token
+      if (process.env.NODE_ENV === 'development') {
+        // Interceptor para respuestas de auth
+        supabaseInstance.auth.onAuthStateChange((event, session) => {
+          if (event === 'TOKEN_REFRESHED') {
+            console.log('✅ Token refrescado exitosamente');
+          } else if (event === 'SIGNED_OUT') {
+            console.log('🚪 Usuario cerró sesión');
+          }
+        });
+      }
+
       //console.log('✅ Cliente Supabase inicializado correctamente');
     } catch (error) {
       console.error('❌ Error inicializando Supabase:', error);
