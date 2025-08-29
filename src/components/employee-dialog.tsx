@@ -168,6 +168,13 @@ export const EmployeeDialog = ({
                             </p>
                         </div>
                     )}
+                    {isEditMode && employeeToEdit && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            <p className="text-sm text-amber-800">
+                                <strong>Nota:</strong> Si modifica el nombre o DNI, la contraseña se actualizará automáticamente a: <strong>{name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Nombre'}{dni || 'DNI'}</strong>
+                            </p>
+                        </div>
+                    )}
                     {mySubrole === 'admin' && (
                       <div className="grid gap-2">
                         <Label htmlFor="subrole">Subrol</Label>

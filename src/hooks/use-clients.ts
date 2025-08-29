@@ -8,30 +8,58 @@ export function useClients() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchClients = async () => {
+    console.log('🔄 Fetching clients...');
     setIsLoading(true);
     const { data, error } = await supabase.from('clients').select('*');
     if (error) {
+      console.error('❌ Error fetching clients:', error);
       setError(error.message);
       setClients([]);
     } else {
-      setClients(data || []);
+      console.log(`✅ Fetched ${data?.length || 0} clients`);
+      // Verificar si hay duplicados antes de establecer el estado
+      const uniqueClients = data || [];
+      const clientIds = new Set();
+      const filteredClients = uniqueClients.filter(client => {
+        if (clientIds.has(client.id)) {
+          console.log('⚠️ Duplicate client found and filtered:', client);
+          return false;
+        }
+        clientIds.add(client.id);
+        return true;
+      });
+      
+      console.log(`📊 Setting ${filteredClients.length} unique clients`);
+      setClients(filteredClients);
       setError(null);
     }
     setIsLoading(false);
   };
 
   useEffect(() => {
+    console.log('🔧 useClients useEffect triggered');
     fetchClients();
   }, []);
 
   // Crear cliente
   const addClient = async (client: Omit<Client, 'id'>) => {
+    console.log('➕ Adding client:', client);
     setIsLoading(true);
     const { data, error } = await supabase.from('clients').insert([client]).select();
     if (error) {
+      console.error('❌ Error adding client:', error);
       setError(error.message);
     } else if (data && data.length > 0) {
-      setClients(prev => [...prev, data[0]]);
+      console.log('✅ Client added successfully:', data[0]);
+      setClients(prev => {
+        // Verificar si el cliente ya existe para evitar duplicados
+        const clientExists = prev.some(c => c.id === data[0].id);
+        if (clientExists) {
+          console.log('⚠️ Client already exists in state, skipping duplicate');
+          return prev;
+        }
+        return [...prev, data[0]];
+      });
     }
     setIsLoading(false);
     return { data, error };
