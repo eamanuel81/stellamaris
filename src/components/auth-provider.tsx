@@ -82,14 +82,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       
       if (profileError) {
-        // Si no hay perfil, verificar si es un administrador por email
-        if (email === 'admin@stellamaris.com' || email.includes('admin')) {
-          setRole('admin');
-        } else {
-          setRole(null);
+        // Si no hay perfil, determinar el rol basado en el email o subrole del empleado
+        console.log('📝 Perfil no encontrado, usando configuración por defecto...');
+        
+        let userRole: Role = 'employee';
+        if (email === 'admin@stellamaris.com' || email.includes('admin') || (employee && employee.subrole === 'admin')) {
+          userRole = 'admin';
         }
-        // Usar el ID del usuario como avatar key por defecto
+        
+        // Establecer valores por defecto sin crear perfil
+        setRole(userRole);
         setAvatarKey(userId);
+        
+        console.log(`✅ Usuario configurado como ${userRole} (sin perfil en tabla profiles)`);
       } else if (profile) {
         setRole(profile.role === 'Administrador' ? 'admin' : 'employee');
         

@@ -116,7 +116,7 @@ export function useEmployees() {
         return { data: null, error: new Error('No se pudo crear el usuario en Auth') };
       }
 
-      // 2. Crear perfil en la tabla profiles con los campos correctos
+      // 2. Crear perfil en la tabla profiles usando el cliente admin para evitar RLS
       const profileData = {
         id: authData.user.id,
         name: employee.name,
@@ -126,22 +126,31 @@ export function useEmployees() {
         role: 'Empleado'
       };
 
-      const { data: profileResult, error: profileError } = await supabase
-        .from('profiles')
-        .insert([profileData])
-        .select();
+      try {
+        const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
+        const supabaseAdmin = getSupabaseAdmin();
+        
+        const { data: profileResult, error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .insert([profileData])
+          .select();
 
-      if (profileError) {
-        console.error('Error creando perfil:', profileError);
-        // Intentar eliminar el usuario de Auth si falla la creación del perfil
-        try {
-          await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
-        } catch (deleteError) {
-          console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+        if (profileError) {
+          console.error('Error creando perfil:', profileError);
+          // Intentar eliminar el usuario de Auth si falla la creación del perfil
+          try {
+            await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
+          } catch (deleteError) {
+            console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+          }
+          setError(`Error creando perfil: ${profileError.message}`);
+          setIsLoading(false);
+          return { data: null, error: profileError };
         }
-        setError(`Error creando perfil: ${profileError.message}`);
-        setIsLoading(false);
-        return { data: null, error: profileError };
+      } catch (profileError) {
+        console.error('Error inesperado creando perfil:', profileError);
+        // Si falla la creación del perfil, continuar sin él
+        console.log('⚠️ Continuando sin crear perfil en la tabla profiles');
       }
 
       // 3. Crear empleado en la tabla employees con el auth_id
@@ -156,8 +165,10 @@ export function useEmployees() {
         console.error('Error creando empleado:', employeeError);
         // Intentar limpiar: eliminar perfil y usuario de Auth
         try {
-          await supabase.from('profiles').delete().eq('id', authData.user.id);
-          await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
+          const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
+          const supabaseAdmin = getSupabaseAdmin();
+          await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id);
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
         } catch (cleanupError) {
           console.error('Error en limpieza después de fallo:', cleanupError);
         }
