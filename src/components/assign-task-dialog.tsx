@@ -153,6 +153,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const [isCreateClientOpen, setIsCreateClientOpen] = React.useState(false);
     const [isEndTimeManual, setIsEndTimeManual] = React.useState(false);
     const [timeConflictWarning, setTimeConflictWarning] = React.useState<string>('');
+    const [conflictDialogOpen, setConflictDialogOpen] = React.useState(false);
+    const [conflictData, setConflictData] = React.useState<{
+        employeeName: string;
+        conflictDetails: string;
+        assignmentData: any;
+        isEdit: boolean;
+    } | null>(null);
     
     const formatDateForInput = useCallback((date: Date) => {
         const d = new Date(date);
@@ -220,6 +227,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             setStatus('pending');
             setIsEndTimeManual(false);
             setTimeConflictWarning('');
+            setConflictDialogOpen(false);
+            setConflictData(null);
         }
     }, [assignmentToEdit, isEditMode, formatDateForInput]);
 
@@ -405,19 +414,12 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 status: status
             };
             
-            // Validar conflictos para edición
+            // Verificar conflictos para edición
             if (selectedEmployees && selectedEmployees.length > 0) {
                 for (const employeeId of selectedEmployees) {
-                    const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, assignmentToEdit.id);
+                    const { hasConflict } = checkTimeConflicts(employeeId, startDate, endDate, assignmentToEdit.id);
                     if (hasConflict) {
-                        const employee = getEmployeeById(employeeId);
-                        const conflictDetails = conflictingAssignments.map(a => {
-                            const task = getTaskById(a.taskId, tasks);
-                            const assignmentDate = new Date(a.startTime);
-                            return `• ${task?.title || 'Tarea'} (${assignmentDate.toLocaleDateString()} ${assignmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
-                        }).join('\n');
-                        
-                        alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede guardar la edición.`);
+                        handleTimeConflict(employeeId, startDate, endDate, assignmentData, true);
                         return;
                     }
                 }
@@ -447,22 +449,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 setOpen(false);
             }
         } else {
-            // Verificar conflictos para todos los empleados seleccionados
-            for (const employeeId of selectedEmployees) {
-                const { hasConflict, conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
-                if (hasConflict) {
-                    const employee = getEmployeeById(employeeId);
-                    const conflictDetails = conflictingAssignments.map(a => {
-                        const task = getTaskById(a.taskId, tasks);
-                        const assignmentDate = new Date(a.startTime);
-                        return `• ${task?.title || 'Tarea'} (${assignmentDate.toLocaleDateString()} ${assignmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
-                    }).join('\n');
-                    
-                    alert(`El empleado ${employee?.name} ${employee?.lastName} tiene un conflicto de horario con las siguientes asignaciones:\n\n${conflictDetails}\n\nNo se puede asignar esta tarea.`);
-                    return;
-                }
-            }
-            
+            // Definir assignmentData antes de verificar conflictos
             const assignmentData = {
                 taskId: selectedTaskId,
                 employeeId: selectedEmployees.slice(),
@@ -473,6 +460,15 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status
             };
+
+            // Verificar conflictos para todos los empleados seleccionados
+            for (const employeeId of selectedEmployees) {
+                const { hasConflict } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
+                if (hasConflict) {
+                    handleTimeConflict(employeeId, startDate, endDate, assignmentData, false);
+                    return;
+                }
+            }
 
             if (onSave) {
                 await onSave(assignmentData);
@@ -498,6 +494,58 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         setIsCreateClientOpen(false); 
     }, [refetchClients]);
 
+    // Función para manejar conflictos de tiempo
+    const handleTimeConflict = useCallback((employeeId: string, startDate: Date, endDate: Date, assignmentData: any, isEdit: boolean) => {
+        const { conflictingAssignments } = checkTimeConflicts(employeeId, startDate, endDate, isEdit && assignmentToEdit ? assignmentToEdit.id : undefined);
+        const employee = getEmployeeById(employeeId);
+        
+        const conflictDetails = conflictingAssignments.map(a => {
+            const task = getTaskById(a.taskId, tasks);
+            const assignmentDate = new Date(a.startTime);
+            return `• ${task?.title || 'Tarea'} (${assignmentDate.toLocaleDateString()} ${assignmentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(a.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+        }).join('\n');
+
+        setConflictData({
+            employeeName: `${employee?.name} ${employee?.lastName}`,
+            conflictDetails,
+            assignmentData,
+            isEdit
+        });
+        setConflictDialogOpen(true);
+    }, [checkTimeConflicts, getEmployeeById, tasks, assignmentToEdit]);
+
+    // Función para confirmar y guardar a pesar del conflicto
+    const handleConfirmConflict = useCallback(async () => {
+        if (!conflictData) return;
+        
+        try {
+            if (conflictData.isEdit) {
+                if (onSave) {
+                    await onSave(conflictData.assignmentData);
+                } else {
+                    await updateAssignment(conflictData.assignmentData);
+                    setOpen(false);
+                }
+            } else {
+                if (onSave) {
+                    await onSave(conflictData.assignmentData);
+                } else {
+                    const result = await addAssignment(conflictData.assignmentData);
+                    if (result.data && !result.error) {
+                        setTimeout(() => {
+                            setOpen(false);
+                        }, 500);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error al guardar con conflicto:', error);
+        } finally {
+            setConflictDialogOpen(false);
+            setConflictData(null);
+        }
+    }, [conflictData, onSave, updateAssignment, addAssignment, setOpen]);
+
     // Función para limpiar el formulario
     const handleCancel = useCallback(() => {
         setSelectedTaskId("");
@@ -511,6 +559,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         setStatus('pending');
         setIsEndTimeManual(false);
         setTimeConflictWarning('');
+        setConflictDialogOpen(false);
+        setConflictData(null);
         setOpen(false);
     }, [formatDateForInput, setOpen]);
 
@@ -809,6 +859,40 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                     </TabsContent>
                 )}
             </Tabs>
+
+            {/* Diálogo de confirmación de conflictos */}
+            <Dialog open={conflictDialogOpen} onOpenChange={setConflictDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>⚠️ Conflicto de Horario Detectado</DialogTitle>
+                        <DialogDescription>
+                            El empleado <strong>{conflictData?.employeeName}</strong> ya tiene tareas asignadas en este horario.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <div className="mb-4">
+                            <h4 className="font-semibold text-sm mb-2">Tareas existentes:</h4>
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                                <pre className="text-sm text-yellow-800 whitespace-pre-line font-mono">
+                                    {conflictData?.conflictDetails}
+                                </pre>
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            ¿Desea continuar y asignar esta tarea de todas formas? 
+                            Esto puede resultar en que el empleado tenga múltiples tareas simultáneas.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setConflictDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleConfirmConflict} className="bg-amber-600 hover:bg-amber-700">
+                            Continuar con Conflicto
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <DialogFooter className="sm:justify-between pt-4 border-t">
                  {isEditMode && onDelete && (
