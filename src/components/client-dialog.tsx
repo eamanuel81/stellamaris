@@ -188,27 +188,27 @@ export const ClientDialog = ({
             if (!isEditMode) {
                 // Eliminar id antes de guardar
                 const { id, ...clientDataWithoutId } = clientData;
-                const { data, error } = await addClient(clientDataWithoutId as Client);
-                if (error) {
-                    alert('Error al guardar el cliente: ' + error.message);
+                const result = await addClient(clientDataWithoutId as Client);
+                if (result.error) {
+                    alert('Error al guardar el cliente: ' + result.error.message);
                     return;
                 }
-                if (!data || data.length === 0) {
+                if (!result.data) {
                     alert('Error: No se pudo guardar el cliente');
                     return;
                 }
-                savedClient = data[0];
+                savedClient = result.data;
             } else {
-                const { data, error } = await updateClient(clientData);
-                if (error) {
-                    alert('Error al actualizar el cliente: ' + error.message);
+                const result = await updateClient(clientData);
+                if (result.error) {
+                    alert('Error al actualizar el cliente: ' + result.error.message);
                     return;
                 }
-                if (!data || data.length === 0) {
+                if (!result.data) {
                     alert('Error: No se pudo actualizar el cliente');
                     return;
                 }
-                savedClient = data[0];
+                savedClient = result.data;
             }
 
             // Llamar a onSave con el cliente guardado
