@@ -71,7 +71,6 @@ export default function ClientsPage() {
             if (result.error) {
                 setActionError(result.error.message);
             } else if (result.data) {
-                console.log('✅ Cliente agregado exitosamente:', result.data);
                 // Cerrar el diálogo solo si fue exitoso
                 setIsDialogOpen(false);
             }
