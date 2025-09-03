@@ -299,7 +299,9 @@ export default function MyTasksPage() {
             // Buscar la asignación actual
             const currentAssignment = assignments.find(a => a.id === assignmentId);
             if (!currentAssignment) {
-                console.error('Assignment not found:', assignmentId);
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('Assignment not found:', assignmentId);
+                }
                 return;
             }
             

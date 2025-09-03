@@ -12,7 +12,7 @@ import { useAssignments } from "@/hooks/use-assignments"
 import { useTasks } from "@/hooks/use-tasks"
 import { useClients } from "@/hooks/use-clients"
 import { useEmployees } from "@/hooks/use-employees"
-import { useAuth } from "@/hooks/use-auth-state"
+import { useAuth } from "@/components/auth-provider"
 import { supabase } from "@/lib/supabaseClient"
 
 const generateTimeSlots = () => {
@@ -436,12 +436,20 @@ export default function MyCalendarPage() {
       const result = await updateAssignment(updatedAssignment);
       
       if (result.error) {
-        console.error('Error updating assignment status:', result.error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error updating assignment status:', result.error);
+
+        }
       } else {
         setSelectedAssignment(prev => prev ? { ...prev, status: newStatus } : null);
       }
     } catch (error) {
-      console.error('Error updating assignment status:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error updating assignment status:', error);
+
+      }
     }
   }
 

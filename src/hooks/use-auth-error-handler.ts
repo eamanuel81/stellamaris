@@ -6,7 +6,9 @@ export function useAuthErrorHandler() {
   const { clearCorruptedSession, logout } = useAuth();
 
   const handleAuthError = useCallback((error: any) => {
-    console.error('🔐 Error de autenticación detectado:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('🔐 Error de autenticación detectado:', error);
+    }
     
     let errorMessage = 'Error de autenticación desconocido';
     
@@ -25,10 +27,16 @@ export function useAuthErrorHandler() {
         errorMessage.includes('Refresh Token Not Found') ||
         errorMessage.includes('TOKEN_REFRESH_FAILED')) {
       
-      console.log('🔄 Error de token de actualización detectado, limpiando sesión...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Error de token de actualización detectado, limpiando sesión...');
+      }
       
       // Limpiar sesión corrupta automáticamente
-      clearCorruptedSession().catch(console.error);
+      clearCorruptedSession().catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error limpiando sesión:', error);
+        }
+      });
     }
   }, [clearCorruptedSession]);
 
@@ -42,7 +50,9 @@ export function useAuthErrorHandler() {
       setAuthError(null);
       return true;
     } catch (error) {
-      console.error('Error limpiando sesión:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error limpiando sesión:', error);
+      }
       return false;
     }
   }, [clearCorruptedSession]);
@@ -53,7 +63,9 @@ export function useAuthErrorHandler() {
       setAuthError(null);
       return true;
     } catch (error) {
-      console.error('Error en logout:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error en logout:', error);
+      }
       return false;
     }
   }, [logout]);
