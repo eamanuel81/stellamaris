@@ -6,10 +6,39 @@ export function useCacheCleaner() {
 
   useEffect(() => {
     const handleAuthStateChange = (event: string, session: any) => {
-      // Limpiar localStorage si el usuario cerró sesión
+      // Limpiar solo datos específicos de la aplicación, NO los tokens de Supabase
       if (event === 'SIGNED_OUT') {
-        localStorage.clear();
-        sessionStorage.clear();
+        // Limpiar solo datos específicos de la aplicación
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (
+            key.includes('stellamaris') && 
+            !key.includes('stellamaris-auth') // NO limpiar tokens de auth
+          )) {
+            keysToRemove.push(key);
+          }
+        }
+        
+        keysToRemove.forEach(key => {
+          localStorage.removeItem(key);
+        });
+        
+        // Limpiar sessionStorage de manera similar
+        const sessionKeysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && (
+            key.includes('stellamaris') && 
+            !key.includes('stellamaris-auth') // NO limpiar tokens de auth
+          )) {
+            sessionKeysToRemove.push(key);
+          }
+        }
+        
+        sessionKeysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+        });
       }
       
       // Forzar recarga de datos si el usuario inició sesión
