@@ -127,7 +127,7 @@ export default function LoginPage() {
             {/* <Button variant="link" size="sm" className="w-full font-normal text-muted-foreground">
               ¿Olvidó su contraseña?
             </Button> */}
-            {role && (
+            {role && !hasAttemptedLogin && (
               <Button 
                 type="button" 
                 variant="outline" 
