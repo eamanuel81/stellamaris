@@ -124,10 +124,10 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Ingresando..." : "Ingresar"}
             </Button>
-            <Button variant="link" size="sm" className="w-full font-normal text-muted-foreground">
+            {/* <Button variant="link" size="sm" className="w-full font-normal text-muted-foreground">
               ¿Olvidó su contraseña?
-            </Button>
-            {role && (
+            </Button> */}
+            {role && !hasAttemptedLogin && (
               <Button 
                 type="button" 
                 variant="outline" 

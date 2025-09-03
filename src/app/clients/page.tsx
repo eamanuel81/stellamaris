@@ -67,8 +67,13 @@ export default function ClientsPage() {
         } else {
             // Eliminar id para que lo genere la base de datos
             const { id, ...clientDataWithoutId } = clientData;
-            const { error } = await addClient(clientDataWithoutId as Omit<Client, 'id'>);
-            if (error) setActionError(error.message);
+            const result = await addClient(clientDataWithoutId as Omit<Client, 'id'>);
+            if (result.error) {
+                setActionError(result.error.message);
+            } else if (result.data) {
+                // Cerrar el diálogo solo si fue exitoso
+                setIsDialogOpen(false);
+            }
         }
         setActionLoading(false);
     };
@@ -134,8 +139,10 @@ export default function ClientsPage() {
           />
         </div>
 
-        {isLoading || actionLoading ? (
+        {isLoading ? (
           <div className="text-center py-8">Cargando clientes...</div>
+        ) : actionLoading ? (
+          <div className="text-center py-8">Guardando cliente...</div>
         ) : error || actionError ? (
           <div className="text-center text-red-500 py-8">Error: {error || actionError}</div>
         ) : (

@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui"
 import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Ship, Package, Search } from "lucide-react"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -77,7 +77,11 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                         <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             <span>
-                                {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                {new Date(assignment.startTime).toLocaleDateString('es-ES', { 
+                                    weekday: 'short', 
+                                    day: '2-digit', 
+                                    month: '2-digit' 
+                                })} - {new Date(assignment.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} a {new Date(assignment.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -98,6 +102,28 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                                     <span>{boat.name}</span>
                                 </div>
                             ))}
+                            {client.responsibles && client.responsibles.length > 0 && (
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="h-4 w-4" />
+                                        <span className="font-medium text-foreground">Otros Responsables:</span>
+                                    </div>
+                                    {client.responsibles.map((responsible, index) => (
+                                        <div key={responsible.id || index} className="pl-6 space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <User className="h-4 w-4 shrink-0" />
+                                                <span className="text-sm truncate">{responsible.firstName} {responsible.lastName}</span>
+                                            </div>
+                                            <div className="flex flex-wrap items-center gap-2 pl-6">
+                                                <span className="text-xs text-muted-foreground">DNI: {responsible.dni}</span>
+                                                {responsible.phone && (
+                                                    <span className="text-xs text-muted-foreground">({responsible.phone})</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -116,19 +142,19 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                     )}
                 </div>
             </CardContent>
-            <CardFooter className="flex items-center justify-between pt-6">
+            <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
                 <Badge className={cn("flex items-center gap-1", currentStatus.classes)}>
                     {currentStatus.icon}
                     {currentStatus.text}
                 </Badge>
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
                     Cambiar Estado
                             <ChevronDown className="ml-1 h-3 w-3" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-[200px]">
                         {Object.entries(statusMap).map(([key, config]) => (
                             <DropdownMenuItem
                                 key={key}
@@ -154,6 +180,7 @@ export default function MyTasksPage() {
     const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
+    const [sortOrder, setSortOrder] = React.useState<"oldest" | "newest">("oldest");
     const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
 
     // Obtener el email del usuario actual
@@ -186,7 +213,9 @@ export default function MyTasksPage() {
 
     // Filtrar asignaciones del empleado actual
     const myAssignments = React.useMemo(() => {
-        if (!assignments || assignments.length === 0) return [];
+        if (!assignments || assignments.length === 0) {
+            return [];
+        }
         
         // Si es admin, mostrar todas las asignaciones
         if (role === 'admin' || subrole === 'admin') {
@@ -202,7 +231,6 @@ export default function MyTasksPage() {
         const currentEmployees = employees.filter(emp => emp.email === currentUserEmail);
         
         if (currentEmployees.length === 0) {
-            
             // Intentar buscar por email parcial o similar
             const similarEmployee = employees.find(emp => 
                 emp.email.toLowerCase().includes(currentUserEmail?.toLowerCase() || '') ||
@@ -210,7 +238,6 @@ export default function MyTasksPage() {
             );
             
             if (similarEmployee) {
-                
                 const filteredAssignments = assignments.filter(assignment => {
                     let employeeIds: string[] = [];
                     
@@ -239,8 +266,6 @@ export default function MyTasksPage() {
         // Si hay múltiples empleados con el mismo email, usar el primero
         const currentEmployee = currentEmployees[0];
         
-
-        
         // Filtrar asignaciones que incluyan al empleado actual
         const filteredAssignments = assignments.filter(assignment => {
             // Manejar diferentes tipos de datos que pueden llegar desde la BD
@@ -261,7 +286,8 @@ export default function MyTasksPage() {
                 employeeIds = [String(assignment.employeeId)];
             }
             
-            return employeeIds.includes(currentEmployee.id);
+            const hasEmployee = employeeIds.includes(currentEmployee.id);
+            return hasEmployee;
         });
         
         return filteredAssignments;
@@ -306,14 +332,24 @@ export default function MyTasksPage() {
       );
   };
   
-  const activeAssignments = myAssignments
-      .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
-      .filter(searchFilter)
-      .filter(a => statusFilter === 'all' || a.status === statusFilter);
-      
-  const completedAssignments = myAssignments
-      .filter(a => a.status === 'completed')
-      .filter(searchFilter);
+    const activeAssignments = myAssignments
+        .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+        .filter(searchFilter)
+        .filter(a => statusFilter === 'all' || a.status === statusFilter)
+        .sort((a, b) => {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+        });
+        
+    const completedAssignments = myAssignments
+        .filter(a => a.status === 'completed')
+        .filter(searchFilter)
+        .sort((a, b) => {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+        });
 
   const filterableStatuses = Object.entries(statusMap).filter(
     ([key]) => key !== 'completed' && key !== 'cancelled'
@@ -321,8 +357,8 @@ export default function MyTasksPage() {
 
     const isLoading = assignmentsLoading || tasksLoading || clientsLoading || employeesLoading;
     const hasError = assignmentsError || tasksError || clientsError || employeesError;
-
-    if (isLoading) {
+    
+        if (isLoading) {
         return (
             <AppLayout>
                 <div className="flex h-screen w-full items-center justify-center">
@@ -366,6 +402,8 @@ export default function MyTasksPage() {
           </p>
         </header>
 
+
+
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="relative flex-1">
@@ -393,6 +431,15 @@ export default function MyTasksPage() {
                 ))}
               </SelectContent>
             </Select>
+                        <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as "oldest" | "newest")}>
+                            <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Ordenar por fecha" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="oldest">Más antiguas primero</SelectItem>
+                <SelectItem value="newest">Más recientes primero</SelectItem>
+              </SelectContent>
+            </Select>
         </div>
 
                     <Tabs defaultValue="active" className="w-full">
@@ -410,7 +457,7 @@ export default function MyTasksPage() {
                                     No hay tareas activas.
                                 </div>
                             ) : (
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {activeAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
                                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
@@ -436,7 +483,7 @@ export default function MyTasksPage() {
                                     No hay tareas completadas.
                                 </div>
                             ) : (
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {completedAssignments.map((assignment) => {
                         const task = getTaskById(assignment.taskId, tasks);
                                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;

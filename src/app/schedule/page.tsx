@@ -3,7 +3,7 @@
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
-import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge } from "@/components/ui"
+import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge, Skeleton } from "@/components/ui"
 import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, clients as initialClients } from "@/lib/data";
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
@@ -15,6 +15,7 @@ import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
 
+// Función regular para generar timeSlots
 const generateTimeSlots = () => {
   const slots = []
   // from 6 AM to 1 AM next day
@@ -23,11 +24,19 @@ const generateTimeSlots = () => {
   }
   slots.push('01:00')
   return slots
-}
+};
 
-const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id)
-const getEmployeeById = (id: string, employees: Employee[]) => employees.find(e => e.id === id)
-const getClientById = (id: string, clients: Client[]) => clients.find(c => c.id === id)
+// Optimizar búsquedas usando Map para O(1) en lugar de O(n)
+const createLookupMaps = (tasks: Task[], employees: Employee[], clients: Client[]) => {
+  const taskMap = new Map(tasks.map(t => [t.id, t]));
+  const employeeMap = new Map(employees.map(e => [e.id, e]));
+  const clientMap = new Map(clients.map(c => [c.id, c]));
+  return { taskMap, employeeMap, clientMap };
+};
+
+const getTaskById = (id: string, taskMap: Map<string, Task>) => taskMap.get(id);
+const getEmployeeById = (id: string, employeeMap: Map<string, Employee>) => employeeMap.get(id);
+const getClientById = (id: string, clientMap: Map<string, Client>) => clientMap.get(id);
 
 const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: string}>, classes: string, tooltipIcon: React.ReactNode, label: string }> = {
     pending: { icon: Hourglass, classes: "bg-amber-100 border-amber-400 text-amber-800 hover:bg-amber-200", tooltipIcon: <Hourglass className="h-4 w-4 shrink-0 text-amber-600" />, label: 'Pendiente' },
@@ -37,12 +46,10 @@ const statusStyles: Record<AssignmentStatus, { icon: React.FC<{className?: strin
     cancelled: { icon: X, classes: "bg-red-100 border-red-400 text-red-800 hover:bg-red-200", tooltipIcon: <X className="h-4 w-4 shrink-0 text-red-600" />, label: 'Cancelada' },
 };
 
-
+// Memoizar funciones de agrupación y procesamiento
 const groupAssignmentsByTimeAndTask = (assignmentsToGroup: Assignment[]) => {
-    // Cambio: cada asignación individual será un grupo separado
-    // Esto asegura que todas las tareas sean visibles, incluso las que están en el mismo horario
     return assignmentsToGroup.map(assignment => [assignment]);
-}
+};
 
 const processOverlaps = (groupedAssignments: Assignment[][]) => {
      const assignmentsWithLayout = groupedAssignments.map(group => ({
@@ -51,8 +58,6 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
         endTime: new Date(group[0].endTime),
     }));
 
-    // For sorting and layout calculation, we need to handle overlaps.
-    // We create a temporary structure to hold layout properties.
     const layoutAssignments = assignmentsWithLayout.map(a => ({ ...a, overlaps: [] as any[], column: -1, totalColumns: 1 }));
 
     // Detect overlaps
@@ -67,10 +72,8 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
         }
     }
     
-    // Sort by start time to process chronologically
     layoutAssignments.sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
     
-    // Assign columns
     for (const assignment of layoutAssignments) {
         if (assignment.column === -1) {
             const placedInColumn = (colIndex: number) => {
@@ -92,7 +95,6 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
             assignment.column = col;
         }
 
-        // Expand totalColumns for all overlapping items
         const allInvolved = [assignment, ...assignment.overlaps];
         const maxColumns = Math.max(...allInvolved.map(a => a.column)) + 1;
         for (const item of allInvolved) {
@@ -103,26 +105,31 @@ const processOverlaps = (groupedAssignments: Assignment[][]) => {
     return layoutAssignments;
 };
 
-const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignmentGroup: Assignment[], tasks: Task[], clients: Client[], employees: Employee[] }) => {
+// Memoizar TooltipDetail para evitar re-renders innecesarios
+const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employeeMap }: { 
+    assignmentGroup: Assignment[], 
+    taskMap: Map<string, Task>, 
+    clientMap: Map<string, Client>, 
+    employeeMap: Map<string, Employee> 
+}) => {
     if (!assignmentGroup || assignmentGroup.length === 0) return null;
 
     const firstAssignment = assignmentGroup[0];
-    const task = getTaskById(firstAssignment.taskId, tasks);
-    const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
+    const task = getTaskById(firstAssignment.taskId, taskMap);
+    const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clientMap) : null;
     const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
     const assignedEmployees = assignmentGroup.flatMap(a => 
-        a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
+        a.employeeId.map(empId => getEmployeeById(empId, employeeMap)).filter(Boolean)
     ) as Employee[];
     const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
 
-    const calculateExtrasTotal = () => {
+    const calculateExtrasTotal = React.useMemo(() => {
         if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
         return firstAssignment.selectedExtras.reduce((total, selected) => {
             const extraDetails = task.extras!.find(e => e.id === selected.extraId);
             return total + (extraDetails?.price || 0) * selected.quantity;
         }, 0);
-    };
-    const extrasTotal = calculateExtrasTotal();
+    }, [task, firstAssignment.selectedExtras]);
 
     return (
         <div className="space-y-2 p-2 text-sm">
@@ -140,6 +147,12 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
                     <span>{client.firstName} {client.lastName}</span>
                 </div>
             )}
+            {client && client.responsibles && client.responsibles.length > 0 && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <PlusCircle className="h-4 w-4 shrink-0" />
+                    <span>{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
+                </div>
+            )}
             {boats.length > 0 && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                     <Ship className="h-4 w-4 shrink-0" />
@@ -150,293 +163,56 @@ const TooltipDetail = ({ assignmentGroup, tasks, clients, employees }: { assignm
                 <Users className="h-4 w-4 shrink-0" />
                 <span>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</span>
             </div>
-            {extrasTotal > 0 && (
+            {calculateExtrasTotal > 0 && (
                  <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
                     <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
-                    <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}</span>
+                    <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(calculateExtrasTotal)}</span>
                 </div>
             )}
         </div>
     )
-}
+});
 
-const DayView = ({ assignments, tasks, clients, employees, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], employees: Employee[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
-    const timeSlots = generateTimeSlots()
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+TooltipDetail.displayName = 'TooltipDetail';
 
-    const todayAssignments = assignments.filter(a => {
-        const assignmentDate = new Date(a.startTime);
-        assignmentDate.setHours(0, 0, 0, 0);
-        return assignmentDate.getTime() === today.getTime();
-    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-    const groupedAssignments = groupAssignmentsByTimeAndTask(todayAssignments);
-    const processedAssignments = processOverlaps(groupedAssignments);
 
-    const getTaskPosition = (startTime: Date) => {
-        const startHour = 6;
-        const hours = new Date(startTime).getHours() + new Date(startTime).getMinutes() / 60;
-        const topPosition = (hours - startHour) * 48; // 48px per hour (h-12)
-        return Math.max(0, topPosition);
-    }
-
-    const getTaskHeight = (startTime: Date, endTime: Date) => {
-        const durationMinutes = (new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60);
-        const height = (durationMinutes / 60) * 48; // 48px per hour
-        return Math.max(24, height - 2); // Subtract 2px for a small gap, min height 24px
-    }
-
-    return (
-        <TooltipProvider>
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div className="p-4 border-b">
-                    <h3 className="font-semibold">Horario de Hoy</h3>
-                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-                <div className="relative h-[600px] overflow-y-auto">
-                    <div className="grid">
-                        {timeSlots.map((time) => (
-                            <div key={time} className="grid grid-cols-[auto_1fr] items-start">
-                                <div className="sticky top-0 -mt-2 text-right">
-                                    <span className="relative top-2 pr-4 text-xs text-muted-foreground">{time}</span>
-                                </div>
-                                <div className="border-l border-border pl-4">
-                                    <div className="h-12 border-dashed border-b"></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="absolute top-0 left-[60px] right-0 bottom-0 pr-4">
-                        {processedAssignments.map((processed, index) => {
-                            const assignmentGroup = processed.group;
-                            const firstAssignment = assignmentGroup[0];
-                            const task = getTaskById(firstAssignment.taskId, tasks);
-                            if (!task) return null;
-
-                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                            const assignedEmployees = assignmentGroup.flatMap(a => 
-                                a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
-                            ) as Employee[];
-                            const top = getTaskPosition(firstAssignment.startTime);
-                            const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
-
-                            const width = 100 / processed.totalColumns;
-                            const left = width * processed.column;
-                            const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
-                            const Icon = statusInfo.icon;
-                            
-                            return (
-                                <Tooltip key={`${firstAssignment.id}-${index}`}>
-                                    <TooltipTrigger asChild>
-                                        <div
-                                            onClick={() => onTaskClick(assignmentGroup)}
-                                            className={cn(
-                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
-                                                statusInfo.classes
-                                            )}
-                                            style={{ 
-                                                top: `${top}px`, 
-                                                height: `${height}px`,
-                                                width: `calc(${width}% - 4px)`,
-                                                left: `calc(${left}% + 2px)`
-                                            }}
-                                        >
-                                            <div className="space-y-0.5">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Icon className="h-3 w-3 shrink-0" />
-                                                    <p className="font-bold text-sm truncate">{task.title}</p>
-                                                </div>
-                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
-                                                    <div className="flex items-center gap-1.5 truncate">
-                                                        <Users className="h-3 w-3 shrink-0" />
-                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
-                                                    </div>
-                                                    {client && (
-                                                        <div className="flex items-center gap-1.5 truncate">
-                                                            <User className="h-3 w-3 shrink-0" />
-                                                            <p>{client.firstName} {client.lastName}</p>
-                                                        </div>
-                                                    )}
-                                                    {boats.length > 0 && (
-                                                        <div className="flex items-center gap-1.5 truncate">
-                                                            <Ship className="h-3 w-3 shrink-0" />
-                                                            <p>{boats.map(b => b.name).join(', ')}</p>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="right" align="start">
-                                        <TooltipDetail assignmentGroup={assignmentGroup} tasks={tasks} clients={clients} employees={employees} />
-                                    </TooltipContent>
-                                </Tooltip>
-                            )
-                        })}
-                    </div>
-                </div>
-            </div>
-        </TooltipProvider>
-    )
-}
-
-const WeekView = ({ assignments, tasks, clients, employees, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], employees: Employee[], onTaskClick: (assignmentGroup: Assignment[]) => void }) => {
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
-    const weekDays = Array.from({ length: 7 }).map((_, i) => {
-        const day = new Date(startOfWeek);
-        day.setDate(startOfWeek.getDate() + i);
-        return day;
-    });
-
-    const timeSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
-
-    const getTaskPosition = (startTime: Date) => {
-        const startHour = 0;
-        const hours = startTime.getHours() + startTime.getMinutes() / 60;
-        return (hours - startHour) * 48; // 48px per hour
-    };
-
-    const getTaskHeight = (startTime: Date, endTime: Date) => {
-        const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
-        return Math.max(24, (durationMinutes / 60) * 48 - 2); // 48px per hour, -2 for gap, min height 24px
-    };
-    
-    return (
-        <TooltipProvider>
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div className="grid grid-cols-[60px_1fr] sticky top-0 z-20 bg-card">
-                    <div className="border-r border-b p-2"></div>
-                    <div className="grid grid-cols-7 border-b">
-                        {weekDays.map(day => (
-                            <div key={day.toISOString()} className="p-2 text-center border-r last:border-r-0">
-                                <p className="font-semibold text-sm">{day.toLocaleDateString('es-ES', { weekday: 'short' })}</p>
-                                <p className="text-xs text-muted-foreground">{day.toLocaleDateString('es-ES', { day: '2-digit' })}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="relative h-[600px] overflow-y-auto">
-                    <div className="grid grid-cols-[60px_1fr]">
-                        {/* Time column */}
-                        <div className="relative">
-                            {timeSlots.map(time => (
-                                <div key={time} className="h-12 flex items-start justify-end pr-2 border-r">
-                                    <span className="relative -top-2 text-xs text-muted-foreground">{time}</span>
-                                </div>
-                            ))}
+// Componente de skeleton para carga progresiva
+const ScheduleSkeleton = () => (
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-4 border-b">
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="relative h-[600px] overflow-y-auto">
+            <div className="grid">
+                {Array.from({ length: 20 }).map((_, i) => (
+                    <div key={i} className="grid grid-cols-[auto_1fr] items-start">
+                        <div className="sticky top-0 -mt-2 text-right">
+                            <Skeleton className="h-3 w-8 ml-auto mr-4" />
                         </div>
-                        {/* Days columns */}
-                        <div className="grid grid-cols-7 relative">
-                            {weekDays.map((day) => {
-                                const dayAssignments = assignments.filter(a => {
-                                    const assignmentDate = new Date(a.startTime);
-                                    assignmentDate.setHours(0,0,0,0);
-                                    const compareDate = new Date(day);
-                                    compareDate.setHours(0,0,0,0);
-                                    return assignmentDate.getTime() === compareDate.getTime();
-                                });
-                                
-                                const groupedForDay = groupAssignmentsByTimeAndTask(dayAssignments);
-                                const processedForDay = processOverlaps(groupedForDay);
-
-                                return (
-                                    <div key={day.toISOString()} className="relative border-r last:border-r-0">
-                                        {timeSlots.map(time => (
-                                            <div key={time} className="h-12 border-b border-dashed"></div>
-                                        ))}
-                                        {processedForDay.map((processed, index) => {
-                                            const assignmentGroup = processed.group;
-                                            const firstAssignment = assignmentGroup[0];
-                                            const task = getTaskById(firstAssignment.taskId, tasks);
-                                            if (!task) return null;
-
-                                            const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;
-                                            const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-                                            const assignedEmployees = assignmentGroup.flatMap(a => 
-                                                a.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean)
-                                            ) as Employee[];
-                                            const startTime = new Date(firstAssignment.startTime);
-                                            const endTime = new Date(firstAssignment.endTime);
-
-                                            const height = getTaskHeight(startTime, endTime);
-                                            const top = getTaskPosition(startTime);
-                                            const width = 100 / processed.totalColumns;
-                                            const left = width * processed.column;
-                                            const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
-                                            const Icon = statusInfo.icon;
-
-
-                                            return (
-                                                <Tooltip key={`${firstAssignment.id}-${index}`}>
-                                                    <TooltipTrigger asChild>
-                                                        <div
-                                                            onClick={() => onTaskClick(assignmentGroup)}
-                                                            className={cn(
-                                                                "absolute rounded-lg p-2 border cursor-pointer z-10 flex flex-col justify-start overflow-hidden",
-                                                                statusInfo.classes
-                                                            )}
-                                                            style={{
-                                                                top: `${top}px`,
-                                                                height: `${height}px`,
-                                                                width: `calc(${width}% - 4px)`,
-                                                                left: `calc(${left}% + 2px)`,
-                                                            }}
-                                                        >
-                                                            <div className="space-y-0.5">
-                                                                <div className="flex items-center gap-1.5">
-                                                                    <Icon className="h-3 w-3 shrink-0" />
-                                                                    <p className="font-bold text-sm truncate">{task.title}</p>
-                                                                </div>
-                                                                <div className="text-xs opacity-80 pl-5 space-y-0.5">
-                                                                    <div className="flex items-center gap-1.5 truncate">
-                                                                        <Users className="h-3 w-3 shrink-0" />
-                                                                        <p>{assignedEmployees.length > 0 ? assignedEmployees.map(e => e.name).join(', ') : 'Sin asignar'}</p>
-                                                                    </div>
-                                                                    {client && (
-                                                                        <div className="flex items-center gap-1.5 truncate">
-                                                                            <User className="h-3 w-3 shrink-0" />
-                                                                            <p>{client.firstName} {client.lastName}</p>
-                                                                        </div>
-                                                                    )}
-                                                                    {boats.length > 0 && (
-                                                                        <div className="flex items-center gap-1.5 truncate">
-                                                                            <Ship className="h-3 w-3 shrink-0" />
-                                                                            <p>{boats.map(b => b.name).join(', ')}</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="right" align="start">
-                                                        <TooltipDetail assignmentGroup={assignmentGroup} tasks={tasks} clients={clients} employees={employees} />
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )
-                                        })
-                                    }
-                                    </div>
-                                )
-                            })}
+                        <div className="border-l border-border pl-4">
+                            <div className="h-12 border-dashed border-b"></div>
                         </div>
                     </div>
-                </div>
+                ))}
             </div>
-        </TooltipProvider>
-    )
-}
+        </div>
+    </div>
+);
+
+import { DayView } from './day-view';
+import { WeekView } from './week-view';
 
 export default function SchedulePage() {
   const [isCreateOpen, setIsCreateOpen] = React.useState(false)
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
-  const { assignments, addAssignment, updateAssignment, deleteAssignment, refetch } = useAssignments();
-  const { tasks } = useTasks();
-  const { clients } = useClients();
-  const { employees } = useEmployees();
+  const [activeTab, setActiveTab] = React.useState("week");
+  const { assignments, addAssignment, updateAssignment, deleteAssignment, refetch, isLoading: assignmentsLoading } = useAssignments();
+  const { tasks, isLoading: tasksLoading } = useTasks();
+  const { clients, isLoading: clientsLoading } = useClients();
+  const { employees, isLoading: employeesLoading } = useEmployees();
   
   // Memoizar el procesamiento de assignments para evitar re-renders
   const assignmentsWithDates = React.useMemo(() => 
@@ -445,6 +221,11 @@ export default function SchedulePage() {
       startTime: new Date(a.startTime),
       endTime: new Date(a.endTime),
     })), [assignments]
+  );
+
+  // Memoizar los maps de lookup para optimizar búsquedas
+  const { taskMap, employeeMap, clientMap } = React.useMemo(() => 
+    createLookupMaps(tasks, employees, clients), [tasks, employees, clients]
   );
   
   const [selectedAssignmentGroup, setSelectedAssignmentGroup] = React.useState<Assignment[] | null>(null);
@@ -512,6 +293,9 @@ export default function SchedulePage() {
     // Also update the selected group to reflect the change immediately in the dialog
     setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
   }, [selectedAssignmentGroup]);
+
+  // Verificar si todos los datos están cargando
+  const isDataLoading = assignmentsLoading || tasksLoading || clientsLoading || employeesLoading;
 
   return (
     <AppLayout>
@@ -605,7 +389,7 @@ export default function SchedulePage() {
             )}
         </Dialog>
         
-        <Tabs defaultValue="week" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex justify-end">
                 <TabsList>
                     <TabsTrigger value="day">Hoy</TabsTrigger>
@@ -613,10 +397,36 @@ export default function SchedulePage() {
                 </TabsList>
             </div>
             <TabsContent value="day" className="mt-4">
-                <DayView assignments={assignmentsWithDates} tasks={tasks} clients={clients} employees={employees} onTaskClick={handleTaskClick} />
+                {isDataLoading ? (
+                    <ScheduleSkeleton />
+                ) : (
+                    <DayView 
+                        assignments={assignmentsWithDates} 
+                        tasks={tasks} 
+                        clients={clients} 
+                        employees={employees} 
+                        onTaskClick={handleTaskClick}
+                        taskMap={taskMap}
+                        clientMap={clientMap}
+                        employeeMap={employeeMap}
+                    />
+                )}
             </TabsContent>
             <TabsContent value="week" className="mt-4">
-                <WeekView assignments={assignmentsWithDates} tasks={tasks} clients={clients} employees={employees} onTaskClick={handleTaskClick} />
+                {isDataLoading ? (
+                    <ScheduleSkeleton />
+                ) : (
+                    <WeekView 
+                        assignments={assignmentsWithDates} 
+                        tasks={tasks} 
+                        clients={clients} 
+                        employees={employees} 
+                        onTaskClick={handleTaskClick}
+                        taskMap={taskMap}
+                        clientMap={clientMap}
+                        employeeMap={employeeMap}
+                    />
+                )}
             </TabsContent>
         </Tabs>
 

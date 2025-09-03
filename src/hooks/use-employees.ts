@@ -39,7 +39,8 @@ export function useEmployees() {
         setError(`Error cargando empleados: ${error.message}`);
         setEmployees([]);
       } else {
-        setEmployees((data as Employee[]) || []);
+        const employeesData = (data as Employee[]) || [];
+        setEmployees(employeesData);
         setError(null);
       }
     } catch (err) {
@@ -115,7 +116,7 @@ export function useEmployees() {
         return { data: null, error: new Error('No se pudo crear el usuario en Auth') };
       }
 
-      // 2. Crear perfil en la tabla profiles con los campos correctos
+      // 2. Crear perfil en la tabla profiles usando el cliente admin para evitar RLS
       const profileData = {
         id: authData.user.id,
         name: employee.name,
@@ -125,22 +126,31 @@ export function useEmployees() {
         role: 'Empleado'
       };
 
-      const { data: profileResult, error: profileError } = await supabase
-        .from('profiles')
-        .insert([profileData])
-        .select();
+      try {
+        const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
+        const supabaseAdmin = getSupabaseAdmin();
+        
+        const { data: profileResult, error: profileError } = await supabaseAdmin
+          .from('profiles')
+          .insert([profileData])
+          .select();
 
-      if (profileError) {
-        console.error('Error creando perfil:', profileError);
-        // Intentar eliminar el usuario de Auth si falla la creación del perfil
-        try {
-          await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
-        } catch (deleteError) {
-          console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+        if (profileError) {
+          console.error('Error creando perfil:', profileError);
+          // Intentar eliminar el usuario de Auth si falla la creación del perfil
+          try {
+            await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
+          } catch (deleteError) {
+            console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+          }
+          setError(`Error creando perfil: ${profileError.message}`);
+          setIsLoading(false);
+          return { data: null, error: profileError };
         }
-        setError(`Error creando perfil: ${profileError.message}`);
-        setIsLoading(false);
-        return { data: null, error: profileError };
+      } catch (profileError) {
+        console.error('Error inesperado creando perfil:', profileError);
+        // Si falla la creación del perfil, continuar sin él
+        console.log('⚠️ Continuando sin crear perfil en la tabla profiles');
       }
 
       // 3. Crear empleado en la tabla employees con el auth_id
@@ -155,8 +165,10 @@ export function useEmployees() {
         console.error('Error creando empleado:', employeeError);
         // Intentar limpiar: eliminar perfil y usuario de Auth
         try {
-          await supabase.from('profiles').delete().eq('id', authData.user.id);
-          await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
+          const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
+          const supabaseAdmin = getSupabaseAdmin();
+          await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id);
+          await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
         } catch (cleanupError) {
           console.error('Error en limpieza después de fallo:', cleanupError);
         }
@@ -187,6 +199,20 @@ export function useEmployees() {
   const updateEmployee = async (employee: Employee) => {
     setIsLoading(true);
     try {
+      // Buscar el empleado actual para comparar cambios
+      const currentEmployee = employees.find(e => e.id === employee.id);
+      if (!currentEmployee) {
+        setError('Empleado no encontrado');
+        setIsLoading(false);
+        return { data: null, error: new Error('Empleado no encontrado') };
+      }
+
+      // Verificar si cambió el nombre o DNI (requiere actualización de contraseña)
+      const nameChanged = currentEmployee.name !== employee.name;
+      const dniChanged = currentEmployee.dni !== employee.dni;
+      const requiresPasswordUpdate = nameChanged || dniChanged;
+
+      // 1. Actualizar empleado en la tabla employees
       const { data, error } = await supabase
         .from('employees')
         .update(employee)
@@ -196,16 +222,73 @@ export function useEmployees() {
       if (error) {
         console.error('Error updating employee:', error);
         setError(error.message);
+        setIsLoading(false);
         return { data: null, error };
-      } else if (data && data.length > 0) {
+      }
+
+      // 2. Si cambió el nombre o DNI, actualizar la contraseña en Auth
+      if (requiresPasswordUpdate && currentEmployee.auth_id) {
+        try {
+          console.log('🔑 Actualizando contraseña debido a cambios en nombre/DNI...');
+          
+          const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
+          const supabaseAdmin = getSupabaseAdmin();
+          
+          // Generar nueva contraseña: primera letra del nombre + DNI
+          const newPassword = `${employee.name.charAt(0).toUpperCase() + employee.name.slice(1)}${employee.dni}`;
+          
+          // Actualizar contraseña en Supabase Auth
+          const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+            currentEmployee.auth_id,
+            { password: newPassword }
+          );
+          
+          if (passwordError) {
+            console.error('⚠️ Error actualizando contraseña:', passwordError);
+            // Continuar aunque falle la actualización de contraseña
+          } else {
+            console.log('✅ Contraseña actualizada exitosamente');
+          }
+          
+          // También actualizar el perfil si existe
+          try {
+            await supabaseAdmin
+              .from('profiles')
+              .update({
+                name: employee.name,
+                last_name: employee.lastName,
+                full_name: employee.nickname || `${employee.name} ${employee.lastName}`,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', currentEmployee.auth_id);
+          } catch (profileError) {
+            console.log('⚠️ No se pudo actualizar el perfil (opcional)');
+          }
+          
+        } catch (authError) {
+          console.error('⚠️ Error inesperado actualizando autenticación:', authError);
+          // Continuar aunque falle la actualización de auth
+        }
+      }
+
+      // 3. Actualizar estado local
+      if (data && data.length > 0) {
         setEmployees(prev => prev.map(e => e.id === employee.id ? (data[0] as Employee) : e));
         setError(null);
+        setIsLoading(false);
+        
+        // Mostrar mensaje informativo si se actualizó la contraseña
+        if (requiresPasswordUpdate) {
+          const newPassword = `${employee.name.charAt(0).toUpperCase() + employee.name.slice(1)}${employee.dni}`;
+          console.log(`ℹ️ Nueva contraseña para ${employee.name}: ${newPassword}`);
+        }
+        
         return { data: data[0] as Employee, error: null };
       }
+      
     } catch (err) {
       console.error('Unexpected error updating employee:', err);
       setError('Error inesperado al actualizar el empleado');
-      return { data: null, error: new Error('Error inesperado') };
     } finally {
       setIsLoading(false);
     }

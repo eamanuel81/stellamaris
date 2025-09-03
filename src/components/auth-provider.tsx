@@ -15,6 +15,7 @@ type AuthContextType = {
   isLoading: boolean;
   avatarKey: string;
   setAvatarKey: (key: string) => void;
+  clearCorruptedSession: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +28,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const isInitialized = useRef(false);
   const { addAuthListener } = useAuthState();
+
+  // Función para limpiar sesión corrupta
+  const clearCorruptedSession = async () => {
+    try {
+      console.log('🧹 Limpiando sesión corrupta...');
+      
+      // Limpiar almacenamiento local
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('stellamaris-auth');
+        sessionStorage.removeItem('stellamaris-auth');
+      }
+      
+      // Cerrar sesión en Supabase
+      await supabase.auth.signOut();
+      
+      // Limpiar estado local
+      clearAuthState();
+      
+      console.log('✅ Sesión corrupta limpiada correctamente');
+    } catch (error) {
+      console.error('❌ Error limpiando sesión corrupta:', error);
+    }
+  };
 
   // Obtiene el perfil del usuario autenticado
   const fetchProfile = async (userId: string, email: string) => {
@@ -58,14 +82,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       
       if (profileError) {
-        // Si no hay perfil, verificar si es un administrador por email
-        if (email === 'admin@stellamaris.com' || email.includes('admin')) {
-          setRole('admin');
-        } else {
-          setRole(null);
+        // Si no hay perfil, determinar el rol basado en el email o subrole del empleado
+        console.log('📝 Perfil no encontrado, usando configuración por defecto...');
+        
+        let userRole: Role = 'employee';
+        if (email === 'admin@stellamaris.com' || email.includes('admin') || (employee && employee.subrole === 'admin')) {
+          userRole = 'admin';
         }
-        // Usar el ID del usuario como avatar key por defecto
+        
+        // Establecer valores por defecto sin crear perfil
+        setRole(userRole);
         setAvatarKey(userId);
+        
+        console.log(`✅ Usuario configurado como ${userRole} (sin perfil en tabla profiles)`);
       } else if (profile) {
         setRole(profile.role === 'Administrador' ? 'admin' : 'employee');
         
@@ -100,42 +129,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const getSessionAndProfile = async () => {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        // Verificar si el usuario cambió
-        if (currentUserId && currentUserId !== session.user.id) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Error obteniendo sesión:', error);
+          if (error.message.includes('Invalid Refresh Token') || error.message.includes('Refresh Token Not Found')) {
+            console.log('🔄 Token de actualización inválido, limpiando sesión...');
+            await clearCorruptedSession();
+          }
           clearAuthState();
+          setIsLoading(false);
+          return;
         }
         
-        setCurrentUserId(session.user.id);
-        await fetchProfile(session.user.id, session.user.email!);
-      } else {
+        if (session?.user) {
+          // Verificar si el usuario cambió
+          if (currentUserId && currentUserId !== session.user.id) {
+            clearAuthState();
+          }
+          
+          setCurrentUserId(session.user.id);
+          await fetchProfile(session.user.id, session.user.email!);
+        } else {
+          clearAuthState();
+        }
+      } catch (error) {
+        console.error('❌ Error inesperado en getSessionAndProfile:', error);
         clearAuthState();
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     
     getSessionAndProfile();
     
     // Usar el listener centralizado en lugar de crear una nueva suscripción
     const removeListener = addAuthListener(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Usuario inició sesión
-        setCurrentUserId(session.user.id);
-        await fetchProfile(session.user.id, session.user.email!);
-        setIsLoading(false);
-      } else if (event === 'SIGNED_OUT') {
-        // Usuario cerró sesión
-        clearAuthState();
-        setIsLoading(false);
-      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-        // Token refrescado, verificar si el usuario cambió
-        if (currentUserId !== session.user.id) {
-          clearAuthState();
+      try {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Usuario inició sesión
           setCurrentUserId(session.user.id);
           await fetchProfile(session.user.id, session.user.email!);
+          setIsLoading(false);
+        } else if (event === 'SIGNED_OUT') {
+          // Usuario cerró sesión
+          clearAuthState();
+          setIsLoading(false);
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // Token refrescado, verificar si el usuario cambió
+          if (currentUserId !== session.user.id) {
+            clearAuthState();
+            setCurrentUserId(session.user.id);
+            await fetchProfile(session.user.id, session.user.email!);
+          }
+        } else if (event === 'TOKEN_REFRESH_FAILED') {
+          // Token de actualización falló
+          console.log('🔄 Fallo en la actualización del token, limpiando sesión...');
+          await clearCorruptedSession();
         }
+      } catch (error) {
+        console.error('❌ Error en auth listener:', error);
       }
     });
     
@@ -147,26 +201,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login usando Supabase Auth
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    try {
+      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setIsLoading(false);
+        return { error: error.message };
+      }
+      if (data.user) {
+        setCurrentUserId(data.user.id);
+        await fetchProfile(data.user.id, data.user.email!);
+      }
+    } catch (error) {
+      console.error('❌ Error inesperado en login:', error);
+      return { error: 'Error inesperado durante el inicio de sesión' };
+    } finally {
       setIsLoading(false);
-      return { error: error.message };
     }
-    if (data.user) {
-      setCurrentUserId(data.user.id);
-      await fetchProfile(data.user.id, data.user.email!);
-    }
-    setIsLoading(false);
   };
 
   // Logout
   const logout = async () => {
-    await supabase.auth.signOut();
-    clearAuthState();
+    try {
+      await supabase.auth.signOut();
+      clearAuthState();
+    } catch (error) {
+      console.error('❌ Error en logout:', error);
+      // Forzar limpieza del estado incluso si falla el logout
+      clearAuthState();
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ role, subrole, login, logout, isLoading, avatarKey, setAvatarKey }}>
+    <AuthContext.Provider value={{ role, subrole, login, logout, isLoading, avatarKey, setAvatarKey, clearCorruptedSession }}>
       {children}
     </AuthContext.Provider>
   );
