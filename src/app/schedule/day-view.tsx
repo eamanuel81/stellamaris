@@ -185,13 +185,13 @@ export const DayView = React.memo(({
     // Memoizar funciones de cálculo de posición dentro del componente
     const getTaskPosition = React.useCallback((startTime: Date) => {
         const startHour = 6;
-        const hours = new Date(startTime).getHours() + new Date(startTime).getMinutes() / 60;
+        const hours = startTime.getHours() + startTime.getMinutes() / 60;
         const topPosition = (hours - startHour) * 48;
         return Math.max(0, topPosition);
     }, []);
 
     const getTaskHeight = React.useCallback((startTime: Date, endTime: Date) => {
-        const durationMinutes = (new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60);
+        const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
         const height = (durationMinutes / 60) * 48;
         return Math.max(24, height - 2);
     }, []);
@@ -244,8 +244,10 @@ export const DayView = React.memo(({
                             const assignedEmployees = assignmentGroup.flatMap(a => 
                                 a.employeeId.map(empId => getEmployeeById(empId, employeeMap)).filter(Boolean)
                             ) as Employee[];
-                            const top = getTaskPosition(firstAssignment.startTime);
-                            const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
+                            const startTime = new Date(firstAssignment.startTime);
+                            const endTime = new Date(firstAssignment.endTime);
+                            const top = getTaskPosition(startTime);
+                            const height = getTaskHeight(startTime, endTime);
 
                             const width = Math.max(100 / processed.totalColumns, 40); // Mínimo 40% de ancho
                             const left = width * processed.column;
