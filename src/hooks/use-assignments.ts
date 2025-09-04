@@ -41,7 +41,9 @@ export function useAssignments() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('❌ Error de autenticación:', userError);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error de autenticación:', userError);
+        }
         if (mountedRef.current) {
           setError('Error de autenticación');
           setAssignments([]);
@@ -68,7 +70,9 @@ export function useAssignments() {
       if (!mountedRef.current) return;
         
       if (error) {
-        console.error('❌ Error cargando asignaciones:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error cargando asignaciones:', error);
+        }
         setError(`Error cargando asignaciones: ${error.message}`);
         setAssignments([]);
       } else {
@@ -77,7 +81,9 @@ export function useAssignments() {
         setError(null);
       }
     } catch (err) {
-      console.error('❌ Error inesperado al cargar las asignaciones:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error inesperado al cargar las asignaciones:', err);
+      }
       setError(`Error inesperado al cargar las asignaciones: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setAssignments([]);
     } finally {

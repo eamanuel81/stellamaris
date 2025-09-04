@@ -32,7 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Función para limpiar sesión corrupta
   const clearCorruptedSession = async () => {
     try {
-      console.log('🧹 Limpiando sesión corrupta...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🧹 Limpiando sesión corrupta...');
+      }
       
       // Limpiar almacenamiento local
       if (typeof window !== 'undefined') {
@@ -46,9 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Limpiar estado local
       clearAuthState();
       
-      console.log('✅ Sesión corrupta limpiada correctamente');
+      if (process.env.NODE_ENV === 'development') {
+      
+        console.log('✅ Sesión corrupta limpiada correctamente');
+      
+      }
     } catch (error) {
-      console.error('❌ Error limpiando sesión corrupta:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error limpiando sesión corrupta:', error);
+      }
     }
   };
 
@@ -83,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (profileError) {
         // Si no hay perfil, determinar el rol basado en el email o subrole del empleado
-        console.log('📝 Perfil no encontrado, usando configuración por defecto...');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📝 Perfil no encontrado, usando configuración por defecto...');
+        }
         
         let userRole: Role = 'employee';
         if (email === 'admin@stellamaris.com' || email.includes('admin') || (employee && employee.subrole === 'admin')) {
@@ -107,7 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
     } catch (error) {
-      console.error('Error in fetchProfile:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error in fetchProfile:', error);
+      }
       setRole(null);
       setSubrole(null);
       setAvatarKey(userId);
@@ -133,9 +145,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('❌ Error obteniendo sesión:', error);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Error obteniendo sesión:', error);
+          }
           if (error.message.includes('Invalid Refresh Token') || error.message.includes('Refresh Token Not Found')) {
-            console.log('🔄 Token de actualización inválido, limpiando sesión...');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔄 Token de actualización inválido, limpiando sesión...');
+            }
             await clearCorruptedSession();
           }
           clearAuthState();
@@ -155,7 +171,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           clearAuthState();
         }
       } catch (error) {
-        console.error('❌ Error inesperado en getSessionAndProfile:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error inesperado en getSessionAndProfile:', error);
+        }
         clearAuthState();
       } finally {
         setIsLoading(false);
@@ -185,11 +203,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } else if (event === 'TOKEN_REFRESH_FAILED') {
           // Token de actualización falló
-          console.log('🔄 Fallo en la actualización del token, limpiando sesión...');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 Fallo en la actualización del token, limpiando sesión...');
+          }
           await clearCorruptedSession();
         }
       } catch (error) {
-        console.error('❌ Error en auth listener:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error en auth listener:', error);
+        }
       }
     });
     
@@ -212,7 +234,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await fetchProfile(data.user.id, data.user.email!);
       }
     } catch (error) {
-      console.error('❌ Error inesperado en login:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error inesperado en login:', error);
+      }
       return { error: 'Error inesperado durante el inicio de sesión' };
     } finally {
       setIsLoading(false);
@@ -225,7 +249,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       clearAuthState();
     } catch (error) {
-      console.error('❌ Error en logout:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error en logout:', error);
+      }
       // Forzar limpieza del estado incluso si falla el logout
       clearAuthState();
     }

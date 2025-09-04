@@ -166,7 +166,8 @@ export const DayView = React.memo(({
     onTaskClick,
     taskMap,
     clientMap,
-    employeeMap
+    employeeMap,
+    selectedDate
 }: { 
     assignments: Assignment[], 
     tasks: Task[], 
@@ -175,37 +176,38 @@ export const DayView = React.memo(({
     onTaskClick: (assignmentGroup: Assignment[]) => void,
     taskMap: Map<string, Task>,
     clientMap: Map<string, Client>,
-    employeeMap: Map<string, Employee>
+    employeeMap: Map<string, Employee>,
+    selectedDate: Date
 }) => {
     // Memoizar timeSlots dentro del componente
     const timeSlots = React.useMemo(() => generateTimeSlots(), []);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(selectedDate);
+    targetDate.setHours(0, 0, 0, 0);
 
     // Memoizar funciones de cálculo de posición dentro del componente
     const getTaskPosition = React.useCallback((startTime: Date) => {
         const startHour = 6;
-        const hours = new Date(startTime).getHours() + new Date(startTime).getMinutes() / 60;
+        const hours = startTime.getHours() + startTime.getMinutes() / 60;
         const topPosition = (hours - startHour) * 48;
         return Math.max(0, topPosition);
     }, []);
 
     const getTaskHeight = React.useCallback((startTime: Date, endTime: Date) => {
-        const durationMinutes = (new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60);
+        const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
         const height = (durationMinutes / 60) * 48;
         return Math.max(24, height - 2);
     }, []);
 
-    const todayAssignments = React.useMemo(() => 
+    const dayAssignments = React.useMemo(() => 
         assignments.filter(a => {
             const assignmentDate = new Date(a.startTime);
             assignmentDate.setHours(0, 0, 0, 0);
-            return assignmentDate.getTime() === today.getTime();
-        }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()), [assignments]
+            return assignmentDate.getTime() === targetDate.getTime();
+        }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()), [assignments, targetDate]
     );
 
     const groupedAssignments = React.useMemo(() => 
-        groupAssignmentsByTimeAndTask(todayAssignments), [todayAssignments]
+        groupAssignmentsByTimeAndTask(dayAssignments), [dayAssignments]
     );
     
     const processedAssignments = React.useMemo(() => 
@@ -216,8 +218,8 @@ export const DayView = React.memo(({
         <TooltipProvider>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="p-4 border-b">
-                    <h3 className="font-semibold">Horario de Hoy</h3>
-                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <h3 className="font-semibold">Horario del Día</h3>
+                    <p className="text-sm text-muted-foreground">{selectedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
                 <div className="relative h-[600px] overflow-y-auto">
                     <div className="grid">
@@ -244,8 +246,10 @@ export const DayView = React.memo(({
                             const assignedEmployees = assignmentGroup.flatMap(a => 
                                 a.employeeId.map(empId => getEmployeeById(empId, employeeMap)).filter(Boolean)
                             ) as Employee[];
-                            const top = getTaskPosition(firstAssignment.startTime);
-                            const height = getTaskHeight(firstAssignment.startTime, firstAssignment.endTime);
+                            const startTime = new Date(firstAssignment.startTime);
+                            const endTime = new Date(firstAssignment.endTime);
+                            const top = getTaskPosition(startTime);
+                            const height = getTaskHeight(startTime, endTime);
 
                             const width = Math.max(100 / processed.totalColumns, 40); // Mínimo 40% de ancho
                             const left = width * processed.column;

@@ -14,7 +14,11 @@ export function useClients() {
     try {
       const { data, error } = await supabase.from('clients').select('*');
       if (error) {
-        console.error('Error fetching clients:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error fetching clients:', error);
+
+        }
         setError(error.message);
         setClients([]);
       } else {
@@ -33,7 +37,11 @@ export function useClients() {
         setError(null);
       }
     } catch (err) {
-      console.error('Unexpected error in fetchClients:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error in fetchClients:', err);
+
+      }
       setError('Error inesperado al cargar clientes');
     } finally {
       setIsLoading(false);
@@ -57,7 +65,11 @@ export function useClients() {
     try {
       const { data, error } = await supabase.from('clients').insert([client]).select();
       if (error) {
-        console.error('Error adding client:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error adding client:', error);
+
+        }
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
@@ -76,7 +88,11 @@ export function useClients() {
         return { data: null, error: new Error('No se recibieron datos del cliente insertado') };
       }
     } catch (err) {
-      console.error('Unexpected error adding client:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error adding client:', err);
+
+      }
       setError('Error inesperado al agregar cliente');
       return { data: null, error: new Error('Error inesperado') };
     } finally {
@@ -90,7 +106,11 @@ export function useClients() {
     try {
       const { data, error } = await supabase.from('clients').update(client).eq('id', client.id).select();
       if (error) {
-        console.error('Error updating client:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error updating client:', error);
+
+        }
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
@@ -98,7 +118,11 @@ export function useClients() {
         return { data: data[0], error: null };
       }
     } catch (err) {
-      console.error('Unexpected error updating client:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error updating client:', err);
+
+      }
       setError('Error inesperado al actualizar cliente');
       return { data: null, error: new Error('Error inesperado') };
     } finally {
@@ -113,7 +137,11 @@ export function useClients() {
     try {
       const { error } = await supabase.from('clients').delete().eq('id', id);
       if (error) {
-        console.error('Error deleting client:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error deleting client:', error);
+
+        }
         setError(error.message);
         return { error };
       } else {
@@ -121,7 +149,11 @@ export function useClients() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error deleting client:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error deleting client:', err);
+
+      }
       setError('Error inesperado al eliminar cliente');
       return { error: new Error('Error inesperado') };
     } finally {

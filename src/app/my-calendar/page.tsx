@@ -1,10 +1,9 @@
-
 "use client"
 
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge } from "@/components/ui"
-import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
+import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban, ChevronLeft, ChevronRight } from "lucide-react"
 import { Assignment, Task, Client, AssignmentStatus } from "@/lib/data"
 import { MyTaskDetailDialog } from "@/components/my-task-detail-dialog"
 import { cn } from "@/lib/utils"
@@ -12,7 +11,7 @@ import { useAssignments } from "@/hooks/use-assignments"
 import { useTasks } from "@/hooks/use-tasks"
 import { useClients } from "@/hooks/use-clients"
 import { useEmployees } from "@/hooks/use-employees"
-import { useAuth } from "@/hooks/use-auth-state"
+import { useAuth } from "@/components/auth-provider"
 import { supabase } from "@/lib/supabaseClient"
 
 const generateTimeSlots = () => {
@@ -128,18 +127,18 @@ const TooltipDetail = ({ assignment, tasks, clients }: { assignment: Assignment,
     )
 }
 
-const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignment: Assignment) => void }) => {
+const DayView = ({ assignments, tasks, clients, onTaskClick, selectedDate }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignment: Assignment) => void, selectedDate: Date }) => {
     const timeSlots = generateTimeSlots()
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(selectedDate);
+    targetDate.setHours(0, 0, 0, 0);
 
-    const todayAssignments = assignments.filter(a => {
+    const dayAssignments = assignments.filter(a => {
         const assignmentDate = new Date(a.startTime);
         assignmentDate.setHours(0, 0, 0, 0);
-        return assignmentDate.getTime() === today.getTime();
+        return assignmentDate.getTime() === targetDate.getTime();
     }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-    const processedAssignments = processOverlaps(todayAssignments);
+    const processedAssignments = processOverlaps(dayAssignments);
 
     const getTaskPosition = (startTime: Date) => {
         const startHour = 6;
@@ -158,8 +157,8 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
         <TooltipProvider>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="p-4 border-b">
-                    <h3 className="font-semibold">Horario de Hoy</h3>
-                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <h3 className="font-semibold">Horario del Día</h3>
+                    <p className="text-sm text-muted-foreground">{selectedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
                 <div className="relative h-[600px] overflow-y-auto">
                     <div className="grid">
@@ -191,40 +190,46 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                             const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
                             const Icon = statusInfo.icon;
                             
+                            // Simplificar la lógica de verificación para evitar el error de TypeScript
+                            const hasClient = !!client;
+                            const hasBoats = boats.length > 0;
+                            const hasResponsibles = client && client.responsibles && client.responsibles.length > 0;
+                            const showDetails = hasClient || hasBoats || hasResponsibles;
+                            
                             return (
                                 <Tooltip key={`${assignment.id}-${index}`}>
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={() => onTaskClick(assignment)}
-                                                                                         className={cn(
-                                                 "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
-                                                 statusInfo.classes
-                                             )}
-                                             style={{ 
-                                                 top: `${top}px`, 
-                                                 height: `${height}px`,
-                                                 width: `calc(${width}% - 4px)`,
-                                                 left: `calc(${left}% + 2px)`
-                                             }}
+                                            className={cn(
+                                                "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
+                                                statusInfo.classes
+                                            )}
+                                            style={{ 
+                                                top: `${top}px`, 
+                                                height: `${height}px`,
+                                                width: `calc(${width}% - 4px)`,
+                                                left: `calc(${left}% + 2px)`
+                                            }}
                                         >
                                             <div className="flex items-start gap-1.5">
                                                 <Icon className="h-3 w-3 shrink-0 mt-0.5" />
                                                 <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
-                                                {(client || boats.length > 0 || (client && client.responsibles && client.responsibles.length > 0)) && (
+                                                {showDetails && (
                                                     <div className="text-xs opacity-80 flex items-center gap-1 ml-auto">
-                                                        {client && (
+                                                        {hasClient && (
                                                             <div className="flex items-center gap-1">
                                                                 <User className="h-3 w-3 shrink-0" />
-                                                                <span className="leading-tight truncate">{client.firstName} {client.lastName}</span>
+                                                                <span className="leading-tight truncate">{client!.firstName} {client!.lastName}</span>
                                                             </div>
                                                         )}
-                                                        {client && client.responsibles && client.responsibles.length > 0 && (
+                                                        {hasResponsibles && (
                                                             <div className="flex items-center gap-1">
                                                                 <Users className="h-3 w-3 shrink-0" />
-                                                                <span className="leading-tight truncate">{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
+                                                                <span className="leading-tight truncate">{client!.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
                                                             </div>
                                                         )}
-                                                        {boats.length > 0 && (
+                                                        {hasBoats && (
                                                             <div className="flex items-center gap-1">
                                                                 <Ship className="h-3 w-3 shrink-0" />
                                                                 <span className="leading-tight truncate">{boats.map(b => b.name).join(', ')}</span>
@@ -248,9 +253,10 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
     )
 }
 
-const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignment: Assignment) => void }) => {
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
+const WeekView = ({ assignments, tasks, clients, onTaskClick, selectedDate }: { assignments: Assignment[], tasks: Task[], clients: Client[], onTaskClick: (assignment: Assignment) => void, selectedDate: Date }) => {
+    const targetDate = new Date(selectedDate);
+    const startOfWeek = new Date(targetDate);
+    startOfWeek.setDate(targetDate.getDate() - targetDate.getDay() + (targetDate.getDay() === 0 ? -6 : 1)); // Monday
     const weekDays = Array.from({ length: 7 }).map((_, i) => {
         const day = new Date(startOfWeek);
         day.setDate(startOfWeek.getDate() + i);
@@ -327,16 +333,15 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
                                             const Icon = statusInfo.icon;
 
-
                                             return (
                                                 <Tooltip key={`${assignment.id}-${index}`}>
                                                     <TooltipTrigger asChild>
                                                         <div
                                                             onClick={() => onTaskClick(assignment)}
-                                                                                                                         className={cn(
-                                                                 "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
-                                                                 statusInfo.classes
-                                                             )}
+                                                            className={cn(
+                                                                "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
+                                                                statusInfo.classes
+                                                            )}
                                                             style={{
                                                                 top: `${top}px`,
                                                                 height: `${height}px`,
@@ -345,8 +350,8 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                             }}
                                                         >
                                                              <div className="flex items-start gap-1.5">
-                                                                                                                                 <Icon className="h-3 w-3 shrink-0 mt-0.5" />
-                                                                 <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
+                                                                <Icon className="h-3 w-3 shrink-0 mt-0.5" />
+                                                                <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>
@@ -373,6 +378,8 @@ export default function MyCalendarPage() {
   const [selectedAssignment, setSelectedAssignment] = React.useState<Assignment | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
   const [currentEmployee, setCurrentEmployee] = React.useState<any>(null);
+  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
+  const [activeTab, setActiveTab] = React.useState<string>("week");
 
   // Usar hooks de la base de datos
   const { assignments, updateAssignment, isLoading: assignmentsLoading } = useAssignments();
@@ -436,13 +443,35 @@ export default function MyCalendarPage() {
       const result = await updateAssignment(updatedAssignment);
       
       if (result.error) {
-        console.error('Error updating assignment status:', result.error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error updating assignment status:', result.error);
+
+        }
       } else {
         setSelectedAssignment(prev => prev ? { ...prev, status: newStatus } : null);
       }
     } catch (error) {
-      console.error('Error updating assignment status:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error updating assignment status:', error);
+
+      }
     }
+  }
+
+  const navigateDate = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    if (activeTab === 'day') {
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+    } else {
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
+    }
+    setSelectedDate(newDate);
+  }
+
+  const goToToday = () => {
+    setSelectedDate(new Date());
   }
 
   // Mostrar loading si los datos están cargando
@@ -482,6 +511,51 @@ export default function MyCalendarPage() {
             <p className="text-muted-foreground">
               Vista de calendario de tus tareas asignadas.
             </p>
+            <div className="mt-2">
+              <p className="text-sm font-medium text-foreground">
+                {activeTab === 'day' 
+                  ? selectedDate.toLocaleDateString('es-ES', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })
+                  : `Semana del ${selectedDate.toLocaleDateString('es-ES', { 
+                      day: '2-digit', 
+                      month: '2-digit', 
+                      year: 'numeric' 
+                    })}`
+                }
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateDate('prev')}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {activeTab === 'day' ? 'Ayer' : 'Semana Anterior'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToToday}
+              className="flex items-center gap-1"
+            >
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateDate('next')}
+              className="flex items-center gap-1"
+            >
+              {activeTab === 'day' ? 'Mañana' : 'Próxima Semana'}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
           </div>
         </header>
 
@@ -507,18 +581,18 @@ export default function MyCalendarPage() {
             )}
         </Dialog>
         
-        <Tabs defaultValue="week" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex justify-end">
                 <TabsList>
-                    <TabsTrigger value="day">Hoy</TabsTrigger>
+                    <TabsTrigger value="day">Día</TabsTrigger>
                     <TabsTrigger value="week">Semana</TabsTrigger>
                 </TabsList>
             </div>
             <TabsContent value="day" className="mt-4">
-                <DayView assignments={myAssignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
+                <DayView assignments={myAssignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} selectedDate={selectedDate} />
             </TabsContent>
             <TabsContent value="week" className="mt-4">
-                <WeekView assignments={myAssignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} />
+                <WeekView assignments={myAssignments} tasks={tasks} clients={clients} onTaskClick={handleTaskClick} selectedDate={selectedDate} />
             </TabsContent>
         </Tabs>
 

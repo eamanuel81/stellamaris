@@ -25,7 +25,9 @@ export function useAuthState() {
           try {
             listener(event, session);
           } catch (error) {
-            console.error('Error in auth listener:', error);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Error in auth listener:', error);
+            }
           }
         });
       });

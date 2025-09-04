@@ -86,36 +86,43 @@ const RecentTasksTable = React.memo(({
   assignments: Assignment[];
   tasks: Task[];
   employees: Employee[];
-}) => (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead>Tarea</TableHead>
-        <TableHead>Empleado</TableHead>
-        <TableHead>Estado</TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {assignments.slice(0, 5).map((assignment) => {
-        const task = getTaskById(assignment.taskId, tasks);
-        const employee = assignment.employeeId && assignment.employeeId.length > 0 
-          ? getEmployeeById(assignment.employeeId[0], employees) 
-          : null;
-        return (
-          <TableRow key={assignment.id}>
-            <TableCell className="font-medium">{task?.title || 'Tarea no encontrada'}</TableCell>
-            <TableCell>{employee ? `${employee.name} ${employee.lastName}` : 'Sin asignar'}</TableCell>
-            <TableCell>
-              <Badge variant={statusMap[assignment.status]?.variant || 'outline'}>
-                {statusMap[assignment.status]?.text || 'Desconocido'}
-              </Badge>
-            </TableCell>
-          </TableRow>
-        );
-      })}
-    </TableBody>
-  </Table>
-));
+}) => {
+  // Ordenar asignaciones por fecha de inicio (más recientes primero)
+  const recentAssignments = assignments
+    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+    .slice(0, 5);
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Tarea</TableHead>
+          <TableHead>Empleado</TableHead>
+          <TableHead>Estado</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {recentAssignments.map((assignment) => {
+          const task = getTaskById(assignment.taskId, tasks);
+          const employee = assignment.employeeId && assignment.employeeId.length > 0 
+            ? getEmployeeById(assignment.employeeId[0], employees) 
+            : null;
+          return (
+            <TableRow key={assignment.id}>
+              <TableCell className="font-medium">{task?.title || 'Tarea no encontrada'}</TableCell>
+              <TableCell>{employee ? `${employee.name} ${employee.lastName}` : 'Sin asignar'}</TableCell>
+              <TableCell>
+                <Badge variant={statusMap[assignment.status]?.variant || 'outline'}>
+                  {statusMap[assignment.status]?.text || 'Desconocido'}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+});
 
 RecentTasksTable.displayName = 'RecentTasksTable';
 

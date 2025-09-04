@@ -27,13 +27,16 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
+  Dialog,
+  DialogTrigger
 } from "@/components/ui"
 import { useAssignments } from '@/hooks/use-assignments';
 import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
-import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar } from "lucide-react"
+import { AssignTaskDialog } from "@/components/assign-task-dialog";
+import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 
@@ -58,7 +61,7 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 
 
 export default function TodayTasksPage() {
-    const { assignments, updateAssignment, refetch } = useAssignments();
+    const { assignments, updateAssignment, refetch, addAssignment } = useAssignments();
     const { tasks } = useTasks();
     const { clients } = useClients();
     const { employees } = useEmployees();
@@ -68,6 +71,7 @@ export default function TodayTasksPage() {
         const today = new Date();
         return today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
     });
+    const [isAssignTaskOpen, setIsAssignTaskOpen] = React.useState(false);
 
 
     // Crear la fecha seleccionada en hora local para evitar problemas de zona horaria
@@ -130,13 +134,38 @@ export default function TodayTasksPage() {
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
-        <header>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">
-            Tareas del Día
-          </h1>
-          <p className="text-muted-foreground">
-            Todas las tareas asignadas para {selectedDateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}.
-          </p>
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">
+              Tareas del Día
+            </h1>
+            <p className="text-muted-foreground">
+              Todas las tareas asignadas para {selectedDateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}.
+            </p>
+          </div>
+          <Dialog open={isAssignTaskOpen} onOpenChange={setIsAssignTaskOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Asignar Tarea
+              </Button>
+            </DialogTrigger>
+            <AssignTaskDialog
+              setOpen={setIsAssignTaskOpen}
+              assignmentToEdit={null}
+              initialDate={selectedDate}
+              onSave={async (assignmentData) => {
+                // Asegurar que employeeId sea un array
+                const assignmentToCreate = {
+                  ...assignmentData,
+                  employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                };
+                await addAssignment(assignmentToCreate);
+                setIsAssignTaskOpen(false);
+                await refetch();
+              }}
+            />
+          </Dialog>
         </header>
 
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

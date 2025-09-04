@@ -16,7 +16,9 @@ export function useTasks() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('Error getting user:', userError);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error getting user:', userError);
+        }
         setError('Error de autenticación');
         setTasks([]);
         setIsLoading(false);
@@ -36,7 +38,9 @@ export function useTasks() {
         .limit(1);
       
       if (tableError) {
-        console.error('Error checking tasks table:', tableError);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error checking tasks table:', tableError);
+        }
         setError(`Error accediendo a la tabla tasks: ${tableError.message}`);
         setTasks([]);
         setIsLoading(false);
@@ -49,7 +53,9 @@ export function useTasks() {
         .order('id', { ascending: false });
         
       if (error) {
-        console.error('Error fetching tasks:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error fetching tasks:', error);
+        }
         setError(`Error cargando tareas: ${error.message}`);
         setTasks([]);
       } else {
@@ -57,7 +63,9 @@ export function useTasks() {
         setError(null);
       }
     } catch (err) {
-      console.error('Unexpected error fetching tasks:', err);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Unexpected error fetching tasks:', err);
+      }
       setError(`Error inesperado al cargar las tareas: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setTasks([]);
     } finally {
@@ -76,7 +84,11 @@ export function useTasks() {
     try {
       const { data, error } = await supabase.from('tasks').insert([task]).select();
       if (error) {
-        console.error('Error adding task:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error adding task:', error);
+
+        }
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
@@ -85,7 +97,11 @@ export function useTasks() {
         return { data: data[0] as Task, error: null };
       }
     } catch (err) {
-      console.error('Unexpected error adding task:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error adding task:', err);
+
+      }
       setError('Error inesperado al crear la tarea');
       return { data: null, error: new Error('Error inesperado') };
     } finally {
@@ -105,7 +121,11 @@ export function useTasks() {
         .select();
         
       if (error) {
-        console.error('Error updating task:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error updating task:', error);
+
+        }
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
@@ -114,7 +134,11 @@ export function useTasks() {
         return { data: data[0] as Task, error: null };
       }
     } catch (err) {
-      console.error('Unexpected error updating task:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error updating task:', err);
+
+      }
       setError('Error inesperado al actualizar la tarea');
       return { data: null, error: new Error('Error inesperado') };
     } finally {
@@ -129,7 +153,11 @@ export function useTasks() {
     try {
       const { error } = await supabase.from('tasks').delete().eq('id', id);
       if (error) {
-        console.error('Error deleting task:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error deleting task:', error);
+
+        }
         setError(error.message);
         return { error };
       } else {
@@ -138,7 +166,11 @@ export function useTasks() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error deleting task:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error deleting task:', err);
+
+      }
       setError('Error inesperado al eliminar la tarea');
       return { error: new Error('Error inesperado') };
     } finally {

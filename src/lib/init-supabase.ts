@@ -6,17 +6,23 @@ const supabaseServiceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
 // Validar variables de entorno
 if (!supabaseUrl) {
-  console.error('❌ NEXT_PUBLIC_SUPABASE_URL no está definida');
+  if (process.env.NODE_ENV === 'development') {
+    console.error('❌ NEXT_PUBLIC_SUPABASE_URL no está definida');
+  }
   throw new Error('NEXT_PUBLIC_SUPABASE_URL no está definida');
 }
 
 if (!supabaseAnonKey) {
-  console.error('❌ NEXT_PUBLIC_SUPABASE_ANON_KEY no está definida');
+  if (process.env.NODE_ENV === 'development') {
+    console.error('❌ NEXT_PUBLIC_SUPABASE_ANON_KEY no está definida');
+  }
   throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY no está definida');
 }
 
 if (!supabaseServiceKey) {
-  console.error('❌ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY no está definida');
+  if (process.env.NODE_ENV === 'development') {
+    console.error('❌ NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY no está definida');
+  }
   throw new Error('NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY no está definida');
 }
 
@@ -53,17 +59,25 @@ export function initializeSupabase() {
       if (process.env.NODE_ENV === 'development') {
         // Interceptor para respuestas de auth
         supabaseInstance.auth.onAuthStateChange((event, session) => {
-          if (event === 'TOKEN_REFRESHED') {
-            console.log('✅ Token refrescado exitosamente');
-          } else if (event === 'SIGNED_OUT') {
-            console.log('🚪 Usuario cerró sesión');
+          if (process.env.NODE_ENV === 'development') {
+            if (event === 'TOKEN_REFRESHED') {
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ Token refrescado exitosamente');
+              }
+            } else if (event === 'SIGNED_OUT') {
+              if (process.env.NODE_ENV === 'development') {
+                console.log('🚪 Usuario cerró sesión');
+              }
+            }
           }
         });
       }
 
       //console.log('✅ Cliente Supabase inicializado correctamente');
     } catch (error) {
-      console.error('❌ Error inicializando Supabase:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error inicializando Supabase:', error);
+      }
       throw error;
     }
   }
@@ -73,7 +87,9 @@ export function initializeSupabase() {
 // Función para inicializar Supabase Admin solo una vez
 export function initializeSupabaseAdmin() {
   if (!supabaseAdminInstance) {
-    console.log('🔧 Inicializando cliente Supabase Admin...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Inicializando cliente Supabase Admin...');
+    }
     try {
       // Las variables ya están validadas arriba, así que son string
       supabaseAdminInstance = createClient(supabaseUrl!, supabaseServiceKey!, {
@@ -87,9 +103,13 @@ export function initializeSupabaseAdmin() {
           }
         }
       });
-      console.log('✅ Cliente Supabase Admin inicializado correctamente');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Cliente Supabase Admin inicializado correctamente');
+      }
     } catch (error) {
-      console.error('❌ Error inicializando Supabase Admin:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error inicializando Supabase Admin:', error);
+      }
       throw error;
     }
   }
@@ -99,7 +119,9 @@ export function initializeSupabaseAdmin() {
 // Función para resetear en desarrollo
 export function resetSupabaseInstances() {
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔄 Reseteando instancias de Supabase para HMR');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Reseteando instancias de Supabase para HMR');
+    }
     supabaseInstance = null;
     supabaseAdminInstance = null;
   }

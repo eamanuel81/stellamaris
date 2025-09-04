@@ -51,7 +51,11 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
         setAvatarKey(user.id);
       }
     } catch (error) {
-      console.error('Error loading avatar:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error loading avatar:', error);
+
+      }
       setAvatarKey('default');
     } finally {
       setIsLoading(false);
@@ -76,7 +80,11 @@ export function AvatarProvider({ children }: { children: ReactNode }) {
       setAvatarKey(newAvatarKey);
       return true;
     } catch (error) {
-      console.error('Error updating avatar:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error updating avatar:', error);
+
+      }
       return false;
     }
   };

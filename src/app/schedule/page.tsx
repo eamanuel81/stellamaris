@@ -4,7 +4,7 @@
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge, Skeleton } from "@/components/ui"
-import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban } from "lucide-react"
+import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban, ChevronLeft, ChevronRight } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, clients as initialClients } from "@/lib/data";
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
@@ -209,6 +209,7 @@ export default function SchedulePage() {
   const [isEditOpen, setIsEditOpen] = React.useState(false)
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("week");
+  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
   const { assignments, addAssignment, updateAssignment, deleteAssignment, refetch, isLoading: assignmentsLoading } = useAssignments();
   const { tasks, isLoading: tasksLoading } = useTasks();
   const { clients, isLoading: clientsLoading } = useClients();
@@ -294,6 +295,20 @@ export default function SchedulePage() {
     setSelectedAssignmentGroup(prev => prev ? prev.map(a => ({ ...a, status: newStatus })) : null);
   }, [selectedAssignmentGroup]);
 
+  const navigateDate = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    if (activeTab === 'day') {
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+    } else {
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
+    }
+    setSelectedDate(newDate);
+  }
+
+  const goToToday = () => {
+    setSelectedDate(new Date());
+  }
+
   // Verificar si todos los datos están cargando
   const isDataLoading = assignmentsLoading || tasksLoading || clientsLoading || employeesLoading;
 
@@ -308,28 +323,73 @@ export default function SchedulePage() {
             <p className="text-muted-foreground">
               Calendario de Asignacion de Tareas a Empleados
             </p>
+            <div className="mt-2">
+              <p className="text-sm font-medium text-foreground">
+                {activeTab === 'day' 
+                  ? selectedDate.toLocaleDateString('es-ES', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })
+                  : `Semana del ${selectedDate.toLocaleDateString('es-ES', { 
+                      day: '2-digit', 
+                      month: '2-digit', 
+                      year: 'numeric' 
+                    })}`
+                }
+              </p>
+            </div>
           </div>
-           <Dialog open={isCreateOpen} onOpenChange={open => open ? setIsCreateOpen(true) : handleCloseDialogs()}>
-            <DialogTrigger asChild>
-              <Button onClick={() => { setSelectedAssignmentGroup(null); setIsCreateOpen(true); }}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Asignar Tarea
-              </Button>
-            </DialogTrigger>
-            <AssignTaskDialog setOpen={setIsCreateOpen} assignmentToEdit={null} onSave={async (assignmentData) => {
-                // Asegurar que employeeId sea un array
-                const assignmentToCreate = {
-                    ...assignmentData,
-                    employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
-                };
-                await addAssignment(assignmentToCreate);
-                await refetch();
-                // Cerrar el modal después del refresh
-                setTimeout(() => {
-                    setIsCreateOpen(false);
-                }, 500);
-            }} />
-        </Dialog>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateDate('prev')}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {activeTab === 'day' ? 'Ayer' : 'Semana Anterior'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToToday}
+              className="flex items-center gap-1"
+            >
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigateDate('next')}
+              className="flex items-center gap-1"
+            >
+              {activeTab === 'day' ? 'Mañana' : 'Próxima Semana'}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Dialog open={isCreateOpen} onOpenChange={open => open ? setIsCreateOpen(true) : handleCloseDialogs()}>
+              <DialogTrigger asChild>
+                <Button onClick={() => { setSelectedAssignmentGroup(null); setIsCreateOpen(true); }}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Asignar Tarea
+                </Button>
+              </DialogTrigger>
+              <AssignTaskDialog setOpen={setIsCreateOpen} assignmentToEdit={null} initialDate={undefined} onSave={async (assignmentData) => {
+                  // Asegurar que employeeId sea un array
+                  const assignmentToCreate = {
+                      ...assignmentData,
+                      employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                  };
+                  await addAssignment(assignmentToCreate);
+                  await refetch();
+                  // Cerrar el modal después del refresh
+                  setTimeout(() => {
+                      setIsCreateOpen(false);
+                  }, 500);
+              }} />
+            </Dialog>
+          </div>
         </header>
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
@@ -344,7 +404,7 @@ export default function SchedulePage() {
         </div>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} onDelete={onDeleteInEdit} onSave={async (assignmentData) => {
+            <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} initialDate={undefined} onDelete={onDeleteInEdit} onSave={async (assignmentData) => {
                 // Asegurar que employeeId sea un array
                 const assignmentToUpdate = {
                     ...assignmentData,
@@ -409,6 +469,7 @@ export default function SchedulePage() {
                         taskMap={taskMap}
                         clientMap={clientMap}
                         employeeMap={employeeMap}
+                        selectedDate={selectedDate}
                     />
                 )}
             </TabsContent>
@@ -425,6 +486,7 @@ export default function SchedulePage() {
                         taskMap={taskMap}
                         clientMap={clientMap}
                         employeeMap={employeeMap}
+                        selectedDate={selectedDate}
                     />
                 )}
             </TabsContent>

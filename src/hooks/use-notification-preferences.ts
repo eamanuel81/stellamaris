@@ -28,7 +28,11 @@ export function useNotificationPreferences() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('Error getting user:', userError);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error getting user:', userError);
+
+        }
         setError('Error de autenticación');
         setIsLoading(false);
         return;
@@ -47,7 +51,11 @@ export function useNotificationPreferences() {
         .single();
         
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Error fetching notification preferences:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error fetching notification preferences:', error);
+
+        }
         setError(`Error cargando preferencias: ${error.message}`);
       } else if (data && data.notification_preferences) {
         // Verificar que notification_preferences tiene la estructura correcta
@@ -67,7 +75,11 @@ export function useNotificationPreferences() {
       }
       // Si no hay datos, usar los valores por defecto
     } catch (err) {
-      console.error('Unexpected error fetching notification preferences:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error fetching notification preferences:', err);
+
+      }
       setError(`Error inesperado al cargar las preferencias: ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       setIsLoading(false);
@@ -98,7 +110,11 @@ export function useNotificationPreferences() {
         });
         
       if (error) {
-        console.error('Error updating notification preferences:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error updating notification preferences:', error);
+
+        }
         setError(error.message);
         return { error };
       } else {
@@ -107,7 +123,11 @@ export function useNotificationPreferences() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error updating notification preferences:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error updating notification preferences:', err);
+
+      }
       setError('Error inesperado al actualizar las preferencias');
       return { error: new Error('Error inesperado') };
     }

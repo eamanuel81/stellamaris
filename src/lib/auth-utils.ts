@@ -42,7 +42,9 @@ export async function changeUserPassword(newPassword: string): Promise<PasswordC
     return { success: true };
 
   } catch (error) {
-    console.error('Error changing password:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error changing password:', error);
+    }
     
     let errorMessage = 'Error desconocido al cambiar la contraseña';
     
@@ -101,7 +103,9 @@ export function clearAvatarState() {
  */
 export async function clearCorruptedSession(): Promise<void> {
   try {
-    console.log('🧹 Limpiando sesión corrupta...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🧹 Limpiando sesión corrupta...');
+    }
     
     // Limpiar almacenamiento local
     if (typeof window !== 'undefined') {
@@ -124,16 +128,22 @@ export async function clearCorruptedSession(): Promise<void> {
       
       keysToRemove.forEach(key => {
         localStorage.removeItem(key);
-        console.log(`🗑️ Eliminada clave: ${key}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🗑️ Eliminada clave: ${key}`);
+        }
       });
     }
     
     // Cerrar sesión en Supabase
     await supabase.auth.signOut();
     
-    console.log('✅ Sesión corrupta limpiada correctamente');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Sesión corrupta limpiada correctamente');
+    }
   } catch (error) {
-    console.error('❌ Error limpiando sesión corrupta:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Error limpiando sesión corrupta:', error);
+    }
     throw error;
   }
 }
@@ -146,26 +156,36 @@ export async function isSessionValid(): Promise<boolean> {
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error) {
-      console.log('❌ Error verificando sesión:', error.message);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('❌ Error verificando sesión:', error.message);
+      }
       return false;
     }
     
     if (!session) {
-      console.log('ℹ️ No hay sesión activa');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('ℹ️ No hay sesión activa');
+      }
       return false;
     }
     
     // Verificar si el token ha expirado
     const now = Math.floor(Date.now() / 1000);
     if (session.expires_at && session.expires_at < now) {
-      console.log('⏰ Token expirado');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⏰ Token expirado');
+      }
       return false;
     }
     
-    console.log('✅ Sesión válida');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Sesión válida');
+    }
     return true;
   } catch (error) {
-    console.error('❌ Error inesperado verificando sesión:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Error inesperado verificando sesión:', error);
+    }
     return false;
   }
 }
@@ -175,24 +195,34 @@ export async function isSessionValid(): Promise<boolean> {
  */
 export async function refreshSession(): Promise<boolean> {
   try {
-    console.log('🔄 Intentando renovar sesión...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Intentando renovar sesión...');
+    }
     
     const { data, error } = await supabase.auth.refreshSession();
     
     if (error) {
-      console.error('❌ Error renovando sesión:', error.message);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Error renovando sesión:', error.message);
+      }
       return false;
     }
     
     if (data.session) {
-      console.log('✅ Sesión renovada exitosamente');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Sesión renovada exitosamente');
+      }
       return true;
     } else {
-      console.log('ℹ️ No se pudo renovar la sesión');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('ℹ️ No se pudo renovar la sesión');
+      }
       return false;
     }
   } catch (error) {
-    console.error('❌ Error inesperado renovando sesión:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ Error inesperado renovando sesión:', error);
+    }
     return false;
   }
 }
@@ -203,14 +233,18 @@ export async function refreshSession(): Promise<boolean> {
 export async function recoverFromAuthError(error: any): Promise<boolean> {
   const errorMessage = error?.message || error?.error_description || String(error);
   
-  console.log('🔄 Intentando recuperar de error:', errorMessage);
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔄 Intentando recuperar de error:', errorMessage);
+  }
   
   // Errores de token de actualización
   if (errorMessage.includes('Invalid Refresh Token') || 
       errorMessage.includes('Refresh Token Not Found') ||
       errorMessage.includes('TOKEN_REFRESH_FAILED')) {
     
-    console.log('🔄 Error de token detectado, limpiando sesión...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Error de token detectado, limpiando sesión...');
+    }
     await clearCorruptedSession();
     return true;
   }
@@ -219,7 +253,9 @@ export async function recoverFromAuthError(error: any): Promise<boolean> {
   if (errorMessage.includes('JWT expired') || 
       errorMessage.includes('Token expired')) {
     
-    console.log('⏰ Token expirado, intentando renovar...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⏰ Token expirado, intentando renovar...');
+    }
     return await refreshSession();
   }
   
@@ -227,12 +263,16 @@ export async function recoverFromAuthError(error: any): Promise<boolean> {
   if (errorMessage.includes('Invalid JWT') || 
       errorMessage.includes('Malformed JWT')) {
     
-    console.log('🔑 JWT inválido, limpiando sesión...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔑 JWT inválido, limpiando sesión...');
+    }
     await clearCorruptedSession();
     return true;
   }
   
-  console.log('ℹ️ Error no recuperable automáticamente');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('ℹ️ Error no recuperable automáticamente');
+  }
   return false;
 }
 
@@ -247,7 +287,9 @@ export function setupAuthErrorListeners() {
           (event.reason.message.includes('Invalid Refresh Token') ||
            event.reason.message.includes('Refresh Token Not Found'))) {
         
-        console.log('🔄 Error de token detectado en unhandledrejection');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 Error de token detectado en unhandledrejection');
+        }
         event.preventDefault();
         
         // Limpiar sesión corrupta

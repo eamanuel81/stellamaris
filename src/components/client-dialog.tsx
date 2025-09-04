@@ -220,7 +220,11 @@ export const ClientDialog = ({
             setOpen(false);
         } catch (error) {
             alert('Error inesperado al guardar el cliente');
-            console.error(error);
+            if (process.env.NODE_ENV === 'development') {
+
+              console.error(error);
+
+            }
         }
     };
 

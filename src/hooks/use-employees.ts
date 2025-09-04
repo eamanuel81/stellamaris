@@ -16,7 +16,11 @@ export function useEmployees() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
-        console.error('Error getting user:', userError);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error getting user:', userError);
+
+        }
         setError('Error de autenticación');
         setEmployees([]);
         setIsLoading(false);
@@ -35,7 +39,11 @@ export function useEmployees() {
         .order('name', { ascending: true });
         
       if (error) {
-        console.error('Error fetching employees:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error fetching employees:', error);
+
+        }
         setError(`Error cargando empleados: ${error.message}`);
         setEmployees([]);
       } else {
@@ -44,7 +52,11 @@ export function useEmployees() {
         setError(null);
       }
     } catch (err) {
-      console.error('Unexpected error fetching employees:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error fetching employees:', err);
+
+      }
       setError(`Error inesperado al cargar los empleados: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       setEmployees([]);
     } finally {
@@ -66,13 +78,21 @@ export function useEmployees() {
         .limit(1);
       
       if (error) {
-        console.error('Error verificando tabla profiles:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error verificando tabla profiles:', error);
+
+        }
         return false;
       }
       
       return true;
     } catch (err) {
-      console.error('Error inesperado verificando profiles:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error inesperado verificando profiles:', err);
+
+      }
       return false;
     }
   };
@@ -104,7 +124,11 @@ export function useEmployees() {
       });
 
       if (authError) {
-        console.error('Error creando usuario en Auth:', authError);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error creando usuario en Auth:', authError);
+
+        }
         setError(`Error creando usuario: ${authError.message}`);
         setIsLoading(false);
         return { data: null, error: authError };
@@ -136,21 +160,37 @@ export function useEmployees() {
           .select();
 
         if (profileError) {
-          console.error('Error creando perfil:', profileError);
+          if (process.env.NODE_ENV === 'development') {
+
+            console.error('Error creando perfil:', profileError);
+
+          }
           // Intentar eliminar el usuario de Auth si falla la creación del perfil
           try {
             await getSupabaseAdmin().auth.admin.deleteUser(authData.user.id);
           } catch (deleteError) {
-            console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+            if (process.env.NODE_ENV === 'development') {
+
+              console.error('Error eliminando usuario de Auth después de fallo:', deleteError);
+
+            }
           }
           setError(`Error creando perfil: ${profileError.message}`);
           setIsLoading(false);
           return { data: null, error: profileError };
         }
       } catch (profileError) {
-        console.error('Error inesperado creando perfil:', profileError);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error inesperado creando perfil:', profileError);
+
+        }
         // Si falla la creación del perfil, continuar sin él
-        console.log('⚠️ Continuando sin crear perfil en la tabla profiles');
+        if (process.env.NODE_ENV === 'development') {
+
+          console.log('⚠️ Continuando sin crear perfil en la tabla profiles');
+
+        }
       }
 
       // 3. Crear empleado en la tabla employees con el auth_id
@@ -162,7 +202,11 @@ export function useEmployees() {
         .select();
 
       if (employeeError) {
-        console.error('Error creando empleado:', employeeError);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error creando empleado:', employeeError);
+
+        }
         // Intentar limpiar: eliminar perfil y usuario de Auth
         try {
           const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
@@ -170,7 +214,11 @@ export function useEmployees() {
           await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id);
           await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
         } catch (cleanupError) {
-          console.error('Error en limpieza después de fallo:', cleanupError);
+          if (process.env.NODE_ENV === 'development') {
+
+            console.error('Error en limpieza después de fallo:', cleanupError);
+
+          }
         }
         setError(`Error creando empleado: ${employeeError.message}`);
         setIsLoading(false);
@@ -185,7 +233,11 @@ export function useEmployees() {
       }
 
     } catch (error) {
-      console.error('Error inesperado creando empleado:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error inesperado creando empleado:', error);
+
+      }
       setError('Error inesperado al crear el empleado');
       setIsLoading(false);
       return { data: null, error: new Error('Error inesperado') };
@@ -220,7 +272,11 @@ export function useEmployees() {
         .select();
         
       if (error) {
-        console.error('Error updating employee:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error updating employee:', error);
+
+        }
         setError(error.message);
         setIsLoading(false);
         return { data: null, error };
@@ -229,7 +285,11 @@ export function useEmployees() {
       // 2. Si cambió el nombre o DNI, actualizar la contraseña en Auth
       if (requiresPasswordUpdate && currentEmployee.auth_id) {
         try {
-          console.log('🔑 Actualizando contraseña debido a cambios en nombre/DNI...');
+          if (process.env.NODE_ENV === 'development') {
+
+            console.log('🔑 Actualizando contraseña debido a cambios en nombre/DNI...');
+
+          }
           
           const { getSupabaseAdmin } = await import('@/lib/supabaseClient');
           const supabaseAdmin = getSupabaseAdmin();
@@ -244,10 +304,18 @@ export function useEmployees() {
           );
           
           if (passwordError) {
-            console.error('⚠️ Error actualizando contraseña:', passwordError);
+            if (process.env.NODE_ENV === 'development') {
+
+              console.error('⚠️ Error actualizando contraseña:', passwordError);
+
+            }
             // Continuar aunque falle la actualización de contraseña
           } else {
-            console.log('✅ Contraseña actualizada exitosamente');
+            if (process.env.NODE_ENV === 'development') {
+
+              console.log('✅ Contraseña actualizada exitosamente');
+
+            }
           }
           
           // También actualizar el perfil si existe
@@ -266,7 +334,11 @@ export function useEmployees() {
           }
           
         } catch (authError) {
-          console.error('⚠️ Error inesperado actualizando autenticación:', authError);
+          if (process.env.NODE_ENV === 'development') {
+
+            console.error('⚠️ Error inesperado actualizando autenticación:', authError);
+
+          }
           // Continuar aunque falle la actualización de auth
         }
       }
@@ -280,14 +352,22 @@ export function useEmployees() {
         // Mostrar mensaje informativo si se actualizó la contraseña
         if (requiresPasswordUpdate) {
           const newPassword = `${employee.name.charAt(0).toUpperCase() + employee.name.slice(1)}${employee.dni}`;
-          console.log(`ℹ️ Nueva contraseña para ${employee.name}: ${newPassword}`);
+          if (process.env.NODE_ENV === 'development') {
+
+            console.log(`ℹ️ Nueva contraseña para ${employee.name}: ${newPassword}`);
+
+          }
         }
         
         return { data: data[0] as Employee, error: null };
       }
       
     } catch (err) {
-      console.error('Unexpected error updating employee:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error updating employee:', err);
+
+      }
       setError('Error inesperado al actualizar el empleado');
     } finally {
       setIsLoading(false);
@@ -301,7 +381,11 @@ export function useEmployees() {
     try {
       const { error } = await supabase.from('employees').delete().eq('id', id);
       if (error) {
-        console.error('Error deleting employee:', error);
+        if (process.env.NODE_ENV === 'development') {
+
+          console.error('Error deleting employee:', error);
+
+        }
         setError(error.message);
         return { error };
       } else {
@@ -310,7 +394,11 @@ export function useEmployees() {
         return { error: null };
       }
     } catch (err) {
-      console.error('Unexpected error deleting employee:', err);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Unexpected error deleting employee:', err);
+
+      }
       setError('Error inesperado al eliminar el empleado');
       return { error: new Error('Error inesperado') };
     } finally {

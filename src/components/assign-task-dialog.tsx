@@ -130,7 +130,7 @@ const statusOptions: { value: AssignmentStatus; label: string }[] = [
     { value: 'cancelled', label: 'Cancelada' },
 ]
 
-export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }: { setOpen: (open: boolean) => void; assignmentToEdit?: Assignment | null; onDelete?: () => void; onSave?: (assignmentData: any) => Promise<void>; }) => {
+export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, initialDate }: { setOpen: (open: boolean) => void; assignmentToEdit?: Assignment | null; onDelete?: () => void; onSave?: (assignmentData: any) => Promise<void>; initialDate?: string; }) => {
     const isEditMode = !!assignmentToEdit;
     const { assignments, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
     const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
@@ -147,7 +147,11 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>([]);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>([]);
     const [status, setStatus] = React.useState<AssignmentStatus>('pending');
-    const [startTime, setStartTime] = React.useState("09:00");
+    const [startTime, setStartTime] = React.useState(() => {
+        const now = new Date();
+        const currentHour = String(now.getHours()).padStart(2, '0');
+        return `${currentHour}:00`;
+    });
     const [endTime, setEndTime] = React.useState("10:00");
     const [isCreateTaskOpen, setIsCreateTaskOpen] = React.useState(false);
     const [isCreateClientOpen, setIsCreateClientOpen] = React.useState(false);
@@ -169,7 +173,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         return `${yyyy}-${mm}-${dd}`;
     }, []);
 
-    const [date, setDate] = React.useState(formatDateForInput(new Date()));
+    const [date, setDate] = React.useState(() => initialDate ? initialDate : formatDateForInput(new Date()));
 
     // Memoizar tarea seleccionada
     const selectedTask = useMemo(() => getTaskById(selectedTaskId, tasks), [selectedTaskId, tasks]);
@@ -221,9 +225,12 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
             setSelectedClientId(undefined);
             setSelectedBoatIds([]);
             setSelectedExtras([]);
-            setStartTime("09:00");
+            // Establecer hora actual sin minutos (ej: 18:00)
+            const now = new Date();
+            const currentHour = String(now.getHours()).padStart(2, '0');
+            setStartTime(`${currentHour}:00`);
             setEndTime("10:00");
-            setDate(formatDateForInput(new Date()));
+            setDate(initialDate ? initialDate : formatDateForInput(new Date()));
             setStatus('pending');
             setIsEndTimeManual(false);
             setTimeConflictWarning('');
@@ -539,7 +546,11 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
                 }
             }
         } catch (error) {
-            console.error('Error al guardar con conflicto:', error);
+            if (process.env.NODE_ENV === 'development') {
+
+              console.error('Error al guardar con conflicto:', error);
+
+            }
         } finally {
             setConflictDialogOpen(false);
             setConflictData(null);
@@ -553,7 +564,10 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave }
         setSelectedClientId(undefined);
         setSelectedBoatIds([]);
         setSelectedExtras([]);
-        setStartTime("09:00");
+        // Establecer hora actual sin minutos
+        const now = new Date();
+        const currentHour = String(now.getHours()).padStart(2, '0');
+        setStartTime(`${currentHour}:00`);
         setEndTime("10:00");
         setDate(formatDateForInput(new Date()));
         setStatus('pending');

@@ -27,7 +27,11 @@ export function AuthErrorHandler({ error, onRetry }: AuthErrorHandlerProps) {
       // Redirigir a la página de login o recargar
       window.location.href = '/';
     } catch (error) {
-      console.error('Error limpiando sesión:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error limpiando sesión:', error);
+
+      }
     } finally {
       setIsHandling(false);
     }
@@ -39,7 +43,11 @@ export function AuthErrorHandler({ error, onRetry }: AuthErrorHandlerProps) {
       await logout();
       window.location.href = '/';
     } catch (error) {
-      console.error('Error en logout:', error);
+      if (process.env.NODE_ENV === 'development') {
+
+        console.error('Error en logout:', error);
+
+      }
       // Forzar recarga si falla
       window.location.reload();
     } finally {
