@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react"
@@ -191,40 +190,46 @@ const DayView = ({ assignments, tasks, clients, onTaskClick }: { assignments: As
                             const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
                             const Icon = statusInfo.icon;
                             
+                            // Simplificar la lógica de verificación para evitar el error de TypeScript
+                            const hasClient = !!client;
+                            const hasBoats = boats.length > 0;
+                            const hasResponsibles = client && client.responsibles && client.responsibles.length > 0;
+                            const showDetails = hasClient || hasBoats || hasResponsibles;
+                            
                             return (
                                 <Tooltip key={`${assignment.id}-${index}`}>
                                     <TooltipTrigger asChild>
                                         <div
                                             onClick={() => onTaskClick(assignment)}
-                                                                                         className={cn(
-                                                 "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
-                                                 statusInfo.classes
-                                             )}
-                                             style={{ 
-                                                 top: `${top}px`, 
-                                                 height: `${height}px`,
-                                                 width: `calc(${width}% - 4px)`,
-                                                 left: `calc(${left}% + 2px)`
-                                             }}
+                                            className={cn(
+                                                "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
+                                                statusInfo.classes
+                                            )}
+                                            style={{ 
+                                                top: `${top}px`, 
+                                                height: `${height}px`,
+                                                width: `calc(${width}% - 4px)`,
+                                                left: `calc(${left}% + 2px)`
+                                            }}
                                         >
                                             <div className="flex items-start gap-1.5">
                                                 <Icon className="h-3 w-3 shrink-0 mt-0.5" />
                                                 <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
-                                                {(client || boats.length > 0 || (client && client.responsibles && client.responsibles.length > 0)) && (
+                                                {showDetails && (
                                                     <div className="text-xs opacity-80 flex items-center gap-1 ml-auto">
-                                                        {client && (
+                                                        {hasClient && (
                                                             <div className="flex items-center gap-1">
                                                                 <User className="h-3 w-3 shrink-0" />
-                                                                <span className="leading-tight truncate">{client.firstName} {client.lastName}</span>
+                                                                <span className="leading-tight truncate">{client!.firstName} {client!.lastName}</span>
                                                             </div>
                                                         )}
-                                                        {client && client.responsibles && client.responsibles.length > 0 && (
+                                                        {hasResponsibles && (
                                                             <div className="flex items-center gap-1">
                                                                 <Users className="h-3 w-3 shrink-0" />
-                                                                <span className="leading-tight truncate">{client.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
+                                                                <span className="leading-tight truncate">{client!.responsibles.map(r => `${r.firstName} ${r.lastName}`).join(', ')}</span>
                                                             </div>
                                                         )}
-                                                        {boats.length > 0 && (
+                                                        {hasBoats && (
                                                             <div className="flex items-center gap-1">
                                                                 <Ship className="h-3 w-3 shrink-0" />
                                                                 <span className="leading-tight truncate">{boats.map(b => b.name).join(', ')}</span>
@@ -327,16 +332,15 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                             const statusInfo = statusStyles[assignment.status] || statusStyles.pending;
                                             const Icon = statusInfo.icon;
 
-
                                             return (
                                                 <Tooltip key={`${assignment.id}-${index}`}>
                                                     <TooltipTrigger asChild>
                                                         <div
                                                             onClick={() => onTaskClick(assignment)}
-                                                                                                                         className={cn(
-                                                                 "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
-                                                                 statusInfo.classes
-                                                             )}
+                                                            className={cn(
+                                                                "absolute rounded-lg p-4 border cursor-pointer z-10 flex flex-col justify-start",
+                                                                statusInfo.classes
+                                                            )}
                                                             style={{
                                                                 top: `${top}px`,
                                                                 height: `${height}px`,
@@ -345,8 +349,8 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick }: { assignments: A
                                                             }}
                                                         >
                                                              <div className="flex items-start gap-1.5">
-                                                                                                                                 <Icon className="h-3 w-3 shrink-0 mt-0.5" />
-                                                                 <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
+                                                                <Icon className="h-3 w-3 shrink-0 mt-0.5" />
+                                                                <p className="font-bold text-sm leading-tight break-words min-w-0 flex-1">{task.title}</p>
                                                             </div>
                                                         </div>
                                                     </TooltipTrigger>
