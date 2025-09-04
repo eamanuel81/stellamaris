@@ -166,7 +166,8 @@ export const DayView = React.memo(({
     onTaskClick,
     taskMap,
     clientMap,
-    employeeMap
+    employeeMap,
+    selectedDate
 }: { 
     assignments: Assignment[], 
     tasks: Task[], 
@@ -175,12 +176,13 @@ export const DayView = React.memo(({
     onTaskClick: (assignmentGroup: Assignment[]) => void,
     taskMap: Map<string, Task>,
     clientMap: Map<string, Client>,
-    employeeMap: Map<string, Employee>
+    employeeMap: Map<string, Employee>,
+    selectedDate: Date
 }) => {
     // Memoizar timeSlots dentro del componente
     const timeSlots = React.useMemo(() => generateTimeSlots(), []);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const targetDate = new Date(selectedDate);
+    targetDate.setHours(0, 0, 0, 0);
 
     // Memoizar funciones de cálculo de posición dentro del componente
     const getTaskPosition = React.useCallback((startTime: Date) => {
@@ -196,16 +198,16 @@ export const DayView = React.memo(({
         return Math.max(24, height - 2);
     }, []);
 
-    const todayAssignments = React.useMemo(() => 
+    const dayAssignments = React.useMemo(() => 
         assignments.filter(a => {
             const assignmentDate = new Date(a.startTime);
             assignmentDate.setHours(0, 0, 0, 0);
-            return assignmentDate.getTime() === today.getTime();
-        }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()), [assignments]
+            return assignmentDate.getTime() === targetDate.getTime();
+        }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()), [assignments, targetDate]
     );
 
     const groupedAssignments = React.useMemo(() => 
-        groupAssignmentsByTimeAndTask(todayAssignments), [todayAssignments]
+        groupAssignmentsByTimeAndTask(dayAssignments), [dayAssignments]
     );
     
     const processedAssignments = React.useMemo(() => 
@@ -216,8 +218,8 @@ export const DayView = React.memo(({
         <TooltipProvider>
             <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
                 <div className="p-4 border-b">
-                    <h3 className="font-semibold">Horario de Hoy</h3>
-                    <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <h3 className="font-semibold">Horario del Día</h3>
+                    <p className="text-sm text-muted-foreground">{selectedDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
                 <div className="relative h-[600px] overflow-y-auto">
                     <div className="grid">

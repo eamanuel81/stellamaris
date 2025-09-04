@@ -154,7 +154,8 @@ export const WeekView = React.memo(({
     onTaskClick,
     taskMap,
     clientMap,
-    employeeMap
+    employeeMap,
+    selectedDate
 }: { 
     assignments: Assignment[], 
     tasks: Task[], 
@@ -163,10 +164,12 @@ export const WeekView = React.memo(({
     onTaskClick: (assignmentGroup: Assignment[]) => void,
     taskMap: Map<string, Task>,
     clientMap: Map<string, Client>,
-    employeeMap: Map<string, Employee>
+    employeeMap: Map<string, Employee>,
+    selectedDate: Date
 }) => {
-    const today = new Date();
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Monday
+    const targetDate = new Date(selectedDate);
+    const startOfWeek = new Date(targetDate);
+    startOfWeek.setDate(targetDate.getDate() - targetDate.getDay() + (targetDate.getDay() === 0 ? -6 : 1)); // Monday
     
     // Memoizar funciones de cálculo de posición dentro del componente
     const getTaskPosition = React.useCallback((startTime: Date) => {
