@@ -27,4 +27,10 @@ module.exports = {
       },
     ],
   },
+  // Configuración de Turbopack para silenciar warning
+  experimental: {
+    turbo: {
+      root: __dirname, // Establece la raíz del proyecto actual
+    },
+  },
 };
