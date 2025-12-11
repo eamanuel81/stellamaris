@@ -27,4 +27,8 @@ module.exports = {
       },
     ],
   },
+  // Configuración de Turbopack (versión actualizada)
+  turbopack: {
+    root: __dirname,
+  },
 };
