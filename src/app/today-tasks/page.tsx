@@ -151,6 +151,7 @@ export default function TodayTasksPage() {
               </Button>
             </DialogTrigger>
             <AssignTaskDialog
+              key={isAssignTaskOpen ? `create-${selectedDate}` : 'closed'}
               setOpen={setIsAssignTaskOpen}
               assignmentToEdit={null}
               initialDate={selectedDate}

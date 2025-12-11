@@ -44,7 +44,7 @@ import {
   Checkbox,
   DropdownMenuItem
 } from "@/components/ui"
-import { PlusCircle, Car, ChevronDown, Trash2 } from "lucide-react"
+import { PlusCircle, Car, ChevronDown, Trash2, Check, ChevronsUpDown } from "lucide-react"
 import { Task, Assignment, Client, TaskExtra, AssignmentStatus } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
@@ -147,6 +147,10 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>([]);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>([]);
     const [status, setStatus] = React.useState<AssignmentStatus>('pending');
+    const [clientComboOpen, setClientComboOpen] = React.useState(false);
+    const [boatComboOpen, setBoatComboOpen] = React.useState(false);
+    const [clientSearchQuery, setClientSearchQuery] = React.useState("");
+    const [boatSearchQuery, setBoatSearchQuery] = React.useState("");
     const [startTime, setStartTime] = React.useState(() => {
         const now = new Date();
         const currentHour = String(now.getHours()).padStart(2, '0');
@@ -191,6 +195,49 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         [selectedClientId, getClientById]
     );
 
+    // Memoizar todas las embarcaciones con información del cliente
+    const allBoats = useMemo(() => {
+        return clients.flatMap(client => 
+            client.boats.map(boat => ({
+                ...boat,
+                clientId: client.id,
+                clientName: `${client.firstName} ${client.lastName}`,
+                uniqueKey: `${client.id}-${boat.id}` // Clave única para evitar duplicados
+            }))
+        );
+    }, [clients]);
+
+    // Filtrar clientes basado en la búsqueda
+    const filteredClients = useMemo(() => {
+        if (!clientSearchQuery.trim()) return clients;
+        const query = clientSearchQuery.toLowerCase();
+        return clients.filter(client => 
+            client.firstName.toLowerCase().includes(query) ||
+            client.lastName.toLowerCase().includes(query) ||
+            client.dni.includes(query) ||
+            (client.email && client.email.toLowerCase().includes(query))
+        );
+    }, [clients, clientSearchQuery]);
+
+    // Filtrar embarcaciones basado en la búsqueda y el cliente seleccionado
+    const filteredBoats = useMemo(() => {
+        // Si hay un cliente seleccionado, solo mostrar sus embarcaciones
+        let boatsToFilter = allBoats;
+        if (selectedClientId) {
+            boatsToFilter = allBoats.filter(boat => boat.clientId === selectedClientId);
+        }
+        
+        // Aplicar filtro de búsqueda si existe
+        if (!boatSearchQuery.trim()) return boatsToFilter;
+        const query = boatSearchQuery.toLowerCase();
+        return boatsToFilter.filter(boat => 
+            boat.name.toLowerCase().includes(query) ||
+            boat.registrationNumber.toLowerCase().includes(query) ||
+            boat.clientName.toLowerCase().includes(query) ||
+            (boat.hullType && boat.hullType.toLowerCase().includes(query))
+        );
+    }, [allBoats, boatSearchQuery, selectedClientId]);
+
     // Memoizar costo total de extras
     const totalExtrasCost = useMemo(() => {
         if (!selectedTask || !selectedTask.extras) return 0;
@@ -219,7 +266,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setStatus(assignmentToEdit.status);
             setIsEndTimeManual(false);
         } else {
-            // Limpiar completamente todos los campos
+            // Limpiar completamente todos los campos cuando NO hay tarea a editar
             setSelectedTaskId("");
             setSelectedEmployees([]);
             setSelectedClientId(undefined);
@@ -236,8 +283,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setTimeConflictWarning('');
             setConflictDialogOpen(false);
             setConflictData(null);
+            // Limpiar búsquedas
+            setClientSearchQuery("");
+            setBoatSearchQuery("");
+            setClientComboOpen(false);
+            setBoatComboOpen(false);
         }
-    }, [assignmentToEdit, isEditMode, formatDateForInput]);
+    }, [assignmentToEdit, isEditMode, formatDateForInput, initialDate]);
+
+    // Refs para los inputs de búsqueda
+    const clientInputRef = useRef<HTMLInputElement>(null);
+    const boatInputRef = useRef<HTMLInputElement>(null);
 
     // Debounce para el cálculo automático de hora de fin
     const debouncedStartTime = useDebounce(startTime, 300);
@@ -287,9 +343,21 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     }, [selectedEmployees.length, qualifiedEmployees]);
 
     const handleClientSelectChange = useCallback((clientId: string) => {
-        setSelectedClientId(clientId === "none" ? undefined : clientId);
-        setSelectedBoatIds([]); 
-    }, []);
+        const newClientId = clientId === "none" ? undefined : clientId;
+        setSelectedClientId(newClientId);
+        
+        // Si cambió el cliente, filtrar solo las embarcaciones que pertenecen al nuevo cliente
+        if (newClientId && selectedBoatIds.length > 0) {
+            const client = clients.find(c => c.id === newClientId);
+            if (client) {
+                const clientBoatIds = client.boats.map(b => b.id);
+                setSelectedBoatIds(prev => prev.filter(id => clientBoatIds.includes(id)));
+            }
+        } else if (!newClientId) {
+            // Si se deselecciona el cliente, limpiar embarcaciones
+            setSelectedBoatIds([]);
+        }
+    }, [clients, selectedBoatIds]);
 
     const handleBoatSelect = useCallback((boatId: string) => {
         setSelectedBoatIds(prev =>
@@ -297,7 +365,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 ? prev.filter(id => id !== boatId)
                 : [...prev, boatId]
         );
-    }, []);
+        
+        // Buscar el cliente propietario de esta embarcación si no hay cliente seleccionado
+        if (!selectedClientId) {
+            const ownerClient = clients.find(client => 
+                client.boats.some(boat => boat.id === boatId)
+            );
+            if (ownerClient) {
+                setSelectedClientId(ownerClient.id);
+            }
+        }
+    }, [selectedClientId, clients]);
 
     const handleExtraQuantityChange = useCallback((extraId: string, quantityStr: string) => {
         const quantity = Number(quantityStr);
@@ -395,6 +473,32 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         checkRealTimeConflicts();
     }, [checkRealTimeConflicts]);
     
+    // Función para limpiar el formulario
+    const handleCancel = useCallback(() => {
+        setSelectedTaskId("");
+        setSelectedEmployees([]);
+        setSelectedClientId(undefined);
+        setSelectedBoatIds([]);
+        setSelectedExtras([]);
+        // Establecer hora actual sin minutos
+        const now = new Date();
+        const currentHour = String(now.getHours()).padStart(2, '0');
+        setStartTime(`${currentHour}:00`);
+        setEndTime("10:00");
+        setDate(formatDateForInput(new Date()));
+        setStatus('pending');
+        setIsEndTimeManual(false);
+        setTimeConflictWarning('');
+        setConflictDialogOpen(false);
+        setConflictData(null);
+        // Limpiar búsquedas
+        setClientSearchQuery("");
+        setBoatSearchQuery("");
+        setClientComboOpen(false);
+        setBoatComboOpen(false);
+        setOpen(false);
+    }, [formatDateForInput, setOpen]);
+    
     const handleSubmit = useCallback(async () => {
         if (!selectedTaskId) {
             alert("Por favor seleccione una tarea.");
@@ -436,8 +540,9 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 await onSave(assignmentData);
             } else {
                 await updateAssignment(assignmentData);
-                setOpen(false);
             }
+            // Limpiar formulario después de guardar
+            handleCancel();
         } else if (selectedEmployees.length === 0) {
             const assignmentData: any = {
                 taskId: selectedTaskId,
@@ -453,8 +558,9 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 await onSave(assignmentData);
             } else {
                 await addAssignment(assignmentData);
-                setOpen(false);
             }
+            // Limpiar formulario después de guardar
+            handleCancel();
         } else {
             // Definir assignmentData antes de verificar conflictos
             const assignmentData = {
@@ -482,13 +588,14 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             } else {
                 const result = await addAssignment(assignmentData);
                 if (result.data && !result.error) {
+                    // Limpiar formulario después de guardar
                     setTimeout(() => {
-                        setOpen(false);
+                        handleCancel();
                     }, 500);
                 }
             }
         }
-    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, setOpen, addAssignment]);
+    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel]);
 
     const handleTaskCreated = useCallback((newTask: Task) => {
         setSelectedTaskId(newTask.id); 
@@ -527,20 +634,22 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         
         try {
             if (conflictData.isEdit) {
-                if (onSave) {
-                    await onSave(conflictData.assignmentData);
-                } else {
-                    await updateAssignment(conflictData.assignmentData);
-                    setOpen(false);
-                }
+            if (onSave) {
+                await onSave(conflictData.assignmentData);
+            } else {
+                await updateAssignment(conflictData.assignmentData);
+            }
+            // Limpiar formulario después de guardar
+            handleCancel();
             } else {
                 if (onSave) {
                     await onSave(conflictData.assignmentData);
                 } else {
                     const result = await addAssignment(conflictData.assignmentData);
                     if (result.data && !result.error) {
+                        // Limpiar formulario después de guardar
                         setTimeout(() => {
-                            setOpen(false);
+                            handleCancel();
                         }, 500);
                     }
                 }
@@ -555,28 +664,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setConflictDialogOpen(false);
             setConflictData(null);
         }
-    }, [conflictData, onSave, updateAssignment, addAssignment, setOpen]);
-
-    // Función para limpiar el formulario
-    const handleCancel = useCallback(() => {
-        setSelectedTaskId("");
-        setSelectedEmployees([]);
-        setSelectedClientId(undefined);
-        setSelectedBoatIds([]);
-        setSelectedExtras([]);
-        // Establecer hora actual sin minutos
-        const now = new Date();
-        const currentHour = String(now.getHours()).padStart(2, '0');
-        setStartTime(`${currentHour}:00`);
-        setEndTime("10:00");
-        setDate(formatDateForInput(new Date()));
-        setStatus('pending');
-        setIsEndTimeManual(false);
-        setTimeConflictWarning('');
-        setConflictDialogOpen(false);
-        setConflictData(null);
-        setOpen(false);
-    }, [formatDateForInput, setOpen]);
+    }, [conflictData, onSave, updateAssignment, addAssignment, handleCancel]);
 
     return (
         <DialogContent className="sm:max-w-lg">
@@ -632,17 +720,87 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                         <div className="grid gap-2">
                           <Label>Cliente (Opcional)</Label>
                             <div className="flex gap-2">
-                                <Select value={selectedClientId} onValueChange={handleClientSelectChange}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Seleccione un cliente" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="none">Ninguno</SelectItem>
-                                        {clients.map(client => (
-                                            <SelectItem key={client.id} value={client.id}>{client.firstName} {client.lastName}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <div className="relative flex-1">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setClientComboOpen(!clientComboOpen)}
+                                        className="w-full justify-between font-normal"
+                                    >
+                                        {selectedClientId
+                                            ? clients.find((client) => client.id === selectedClientId)?.firstName + " " + clients.find((client) => client.id === selectedClientId)?.lastName
+                                            : "Buscar cliente..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                    {clientComboOpen && (
+                                        <>
+                                            <div 
+                                                className="fixed inset-0 z-50" 
+                                                onClick={() => setClientComboOpen(false)}
+                                            />
+                                            <div className="absolute top-full left-0 z-50 mt-1 w-[400px] rounded-md border bg-white shadow-md">
+                                                <div className="flex items-center border-b px-3 py-2">
+                                                    <Input
+                                                        ref={clientInputRef}
+                                                        placeholder="Buscar cliente por nombre o DNI..."
+                                                        value={clientSearchQuery}
+                                                        onChange={(e) => setClientSearchQuery(e.target.value)}
+                                                        type="text"
+                                                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9"
+                                                        autoFocus
+                                                        autoComplete="off"
+                                                    />
+                                                </div>
+                                                <div className="max-h-[300px] overflow-y-auto p-1">
+                                                    <div 
+                                                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                                        onClick={() => {
+                                                            setSelectedClientId(undefined);
+                                                            setSelectedBoatIds([]);
+                                                            setClientComboOpen(false);
+                                                            setClientSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                !selectedClientId ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        Ninguno
+                                                    </div>
+                                                    {filteredClients.length === 0 && clientSearchQuery && (
+                                                        <div className="py-6 text-center text-sm text-muted-foreground">
+                                                            No se encontraron clientes.
+                                                        </div>
+                                                    )}
+                                                    {filteredClients.map((client) => (
+                                                        <div
+                                                            key={client.id}
+                                                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                                            onClick={() => {
+                                                                handleClientSelectChange(client.id);
+                                                                setClientComboOpen(false);
+                                                                setClientSearchQuery("");
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    selectedClientId === client.id ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            <div className="flex flex-col">
+                                                                <span>{client.firstName} {client.lastName}</span>
+                                                                <span className="text-xs text-muted-foreground">DNI: {client.dni}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                                 <Dialog open={isCreateClientOpen} onOpenChange={setIsCreateClientOpen}>
                                      <TooltipProvider>
                                         <Tooltip>
@@ -666,37 +824,117 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                             </div>
                         </div>
                         
-                         {selectedClient && (
-                            <div className="grid gap-2">
-                                <Label>Embarcacion(es)</Label>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="flex justify-between items-center font-normal">
-                                            <span className="truncate">
-                                                {selectedBoatIds.length === 0 && "Seleccione embarcaciones"}
-                                                {selectedBoatIds.length === 1 && selectedClient.boats.find(b => b.id === selectedBoatIds[0])?.name}
-                                                {selectedBoatIds.length > 1 && `${selectedBoatIds.length} embarcaciones seleccionadas`}
-                                            </span>
-                                            <ChevronDown className="h-4 w-4 opacity-50" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                                        <DropdownMenuLabel>Embarcaciones de {selectedClient.firstName}</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        {selectedClient.boats.map(boat => (
-                                            <DropdownMenuCheckboxItem
-                                                key={boat.id}
-                                                checked={selectedBoatIds.includes(boat.id)}
-                                                onSelect={(e) => e.preventDefault()}
-                                                onCheckedChange={() => handleBoatSelect(boat.id)}
-                                            >
-                                                {boat.name}
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                        <div className="grid gap-2">
+                          <Label>Embarcación(es) (Opcional)</Label>
+                            <div className="relative">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setBoatComboOpen(!boatComboOpen)}
+                                    className="w-full justify-between font-normal"
+                                >
+                                    {selectedBoatIds.length === 0 && (selectedClientId ? `Buscar embarcación de ${selectedClient?.firstName}...` : "Buscar embarcación...")}
+                                    {selectedBoatIds.length === 1 && allBoats.find(b => b.id === selectedBoatIds[0])?.name}
+                                    {selectedBoatIds.length > 1 && `${selectedBoatIds.length} embarcaciones seleccionadas`}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                                {boatComboOpen && (
+                                    <>
+                                        <div 
+                                            className="fixed inset-0 z-50" 
+                                            onClick={() => setBoatComboOpen(false)}
+                                        />
+                                        <div className="absolute top-full left-0 z-50 mt-1 w-[400px] rounded-md border bg-white shadow-md">
+                                            <div className="flex items-center border-b px-3 py-2">
+                                                <Input
+                                                    ref={boatInputRef}
+                                                    placeholder="Buscar embarcación por nombre o matrícula..."
+                                                    value={boatSearchQuery}
+                                                    onChange={(e) => setBoatSearchQuery(e.target.value)}
+                                                    type="text"
+                                                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9"
+                                                    autoFocus
+                                                    autoComplete="off"
+                                                />
+                                            </div>
+                                            <div className="max-h-[300px] overflow-y-auto p-1">
+                                                {selectedClientId && (
+                                                    <div className="px-2 py-1.5 text-xs text-muted-foreground border-b mb-1">
+                                                        Mostrando embarcaciones de: <span className="font-medium">{selectedClient?.firstName} {selectedClient?.lastName}</span>
+                                                    </div>
+                                                )}
+                                                {filteredBoats.length === 0 && boatSearchQuery && (
+                                                    <div className="py-6 text-center text-sm text-muted-foreground">
+                                                        No se encontraron embarcaciones.
+                                                    </div>
+                                                )}
+                                                {filteredBoats.length === 0 && !boatSearchQuery && selectedClientId && (
+                                                    <div className="py-6 text-center text-sm text-muted-foreground">
+                                                        Este cliente no tiene embarcaciones registradas.
+                                                    </div>
+                                                )}
+                                                {filteredBoats.map((boat) => (
+                                                    <div
+                                                        key={boat.uniqueKey}
+                                                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                                        onClick={() => {
+                                                            handleBoatSelect(boat.id);
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                selectedBoatIds.includes(boat.id) ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium">{boat.name}</span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                {boat.registrationNumber} • Cliente: {boat.clientName}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="p-2 border-t">
+                                                <Button
+                                                    type="button"
+                                                    variant="secondary"
+                                                    size="sm"
+                                                    className="w-full"
+                                                    onClick={() => {
+                                                        setBoatComboOpen(false);
+                                                        setBoatSearchQuery("");
+                                                    }}
+                                                >
+                                                    Listo ({selectedBoatIds.length} seleccionada{selectedBoatIds.length !== 1 ? 's' : ''})
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                        )}
+                            {/* Mostrar embarcaciones seleccionadas */}
+                            {selectedBoatIds.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {selectedBoatIds.map((boatId, index) => {
+                                        const boat = allBoats.find(b => b.id === boatId);
+                                        return boat ? (
+                                            <Badge key={`selected-${boat.uniqueKey}-${index}`} variant="secondary" className="gap-1">
+                                                {boat.name}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleBoatSelect(boatId)}
+                                                    className="ml-1 hover:bg-secondary-foreground/20 rounded-full"
+                                                >
+                                                    ×
+                                                </button>
+                                            </Badge>
+                                        ) : null;
+                                    })}
+                                </div>
+                            )}
+                        </div>
 
                         <div className="grid gap-2">
                           <Label>Empleado(s)</Label>

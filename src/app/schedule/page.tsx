@@ -375,7 +375,12 @@ export default function SchedulePage() {
                   Asignar Tarea
                 </Button>
               </DialogTrigger>
-              <AssignTaskDialog setOpen={setIsCreateOpen} assignmentToEdit={null} initialDate={undefined} onSave={async (assignmentData) => {
+              <AssignTaskDialog 
+                key={isCreateOpen ? 'create-new' : 'closed'} 
+                setOpen={setIsCreateOpen} 
+                assignmentToEdit={null} 
+                initialDate={undefined} 
+                onSave={async (assignmentData) => {
                   // Asegurar que employeeId sea un array
                   const assignmentToCreate = {
                       ...assignmentData,
@@ -404,7 +409,13 @@ export default function SchedulePage() {
         </div>
 
         <Dialog open={isEditOpen} onOpenChange={open => open ? setIsEditOpen(true) : handleCloseDialogs()}>
-            <AssignTaskDialog setOpen={setIsEditOpen} assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} initialDate={undefined} onDelete={onDeleteInEdit} onSave={async (assignmentData) => {
+            <AssignTaskDialog 
+                key={selectedAssignmentGroup ? `edit-${selectedAssignmentGroup[0].id}` : 'edit-closed'} 
+                setOpen={setIsEditOpen} 
+                assignmentToEdit={selectedAssignmentGroup ? selectedAssignmentGroup[0] : null} 
+                initialDate={undefined} 
+                onDelete={onDeleteInEdit} 
+                onSave={async (assignmentData) => {
                 // Asegurar que employeeId sea un array
                 const assignmentToUpdate = {
                     ...assignmentData,
