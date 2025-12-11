@@ -752,50 +752,56 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                                     />
                                                 </div>
                                                 <div className="max-h-[300px] overflow-y-auto p-1">
-                                                    <div 
-                                                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-                                                        onClick={() => {
-                                                            setSelectedClientId(undefined);
-                                                            setSelectedBoatIds([]);
-                                                            setClientComboOpen(false);
-                                                            setClientSearchQuery("");
-                                                        }}
-                                                    >
-                                                        <Check
-                                                            className={cn(
-                                                                "mr-2 h-4 w-4",
-                                                                !selectedClientId ? "opacity-100" : "opacity-0"
-                                                            )}
-                                                        />
-                                                        Ninguno
-                                                    </div>
+                                                <div 
+                                                    className={cn(
+                                                        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                                                        !selectedClientId && "bg-yellow-100 hover:bg-yellow-200"
+                                                    )}
+                                                    onClick={() => {
+                                                        setSelectedClientId(undefined);
+                                                        setSelectedBoatIds([]);
+                                                        setClientSearchQuery(""); // Limpiar búsqueda primero
+                                                        setClientComboOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            !selectedClientId ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    Ninguno
+                                                </div>
                                                     {filteredClients.length === 0 && clientSearchQuery && (
                                                         <div className="py-6 text-center text-sm text-muted-foreground">
                                                             No se encontraron clientes.
                                                         </div>
                                                     )}
-                                                    {filteredClients.map((client) => (
-                                                        <div
-                                                            key={client.id}
-                                                            className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-                                                            onClick={() => {
-                                                                handleClientSelectChange(client.id);
-                                                                setClientComboOpen(false);
-                                                                setClientSearchQuery("");
-                                                            }}
-                                                        >
-                                                            <Check
-                                                                className={cn(
-                                                                    "mr-2 h-4 w-4",
-                                                                    selectedClientId === client.id ? "opacity-100" : "opacity-0"
-                                                                )}
-                                                            />
-                                                            <div className="flex flex-col">
-                                                                <span>{client.firstName} {client.lastName}</span>
-                                                                <span className="text-xs text-muted-foreground">DNI: {client.dni}</span>
-                                                            </div>
+                                                {filteredClients.map((client) => (
+                                                    <div
+                                                        key={client.id}
+                                                        className={cn(
+                                                            "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                                                            selectedClientId === client.id && "bg-yellow-100 hover:bg-yellow-200"
+                                                        )}
+                                                        onClick={() => {
+                                                            handleClientSelectChange(client.id);
+                                                            setClientSearchQuery(""); // Limpiar búsqueda primero
+                                                            setClientComboOpen(false);
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                selectedClientId === client.id ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <span>{client.firstName} {client.lastName}</span>
+                                                            <span className="text-xs text-muted-foreground">DNI: {client.dni}</span>
                                                         </div>
-                                                    ))}
+                                                    </div>
+                                                ))}
                                                 </div>
                                             </div>
                                         </>
@@ -876,9 +882,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                                 {filteredBoats.map((boat) => (
                                                     <div
                                                         key={boat.uniqueKey}
-                                                        className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                                        className={cn(
+                                                            "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                                                            selectedBoatIds.includes(boat.id) && "bg-yellow-100 hover:bg-yellow-200"
+                                                        )}
                                                         onClick={() => {
                                                             handleBoatSelect(boat.id);
+                                                            setBoatSearchQuery(""); // Limpiar búsqueda al seleccionar
                                                         }}
                                                     >
                                                         <Check
@@ -972,6 +982,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                             checked={selectedEmployees.includes(emp.id)}
                                             onSelect={(e) => e.preventDefault()}
                                             onCheckedChange={() => handleEmployeeSelect(emp.id)}
+                                            className={cn(selectedEmployees.includes(emp.id) && "bg-yellow-100 data-[highlighted]:bg-yellow-200")}
                                         >
                                             <div className="flex items-center justify-between w-full">
                                                 <span>{emp.name} {emp.lastName}</span>
