@@ -230,7 +230,10 @@ export default function TodayTasksPage() {
                                 <div className="flex items-center gap-2">
                                     <CardTitle>{task.title}</CardTitle>
                                     {hasObservations && (
-                                        <FileText className="h-4 w-4 text-blue-500" />
+                                        <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
+                                            <FileText className="h-4 w-4" />
+                                            <span className="text-xs font-medium">Observaciones</span>
+                                        </div>
                                     )}
                                 </div>
                                 {task.requiresDriving && (
@@ -330,15 +333,17 @@ export default function TodayTasksPage() {
                                         </div>
                                     )}
 
-                                    {assignment.observations && (
+                                    {assignment.observations && assignment.observations.trim().length > 0 && (
                                         <div className="space-y-2 pt-4 border-t">
-                                            <div className="flex items-center gap-2 font-medium text-foreground">
-                                                <FileText className="h-4 w-4 shrink-0" />
+                                            <div className="flex items-center gap-2 font-semibold text-foreground">
+                                                <FileText className="h-5 w-5 shrink-0 text-blue-600" />
                                                 <span>Observaciones:</span>
                                             </div>
-                                            <p className="pl-6 text-sm text-muted-foreground whitespace-pre-wrap">
-                                                {assignment.observations}
-                                            </p>
+                                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                                                <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                                    {assignment.observations}
+                                                </p>
+                                            </div>
                                         </div>
                                     )}
                             </div>
@@ -413,7 +418,10 @@ export default function TodayTasksPage() {
                                 <div className="flex items-center gap-2">
                                     <CardTitle>{task.title}</CardTitle>
                                     {hasObservations && (
-                                        <FileText className="h-4 w-4 text-blue-500" />
+                                        <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
+                                            <FileText className="h-4 w-4" />
+                                            <span className="text-xs font-medium">Observaciones</span>
+                                        </div>
                                     )}
                                 </div>
                                 {task.requiresDriving && (
@@ -513,15 +521,17 @@ export default function TodayTasksPage() {
                                         </div>
                                     )}
 
-                                    {assignment.observations && (
+                                    {assignment.observations && assignment.observations.trim().length > 0 && (
                                         <div className="space-y-2 pt-4 border-t">
-                                            <div className="flex items-center gap-2 font-medium text-foreground">
-                                                <FileText className="h-4 w-4 shrink-0" />
+                                            <div className="flex items-center gap-2 font-semibold text-foreground">
+                                                <FileText className="h-5 w-5 shrink-0 text-blue-600" />
                                                 <span>Observaciones:</span>
                                             </div>
-                                            <p className="pl-6 text-sm text-muted-foreground whitespace-pre-wrap">
-                                                {assignment.observations}
-                                            </p>
+                                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mt-2">
+                                                <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                                    {assignment.observations}
+                                                </p>
+                                            </div>
                                         </div>
                                     )}
                             </div>

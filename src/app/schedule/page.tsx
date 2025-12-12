@@ -169,10 +169,15 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
                     <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(calculateExtrasTotal)}</span>
                 </div>
             )}
-            {firstAssignment.observations && (
-                <div className="flex items-start gap-2 text-muted-foreground border-t pt-2 mt-2">
-                    <FileText className="h-4 w-4 shrink-0 text-blue-500" />
-                    <span className="text-xs whitespace-pre-wrap">{firstAssignment.observations}</span>
+            {firstAssignment.observations && firstAssignment.observations.trim().length > 0 && (
+                <div className="border-t pt-2 mt-2">
+                    <div className="flex items-center gap-2 font-semibold text-foreground mb-1">
+                        <FileText className="h-4 w-4 shrink-0 text-blue-600" />
+                        <span>Observaciones:</span>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                        <span className="text-xs text-foreground whitespace-pre-wrap leading-relaxed">{firstAssignment.observations}</span>
+                    </div>
                 </div>
             )}
         </div>

@@ -509,6 +509,9 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             alert("Por favor seleccione una tarea.");
             return;
         }
+        
+        console.log('📝 Observaciones a guardar:', observations);
+        
         const [startHour, startMinute] = startTime.split(':').map(Number);
         const [endHour, endMinute] = endTime.split(':').map(Number);
         const assignmentDate = new Date(date + 'T00:00:00');
@@ -528,8 +531,10 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
-                observations: observations || undefined
+                observations: observations && observations.trim() ? observations.trim() : undefined
             };
+            
+            console.log('💾 Datos a guardar (edición):', assignmentData);
             
             // Verificar conflictos para edición
             if (selectedEmployees && selectedEmployees.length > 0) {
@@ -558,8 +563,10 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
-                observations: observations || undefined
+                observations: observations && observations.trim() ? observations.trim() : undefined
             };
+            
+            console.log('💾 Datos a guardar (sin empleados):', assignmentData);
 
             if (onSave) {
                 await onSave(assignmentData);
@@ -579,8 +586,10 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
-                observations: observations || undefined
+                observations: observations && observations.trim() ? observations.trim() : undefined
             };
+            
+            console.log('💾 Datos a guardar (con empleados):', assignmentData);
 
             // Verificar conflictos para todos los empleados seleccionados
             for (const employeeId of selectedEmployees) {
@@ -603,7 +612,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 }
             }
         }
-    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel]);
+    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, observations, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel]);
 
     const handleTaskCreated = useCallback((newTask: Task) => {
         setSelectedTaskId(newTask.id); 
@@ -1089,7 +1098,10 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                 id="observations"
                                 placeholder="Agregue observaciones o notas sobre esta tarea..."
                                 value={observations}
-                                onChange={(e) => setObservations(e.target.value)}
+                                onChange={(e) => {
+                                    console.log('✍️ Escribiendo observaciones:', e.target.value);
+                                    setObservations(e.target.value);
+                                }}
                                 className="min-h-[80px] resize-none"
                             />
                             <p className="text-xs text-muted-foreground">
