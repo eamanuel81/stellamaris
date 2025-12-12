@@ -213,7 +213,7 @@ export const ClientDialog = ({
 
             // Llamar a onSave con el cliente guardado
             if (onSave) {
-                onSave(savedClient);
+                await onSave(savedClient);
             }
             
             setUploadedPhotos([]);

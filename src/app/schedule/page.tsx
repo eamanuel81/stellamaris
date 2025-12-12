@@ -441,7 +441,7 @@ export default function SchedulePage() {
             }} />
         </Dialog>
 
-        <Dialog open={isDetailOpen} onOpenChange={open => open ? setIsDetailOpen(true) : handleCloseDialogs()}>
+        <Dialog open={isDetailOpen && !!selectedAssignmentGroup} onOpenChange={open => open ? setIsDetailOpen(true) : handleCloseDialogs()}>
             {selectedAssignmentGroup && (
                 <AssignmentDetailDialog
                     assignmentGroup={selectedAssignmentGroup}
@@ -456,17 +456,6 @@ export default function SchedulePage() {
                       await refetch();
                       // No cierres el modal automáticamente
                     }}
-                />
-            )}
-            {!selectedAssignmentGroup && (
-                <AssignmentDetailDialog
-                    assignmentGroup={[]}
-                    tasks={tasks}
-                    clients={clients}
-                    employees={employees}
-                    onEdit={handleOpenEdit}
-                    setOpen={handleCloseDialogs}
-                    onStatusChange={async () => {}}
                 />
             )}
         </Dialog>

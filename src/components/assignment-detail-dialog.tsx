@@ -20,7 +20,7 @@ import {
     Label,
 } from "@/components/ui";
 import { Assignment, Task, Client, Employee, AssignmentStatus } from "@/lib/data";
-import { Clock, User, Ship, DollarSign, Edit, Users, Shield, Tag } from "lucide-react";
+import { Clock, User, Ship, DollarSign, Edit, Users, Shield, Tag, FileText } from "lucide-react";
 import { useAssignments } from '@/hooks/use-assignments';
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find(t => t.id === id);
@@ -223,6 +223,23 @@ export const AssignmentDetailDialog = ({
                             <div className="flex items-center gap-2 text-sm font-bold mt-2">
                                 <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
                                 <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(extrasTotal)}</span>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {firstAssignment.observations && firstAssignment.observations.trim().length > 0 && (
+                    <>
+                        <Separator />
+                        <div className="grid gap-2">
+                            <div className="flex items-center gap-2 font-semibold text-sm">
+                                <FileText className="h-4 w-4 shrink-0 text-blue-600" />
+                                <span>Observaciones</span>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                                <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                    {firstAssignment.observations}
+                                </p>
                             </div>
                         </div>
                     </>

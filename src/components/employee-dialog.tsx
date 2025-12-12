@@ -75,7 +75,7 @@ export const EmployeeDialog = ({
         setAvatarKey(Date.now().toString());
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!name || !lastName || !email) {
             alert("Por favor complete Nombre, Apellido y Email.");
             return;
@@ -96,7 +96,7 @@ export const EmployeeDialog = ({
             subrole,
         };
 
-        onSave(employeeData);
+        await onSave(employeeData);
         setOpen(false);
     };
 
