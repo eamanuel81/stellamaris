@@ -3,7 +3,7 @@ V  1.0.2
 
 Sistema de gestión de tareas para guardería de lanchas.
 
-## Configuración
+## Configuración  
 
 ### Variables de Entorno
 
