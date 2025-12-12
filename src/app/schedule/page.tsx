@@ -4,7 +4,7 @@
 import React from "react"
 import { AppLayout } from "@/components/app-layout"
 import { Button, Dialog, DialogTrigger, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, Badge, Skeleton } from "@/components/ui"
-import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban, ChevronLeft, ChevronRight } from "lucide-react"
+import { PlusCircle, Clock, User, Ship, DollarSign, Users, Hourglass, Check, CheckCheck, X, Ban, ChevronLeft, ChevronRight, FileText } from "lucide-react"
 import { employees, tasks as initialTasks, assignments as initialAssignments, clients as initialClients } from "@/lib/data";
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 import { AssignTaskDialog } from "@/components/assign-task-dialog"
@@ -167,6 +167,12 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
                  <div className="flex items-center gap-2 font-bold pt-1 border-t mt-2">
                     <DollarSign className="h-4 w-4 shrink-0 text-green-600" />
                     <span>Total Extras: {new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(calculateExtrasTotal)}</span>
+                </div>
+            )}
+            {firstAssignment.observations && (
+                <div className="flex items-start gap-2 text-muted-foreground border-t pt-2 mt-2">
+                    <FileText className="h-4 w-4 shrink-0 text-blue-500" />
+                    <span className="text-xs whitespace-pre-wrap">{firstAssignment.observations}</span>
                 </div>
             )}
         </div>

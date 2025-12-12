@@ -43,6 +43,7 @@ export type Assignment = {
     clientId?: string;
     boatIds?: string[];
     selectedExtras?: { extraId: string; quantity: number }[];
+    observations?: string; // Observaciones opcionales de la tarea
 };
 
 export type Boat = {

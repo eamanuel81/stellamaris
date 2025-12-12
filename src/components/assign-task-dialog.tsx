@@ -42,7 +42,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   Checkbox,
-  DropdownMenuItem
+  DropdownMenuItem,
+  Textarea
 } from "@/components/ui"
 import { PlusCircle, Car, ChevronDown, Trash2, Check, ChevronsUpDown } from "lucide-react"
 import { Task, Assignment, Client, TaskExtra, AssignmentStatus } from "@/lib/data"
@@ -147,6 +148,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     const [selectedBoatIds, setSelectedBoatIds] = React.useState<string[]>([]);
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>([]);
     const [status, setStatus] = React.useState<AssignmentStatus>('pending');
+    const [observations, setObservations] = React.useState<string>("");
     const [clientComboOpen, setClientComboOpen] = React.useState(false);
     const [boatComboOpen, setBoatComboOpen] = React.useState(false);
     const [clientSearchQuery, setClientSearchQuery] = React.useState("");
@@ -264,6 +266,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setEndTime(new Date(assignmentToEdit.endTime).toTimeString().substring(0,5));
             setDate(formatDateForInput(new Date(assignmentToEdit.startTime)));
             setStatus(assignmentToEdit.status);
+            setObservations(assignmentToEdit.observations || "");
             setIsEndTimeManual(false);
         } else {
             // Limpiar completamente todos los campos cuando NO hay tarea a editar
@@ -279,6 +282,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setEndTime("10:00");
             setDate(initialDate ? initialDate : formatDateForInput(new Date()));
             setStatus('pending');
+            setObservations(""); // Limpiar observaciones
             setIsEndTimeManual(false);
             setTimeConflictWarning('');
             setConflictDialogOpen(false);
@@ -487,6 +491,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         setEndTime("10:00");
         setDate(formatDateForInput(new Date()));
         setStatus('pending');
+        setObservations(""); // Limpiar observaciones
         setIsEndTimeManual(false);
         setTimeConflictWarning('');
         setConflictDialogOpen(false);
@@ -522,7 +527,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 clientId: selectedClientId,
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
-                status: status
+                status: status,
+                observations: observations || undefined
             };
             
             // Verificar conflictos para edición
@@ -551,7 +557,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 clientId: selectedClientId,
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
-                status: status
+                status: status,
+                observations: observations || undefined
             };
 
             if (onSave) {
@@ -571,7 +578,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 clientId: selectedClientId,
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
-                status: status
+                status: status,
+                observations: observations || undefined
             };
 
             // Verificar conflictos para todos los empleados seleccionados
@@ -1073,6 +1081,20 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="observations">Observaciones (Opcional)</Label>
+                            <Textarea
+                                id="observations"
+                                placeholder="Agregue observaciones o notas sobre esta tarea..."
+                                value={observations}
+                                onChange={(e) => setObservations(e.target.value)}
+                                className="min-h-[80px] resize-none"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Puede dejar asentado información adicional sobre la tarea
+                            </p>
                         </div>
                     </div>
                 </TabsContent>

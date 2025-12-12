@@ -36,7 +36,7 @@ import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
 import { AssignTaskDialog } from "@/components/assign-task-dialog";
-import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar, Plus } from "lucide-react"
+import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar, Plus, Edit2, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 
@@ -72,6 +72,8 @@ export default function TodayTasksPage() {
         return today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
     });
     const [isAssignTaskOpen, setIsAssignTaskOpen] = React.useState(false);
+    const [editingAssignment, setEditingAssignment] = React.useState<Assignment | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
 
 
     // Crear la fecha seleccionada en hora local para evitar problemas de zona horaria
@@ -219,12 +221,18 @@ export default function TodayTasksPage() {
                         const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
                         const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
+                        const hasObservations = assignment.observations && assignment.observations.trim().length > 0;
                         
                         return (
                         <Card key={assignment.id} className="flex flex-col">
                             <CardHeader>
                             <div className="flex items-start justify-between gap-4">
-                                <CardTitle>{task.title}</CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <CardTitle>{task.title}</CardTitle>
+                                    {hasObservations && (
+                                        <FileText className="h-4 w-4 text-blue-500" />
+                                    )}
+                                </div>
                                 {task.requiresDriving && (
                                 <Badge variant="outline" className="flex-shrink-0">
                                     <Car className="mr-1 h-3 w-3" />
@@ -321,6 +329,18 @@ export default function TodayTasksPage() {
                                             </ul>
                                         </div>
                                     )}
+
+                                    {assignment.observations && (
+                                        <div className="space-y-2 pt-4 border-t">
+                                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                                <FileText className="h-4 w-4 shrink-0" />
+                                                <span>Observaciones:</span>
+                                            </div>
+                                            <p className="pl-6 text-sm text-muted-foreground whitespace-pre-wrap">
+                                                {assignment.observations}
+                                            </p>
+                                        </div>
+                                    )}
                             </div>
                             </CardContent>
                             <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
@@ -328,9 +348,22 @@ export default function TodayTasksPage() {
                                     {currentStatus.icon}
                                     <span className="ml-1.5">{currentStatus.text}</span>
                             </Badge>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  setEditingAssignment(assignment);
+                                  setIsEditDialogOpen(true);
+                                }}
+                                className="flex-1 sm:flex-none"
+                              >
+                                <Edit2 className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Editar</span>
+                              </Button>
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
+                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none min-w-[140px]">
                                     Cambiar Estado
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                   </Button>
@@ -343,6 +376,7 @@ export default function TodayTasksPage() {
                                     <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
+                            </div>
                             </CardFooter>
                         </Card>
                         )
@@ -370,12 +404,18 @@ export default function TodayTasksPage() {
                         const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
                         const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
+                        const hasObservations = assignment.observations && assignment.observations.trim().length > 0;
                         
                         return (
                         <Card key={assignment.id} className="flex flex-col">
                            <CardHeader>
                             <div className="flex items-start justify-between gap-4">
-                                <CardTitle>{task.title}</CardTitle>
+                                <div className="flex items-center gap-2">
+                                    <CardTitle>{task.title}</CardTitle>
+                                    {hasObservations && (
+                                        <FileText className="h-4 w-4 text-blue-500" />
+                                    )}
+                                </div>
                                 {task.requiresDriving && (
                                 <Badge variant="outline" className="flex-shrink-0">
                                     <Car className="mr-1 h-3 w-3" />
@@ -472,6 +512,18 @@ export default function TodayTasksPage() {
                                             </ul>
                                         </div>
                                     )}
+
+                                    {assignment.observations && (
+                                        <div className="space-y-2 pt-4 border-t">
+                                            <div className="flex items-center gap-2 font-medium text-foreground">
+                                                <FileText className="h-4 w-4 shrink-0" />
+                                                <span>Observaciones:</span>
+                                            </div>
+                                            <p className="pl-6 text-sm text-muted-foreground whitespace-pre-wrap">
+                                                {assignment.observations}
+                                            </p>
+                                        </div>
+                                    )}
                             </div>
                             </CardContent>
                             <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
@@ -479,9 +531,22 @@ export default function TodayTasksPage() {
                                     {currentStatus.icon}
                                     <span className="ml-1.5">{currentStatus.text}</span>
                             </Badge>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  setEditingAssignment(assignment);
+                                  setIsEditDialogOpen(true);
+                                }}
+                                className="flex-1 sm:flex-none"
+                              >
+                                <Edit2 className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Editar</span>
+                              </Button>
                              <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
+                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-none min-w-[140px]">
                                     Cambiar Estado
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                   </Button>
@@ -494,6 +559,7 @@ export default function TodayTasksPage() {
                                     <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
+                            </div>
                             </CardFooter>
                         </Card>
                         )
@@ -510,6 +576,26 @@ export default function TodayTasksPage() {
                 )}
             </TabsContent>
         </Tabs>
+
+        {/* Dialog para editar tarea */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <AssignTaskDialog
+            key={editingAssignment ? `edit-${editingAssignment.id}` : 'edit-closed'}
+            setOpen={setIsEditDialogOpen}
+            assignmentToEdit={editingAssignment}
+            initialDate={selectedDate}
+            onSave={async (assignmentData) => {
+              const assignmentToUpdate = {
+                ...assignmentData,
+                employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+              };
+              await updateAssignment(assignmentToUpdate);
+              setIsEditDialogOpen(false);
+              setEditingAssignment(null);
+              await refetch();
+            }}
+          />
+        </Dialog>
       </div>
     </AppLayout>
   )
