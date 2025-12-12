@@ -221,21 +221,12 @@ export default function TodayTasksPage() {
                         const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
                         const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
-                        const hasObservations = assignment.observations && assignment.observations.trim().length > 0;
                         
                         return (
                         <Card key={assignment.id} className="flex flex-col">
                             <CardHeader>
                             <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-center gap-2">
-                                    <CardTitle>{task.title}</CardTitle>
-                                    {hasObservations && (
-                                        <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
-                                            <FileText className="h-4 w-4" />
-                                            <span className="text-xs font-medium">Observaciones</span>
-                                        </div>
-                                    )}
-                                </div>
+                                <CardTitle>{task.title}</CardTitle>
                                 {task.requiresDriving && (
                                 <Badge variant="outline" className="flex-shrink-0">
                                     <Car className="mr-1 h-3 w-3" />
@@ -409,21 +400,12 @@ export default function TodayTasksPage() {
                         const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
                         const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
-                        const hasObservations = assignment.observations && assignment.observations.trim().length > 0;
                         
                         return (
                         <Card key={assignment.id} className="flex flex-col">
                            <CardHeader>
                             <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-center gap-2">
-                                    <CardTitle>{task.title}</CardTitle>
-                                    {hasObservations && (
-                                        <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
-                                            <FileText className="h-4 w-4" />
-                                            <span className="text-xs font-medium">Observaciones</span>
-                                        </div>
-                                    )}
-                                </div>
+                                <CardTitle>{task.title}</CardTitle>
                                 {task.requiresDriving && (
                                 <Badge variant="outline" className="flex-shrink-0">
                                     <Car className="mr-1 h-3 w-3" />
