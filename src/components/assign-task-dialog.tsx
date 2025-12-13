@@ -170,6 +170,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         assignmentData: any;
         isEdit: boolean;
     } | null>(null);
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
     
     const formatDateForInput = useCallback((date: Date) => {
         const d = new Date(date);
@@ -505,16 +506,20 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     }, [formatDateForInput, setOpen]);
     
     const handleSubmit = useCallback(async () => {
+        if (isSubmitting) return; // Prevenir envíos múltiples
+        
         if (!selectedTaskId) {
             alert("Por favor seleccione una tarea.");
             return;
         }
         
-        const [startHour, startMinute] = startTime.split(':').map(Number);
-        const [endHour, endMinute] = endTime.split(':').map(Number);
-        const assignmentDate = new Date(date + 'T00:00:00');
-        const startDate = new Date(assignmentDate.getTime());
-        startDate.setHours(startHour, startMinute, 0, 0);
+        setIsSubmitting(true);
+        try {
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const [endHour, endMinute] = endTime.split(':').map(Number);
+            const assignmentDate = new Date(date + 'T00:00:00');
+            const startDate = new Date(assignmentDate.getTime());
+            startDate.setHours(startHour, startMinute, 0, 0);
         const endDate = new Date(assignmentDate.getTime());
         endDate.setHours(endHour, endMinute, 0, 0);
         
@@ -538,6 +543,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                     const { hasConflict } = checkTimeConflicts(employeeId, startDate, endDate, assignmentToEdit.id);
                     if (hasConflict) {
                         handleTimeConflict(employeeId, startDate, endDate, assignmentData, true);
+                        setIsSubmitting(false);
                         return;
                     }
                 }
@@ -588,6 +594,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 const { hasConflict } = checkTimeConflicts(employeeId, startDate, endDate, undefined);
                 if (hasConflict) {
                     handleTimeConflict(employeeId, startDate, endDate, assignmentData, false);
+                    setIsSubmitting(false);
                     return;
                 }
             }
@@ -604,7 +611,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 }
             }
         }
-    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, observations, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel]);
+        } catch (error) {
+            console.error('Error al guardar asignación:', error);
+            alert('Error al guardar la asignación. Por favor intente nuevamente.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, observations, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel, isSubmitting]);
 
     const handleTaskCreated = useCallback((newTask: Task) => {
         setSelectedTaskId(newTask.id); 
@@ -676,7 +689,11 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     }, [conflictData, onSave, updateAssignment, addAssignment, handleCancel]);
 
     return (
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent 
+            className="sm:max-w-lg"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
+        >
             <DialogHeader>
                 <DialogTitle>{isEditMode ? 'Editar Tarea Asignada' : 'Asignar una nueva tarea'}</DialogTitle>
                 <DialogDescription>
@@ -1205,8 +1222,12 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                  )}
                  {!isEditMode && <div></div>}
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={handleCancel}>Cancelar</Button>
-                    <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Asignar'}</Button>
+                    <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+                        Cancelar
+                    </Button>
+                    <Button type="submit" onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? 'Guardando...' : (isEditMode ? 'Guardar Cambios' : 'Asignar')}
+                    </Button>
                 </div>
             </DialogFooter>
         </DialogContent>
