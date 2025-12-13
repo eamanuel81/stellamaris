@@ -85,21 +85,41 @@ async function tomarCapturas() {
     const buttonCount = await asignarButton.count();
     if (buttonCount > 0) {
       await asignarButton.first().click();
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
       // Esperar a que el diálogo esté visible
-      await page.waitForSelector('[role="dialog"]', { timeout: 5000 }).catch(() => {});
+      await page.waitForSelector('[role="dialog"]', { timeout: 10000 }).catch(() => {});
       await page.screenshot({ path: path.join(OUTPUT_DIR, '12-formulario-asignar-general.png'), fullPage: true });
       
-      // Tomar captura de búsqueda de cliente si está disponible
+      // Tomar captura de búsqueda de cliente
       try {
-        const buscarCliente = page.locator('button:has-text("Buscar cliente"), input[placeholder*="cliente" i]');
-        if (await buscarCliente.count() > 0) {
-          await buscarCliente.first().click();
-          await page.waitForTimeout(1000);
+        const buscarClienteBtn = page.locator('button:has-text("Buscar cliente"), button[aria-label*="cliente" i]');
+        if (await buscarClienteBtn.count() > 0) {
+          await buscarClienteBtn.first().click();
+          await page.waitForTimeout(2000);
+          // Escribir algo para mostrar resultados
+          const clienteInput = page.locator('input[placeholder*="cliente" i], input[type="text"]').last();
+          if (await clienteInput.count() > 0) {
+            await clienteInput.fill('a');
+            await page.waitForTimeout(1000);
+          }
           await page.screenshot({ path: path.join(OUTPUT_DIR, '13-busqueda-cliente.png'), fullPage: true });
+          await page.keyboard.press('Escape'); // Cerrar búsqueda
+          await page.waitForTimeout(500);
         }
       } catch (e) {
-        console.log('No se pudo tomar captura de búsqueda de cliente');
+        console.log('No se pudo tomar captura de búsqueda de cliente:', e.message);
+      }
+      
+      // Intentar tomar captura de extras si la tarea tiene
+      try {
+        const extrasTab = page.locator('button[role="tab"]:has-text("Extras")');
+        if (await extrasTab.count() > 0) {
+          await extrasTab.click();
+          await page.waitForTimeout(1000);
+          await page.screenshot({ path: path.join(OUTPUT_DIR, '16-formulario-extras.png'), fullPage: true });
+        }
+      } catch (e) {
+        console.log('No hay pestaña de extras disponible');
       }
       
       await page.keyboard.press('Escape'); // Cerrar formulario
@@ -114,12 +134,16 @@ async function tomarCapturas() {
 
     // 6. Formulario Crear Tipo de Tarea
     console.log('6. Tomando captura del formulario crear tipo de tarea...');
-    const agregarTareaButton = page.locator('button:has-text("Agregar"), button:has-text("Nuevo")');
+    await page.goto(`${BASE_URL}/tasks`);
+    await page.waitForTimeout(2000);
+    const agregarTareaButton = page.locator('button:has-text("Agregar"), button:has-text("Agregar Tarea")');
     if (await agregarTareaButton.count() > 0) {
       await agregarTareaButton.first().click();
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(2000);
+      await page.waitForSelector('[role="dialog"]', { timeout: 5000 }).catch(() => {});
       await page.screenshot({ path: path.join(OUTPUT_DIR, '18-crear-tipo-tarea.png'), fullPage: true });
       await page.keyboard.press('Escape');
+      await page.waitForTimeout(1000);
     }
 
     // 7. Empleados
@@ -167,6 +191,41 @@ async function tomarCapturas() {
     await page.goto(`${BASE_URL}/schedule`);
     await page.waitForTimeout(2000);
     await page.screenshot({ path: path.join(OUTPUT_DIR, '25-calendario-asignar.png'), fullPage: true });
+
+    // Capturas adicionales que requieren interacción específica
+    console.log('12. Tomando captura de búsqueda de embarcación...');
+    await page.goto(`${BASE_URL}/today-tasks`);
+    await page.waitForTimeout(2000);
+    const asignarBtn2 = page.locator('button:has-text("Asignar"), button:has-text("Asignar Tarea")');
+    if (await asignarBtn2.count() > 0) {
+      await asignarBtn2.first().click();
+      await page.waitForTimeout(3000);
+      // Seleccionar un cliente primero
+      try {
+        const clienteBtn = page.locator('button:has-text("Buscar cliente")');
+        if (await clienteBtn.count() > 0) {
+          await clienteBtn.first().click();
+          await page.waitForTimeout(1000);
+          // Seleccionar el primer cliente disponible
+          const primerCliente = page.locator('div[role="option"], div:has-text("manuel")').first();
+          if (await primerCliente.count() > 0) {
+            await primerCliente.click();
+            await page.waitForTimeout(1500);
+            // Ahora buscar embarcación
+            const buscarEmbarcacionBtn = page.locator('button:has-text("Buscar embarcación")');
+            if (await buscarEmbarcacionBtn.count() > 0) {
+              await buscarEmbarcacionBtn.first().click();
+              await page.waitForTimeout(1500);
+              await page.screenshot({ path: path.join(OUTPUT_DIR, '14-busqueda-embarcacion.png'), fullPage: true });
+            }
+          }
+        }
+      } catch (e) {
+        console.log('No se pudo tomar captura de búsqueda de embarcación:', e.message);
+      }
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(1000);
+    }
 
     console.log('✅ Todas las capturas han sido tomadas exitosamente!');
     console.log(`📁 Imágenes guardadas en: ${OUTPUT_DIR}`);
