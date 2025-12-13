@@ -147,18 +147,21 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                     {currentStatus.icon}
                     {currentStatus.text}
                 </Badge>
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="w-full sm:w-auto min-w-[140px]">
                     Cambiar Estado
                             <ChevronDown className="ml-1 h-3 w-3" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-[200px]">
+                <DropdownMenuContent align="end" className="w-[200px]" onCloseAutoFocus={(e) => e.preventDefault()}>
                         {Object.entries(statusMap).map(([key, config]) => (
                             <DropdownMenuItem
                                 key={key}
-                                onClick={() => updateAssignmentStatus(assignment.id, key as AssignmentStatus)}
+                                onSelect={(e) => {
+                                  e.preventDefault();
+                                  setTimeout(() => updateAssignmentStatus(assignment.id, key as AssignmentStatus), 0);
+                                }}
                                 className="flex items-center gap-2"
                             >
                                 {config.icon}

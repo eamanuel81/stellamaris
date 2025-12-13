@@ -158,16 +158,24 @@ export default function TasksPage() {
                             )}
                         </TableCell>
                         <TableCell>
-                            <DropdownMenu>
+                            <DropdownMenu modal={false}>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 w-8 p-0">
                                 <span className="sr-only">Abrir menú</span>
                                 <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
                                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(task)}>Editar</DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  className="cursor-pointer" 
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    setTimeout(() => handleEditClick(task), 0);
+                                  }}
+                                >
+                                  Editar
+                                </DropdownMenuItem>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">

@@ -42,8 +42,14 @@ export const EmployeeDialog = ({
     const [phone, setPhone] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [canDrive, setCanDrive] = React.useState(false);
-    const [avatarKey, setAvatarKey] = React.useState(Date.now().toString());
+    const idCounterRef = React.useRef(0);
+    const [avatarKey, setAvatarKey] = React.useState('');
     const [subrole, setSubrole] = React.useState<'empleado' | 'encargado' | 'admin'>('empleado');
+    
+    const getNextId = () => {
+        idCounterRef.current += 1;
+        return `avatar-${idCounterRef.current}`;
+    };
 
     React.useEffect(() => {
         if (isEditMode && employeeToEdit) {
@@ -72,7 +78,7 @@ export const EmployeeDialog = ({
     }, [employeeToEdit, isEditMode, open]);
 
     const handleAvatarChange = () => {
-        setAvatarKey(Date.now().toString());
+        setAvatarKey(getNextId());
     };
 
     const handleSubmit = async () => {
@@ -82,7 +88,7 @@ export const EmployeeDialog = ({
         }
 
         const employeeData: Employee = {
-            id: isEditMode ? employeeToEdit!.id : `e${Date.now()}`,
+            id: isEditMode ? employeeToEdit!.id : getNextId(),
             name,
             lastName,
             nickname,
@@ -92,7 +98,7 @@ export const EmployeeDialog = ({
             canDrive,
             email,
             role: isEditMode ? employeeToEdit!.role : 'employee',
-            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarKey}`,
+            avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarKey || getNextId()}`,
             subrole,
         };
 

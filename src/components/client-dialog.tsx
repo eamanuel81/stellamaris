@@ -43,8 +43,14 @@ export const ClientDialog = ({
     const [boats, setBoats] = React.useState<any[]>([]);
     const [responsibles, setResponsibles] = React.useState<any[]>([]);
     const [uploadedPhotos, setUploadedPhotos] = React.useState<string[]>([]); // URLs subidas en esta sesión
+    const idCounterRef = React.useRef(0);
     
-    const initialBoatState = { id: `b${Date.now()}`, name: '', hullType: '', engine: '', registrationNumber: '', photos: [] };
+    const getNextId = (prefix: string) => {
+        idCounterRef.current += 1;
+        return `${prefix}${idCounterRef.current}`;
+    };
+    
+    const initialBoatState = { id: '', name: '', hullType: '', engine: '', registrationNumber: '', photos: [] };
 
     React.useEffect(() => {
         if (isEditMode && clientToEdit) {
@@ -54,8 +60,8 @@ export const ClientDialog = ({
             setEmail(clientToEdit.email);
             setPhone(clientToEdit.phone);
             setInternalNote(clientToEdit.internalNote);
-            setBoats(clientToEdit.boats.length > 0 ? clientToEdit.boats : [initialBoatState]);
-            setResponsibles(clientToEdit.responsibles.length > 0 ? clientToEdit.responsibles : [{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
+            setBoats(clientToEdit.boats.length > 0 ? clientToEdit.boats : [{ ...initialBoatState, id: getNextId('b') }]);
+            setResponsibles(clientToEdit.responsibles.length > 0 ? clientToEdit.responsibles : [{ id: getNextId('r'), firstName: '', lastName: '', dni: '', phone: '' }]);
         } else {
             setFirstName('');
             setLastName('');
@@ -63,8 +69,8 @@ export const ClientDialog = ({
             setEmail('');
             setPhone('');
             setInternalNote('');
-            setBoats([initialBoatState]);
-            setResponsibles([{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
+            setBoats([{ ...initialBoatState, id: getNextId('b') }]);
+            setResponsibles([{ id: getNextId('r'), firstName: '', lastName: '', dni: '', phone: '' }]);
         }
     }, [clientToEdit, isEditMode, open]);
 
@@ -75,7 +81,7 @@ export const ClientDialog = ({
     };
 
     const handleAddBoat = () => {
-        setBoats([...boats, { ...initialBoatState, id: `b${Date.now()}` }]);
+        setBoats([...boats, { ...initialBoatState, id: getNextId('b') }]);
     };
     
     const handleRemoveBoat = (index: number) => {
@@ -84,7 +90,7 @@ export const ClientDialog = ({
             setBoats(newBoats);
         } else {
             // Clear the only boat if removed
-            setBoats([{ ...initialBoatState, id: `b${Date.now()}` }]);
+            setBoats([{ ...initialBoatState, id: getNextId('b') }]);
         }
     };
     
@@ -93,9 +99,9 @@ export const ClientDialog = ({
         if (!newBoats[boatIndex].photos) {
             newBoats[boatIndex].photos = [];
         }
-        // Using a random number to vary the placeholder image
-        const randomId = Math.floor(Math.random() * 1000);
-        newBoats[boatIndex].photos!.push(`https://placehold.co/600x400.png?text=Foto+${randomId}`);
+        // Using counter for placeholder image
+        const photoId = getNextId('photo');
+        newBoats[boatIndex].photos!.push(`https://placehold.co/600x400.png?text=Foto+${photoId}`);
         setBoats(newBoats);
     };
 
@@ -120,15 +126,15 @@ export const ClientDialog = ({
     };
 
     const handleAddResponsible = () => {
-        setResponsibles([...responsibles, { id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
+        setResponsibles([...responsibles, { id: getNextId('r'), firstName: '', lastName: '', dni: '', phone: '' }]);
     };
 
     const handleRemoveResponsible = (index: number) => {
         if (responsibles.length > 1) {
-            const newResponsibles = responsibles.filter((_, i) => i !== index);
-            setResponsibles(newResponsibles);
+             const newResponsibles = responsibles.filter((_, i) => i !== index);
+             setResponsibles(newResponsibles);
         } else {
-             setResponsibles([{ id: `r${Date.now()}`, firstName: '', lastName: '', dni: '', phone: '' }]);
+             setResponsibles([{ id: getNextId('r'), firstName: '', lastName: '', dni: '', phone: '' }]);
         }
     };
 
@@ -137,7 +143,7 @@ export const ClientDialog = ({
         const file = e.target.files?.[0];
         if (!file) return;
         const fileExt = file.name.split('.').pop();
-        const filePath = `boats/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+        const filePath = `boats/${getNextId('upload')}.${fileExt}`;
         const { error } = await supabase.storage.from('stellamaris').upload(filePath, file);
         if (error) {
             alert('Error al subir la imagen');
@@ -179,7 +185,7 @@ export const ClientDialog = ({
             internalNote,
             boats: boats.filter(b => b.name.trim() !== ''),
             responsibles: responsibles.filter(r => r.firstName.trim() !== '' && r.lastName.trim() !== ''),
-            avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${Date.now()}`
+            avatarUrl: isEditMode && clientToEdit ? clientToEdit.avatarUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${getNextId('avatar')}`
         };
 
         try {

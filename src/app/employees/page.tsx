@@ -49,6 +49,8 @@ export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [actionLoading, setActionLoading] = React.useState(false);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = React.useState<Employee | null>(null);
 
   const handleCreateClick = () => {
     setEmployeeToEdit(null);
@@ -56,8 +58,28 @@ export default function EmployeesPage() {
   };
 
   const handleEditClick = (employee: Employee) => {
-    setEmployeeToEdit(employee);
-    setIsEmployeeDialogOpen(true);
+    // Si el diálogo ya está abierto, ciérralo primero
+    if (isEmployeeDialogOpen) {
+      setIsEmployeeDialogOpen(false);
+      // Espera un momento para que el diálogo se cierre completamente
+      setTimeout(() => {
+        setEmployeeToEdit(employee);
+        setIsEmployeeDialogOpen(true);
+      }, 100);
+    } else {
+      setEmployeeToEdit(employee);
+      setIsEmployeeDialogOpen(true);
+    }
+  };
+
+  const handleCloseEmployeeDialog = (open: boolean) => {
+    setIsEmployeeDialogOpen(open);
+    if (!open) {
+      // Limpiar después de cerrar para asegurar limpieza completa
+      setTimeout(() => {
+        setEmployeeToEdit(null);
+      }, 300);
+    }
   };
 
   const handleViewTasksClick = (employee: Employee) => {
@@ -79,12 +101,20 @@ export default function EmployeesPage() {
     setActionLoading(false);
   };
 
-  const handleDeleteEmployee = async (employeeId: string) => {
+  const handleDeleteClick = (employee: Employee) => {
+    setEmployeeToDelete(employee);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!employeeToDelete) return;
     setActionLoading(true);
     setActionError(null);
-    const { error } = await deleteEmployee(employeeId);
+    const { error } = await deleteEmployee(employeeToDelete.id);
     if (error) setActionError(error.message);
     setActionLoading(false);
+    setIsDeleteDialogOpen(false);
+    setEmployeeToDelete(null);
   };
 
   const filteredEmployees = employees.filter(employee => {
@@ -117,12 +147,15 @@ export default function EmployeesPage() {
           )}
         </header>
 
-        <EmployeeDialog
-          open={isEmployeeDialogOpen}
-          setOpen={setIsEmployeeDialogOpen}
-          onSave={handleSaveEmployee}
-          employeeToEdit={employeeToEdit}
-        />
+        {isEmployeeDialogOpen && (
+            <EmployeeDialog
+              key={employeeToEdit ? `edit-${employeeToEdit.id}` : 'create'}
+              open={isEmployeeDialogOpen}
+              setOpen={handleCloseEmployeeDialog}
+              onSave={handleSaveEmployee}
+              employeeToEdit={employeeToEdit}
+            />
+        )}
         {selectedEmployee && (
           <EmployeeTasksDialog
             open={isTasksDialogOpen}
@@ -131,6 +164,23 @@ export default function EmployeesPage() {
             assignments={[]}
           />
         )}
+
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado {employeeToDelete?.name} {employeeToDelete?.lastName} y sus datos asociados.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -187,39 +237,45 @@ export default function EmployeesPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                           <span className="sr-only">Abrir menú</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         {subrole !== 'encargado' && (
-                          <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(employee)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer" 
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              setTimeout(() => handleEditClick(employee), 0);
+                            }}
+                          >
+                            Editar
+                          </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem className="cursor-pointer" onClick={() => handleViewTasksClick(employee)}>Ver Tareas</DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="cursor-pointer" 
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setTimeout(() => handleViewTasksClick(employee), 0);
+                          }}
+                        >
+                          Ver Tareas
+                        </DropdownMenuItem>
                         {subrole !== 'encargado' && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem  onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
-                                Eliminar
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. Esto eliminará permanentemente al empleado y sus datos asociados.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteEmployee(employee.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          <DropdownMenuItem 
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              setTimeout(() => handleDeleteClick(employee), 0);
+                            }}
+                          >
+                            Eliminar
+                          </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>

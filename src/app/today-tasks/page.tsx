@@ -357,19 +357,59 @@ export default function TodayTasksPage() {
                                 <Edit2 className="h-4 w-4 sm:mr-2" />
                                 <span className="hidden sm:inline">Editar</span>
                               </Button>
-                             <DropdownMenu>
+                             <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="outline" size="sm" className="flex-1 sm:flex-none min-w-[140px]">
                                     Cambiar Estado
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-[200px]">
-                                    <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'rejected'} onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Marcar como Rechazada</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
+                                <DropdownMenuContent align="end" className="w-[200px]" onCloseAutoFocus={(e) => e.preventDefault()}>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'accepted'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'accepted'), 0);
+                                      }}
+                                    >
+                                      Marcar como Aceptada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'completed'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'completed'), 0);
+                                      }}
+                                    >
+                                      Marcar como Terminada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'pending'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'pending'), 0);
+                                      }}
+                                    >
+                                      Marcar como Pendiente
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'rejected'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'rejected'), 0);
+                                      }}
+                                    >
+                                      Marcar como Rechazada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'cancelled'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'cancelled'), 0);
+                                      }}
+                                    >
+                                      Marcar como Cancelada
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>
@@ -536,19 +576,59 @@ export default function TodayTasksPage() {
                                 <Edit2 className="h-4 w-4 sm:mr-2" />
                                 <span className="hidden sm:inline">Editar</span>
                               </Button>
-                             <DropdownMenu>
+                             <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="outline" size="sm" className="flex-1 sm:flex-none min-w-[140px]">
                                     Cambiar Estado
                                     <ChevronDown className="ml-2 h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-[200px]">
-                                    <DropdownMenuItem disabled={assignment.status === 'accepted'} onClick={() => updateAssignmentStatus(assignment.id, 'accepted')}>Marcar como Aceptada</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'completed'} onClick={() => updateAssignmentStatus(assignment.id, 'completed')}>Marcar como Terminada</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'pending'} onClick={() => updateAssignmentStatus(assignment.id, 'pending')}>Marcar como Pendiente</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'rejected'} onClick={() => updateAssignmentStatus(assignment.id, 'rejected')}>Marcar como Rechazada</DropdownMenuItem>
-                                    <DropdownMenuItem disabled={assignment.status === 'cancelled'} onClick={() => updateAssignmentStatus(assignment.id, 'cancelled')}>Marcar como Cancelada</DropdownMenuItem>
+                                <DropdownMenuContent align="end" className="w-[200px]" onCloseAutoFocus={(e) => e.preventDefault()}>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'accepted'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'accepted'), 0);
+                                      }}
+                                    >
+                                      Marcar como Aceptada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'completed'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'completed'), 0);
+                                      }}
+                                    >
+                                      Marcar como Terminada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'pending'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'pending'), 0);
+                                      }}
+                                    >
+                                      Marcar como Pendiente
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'rejected'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'rejected'), 0);
+                                      }}
+                                    >
+                                      Marcar como Rechazada
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      disabled={assignment.status === 'cancelled'} 
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setTimeout(() => updateAssignmentStatus(assignment.id, 'cancelled'), 0);
+                                      }}
+                                    >
+                                      Marcar como Cancelada
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>

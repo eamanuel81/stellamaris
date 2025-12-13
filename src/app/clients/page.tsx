@@ -46,6 +46,8 @@ export default function ClientsPage() {
     const [searchTerm, setSearchTerm] = React.useState("");
     const [actionLoading, setActionLoading] = React.useState(false);
     const [actionError, setActionError] = React.useState<string | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+    const [clientToDelete, setClientToDelete] = React.useState<Client | null>(null);
 
     const handleCreateClick = () => {
         setClientToEdit(null);
@@ -53,8 +55,28 @@ export default function ClientsPage() {
     };
 
     const handleEditClick = (client: Client) => {
-        setClientToEdit(client);
-        setIsDialogOpen(true);
+        // Si el diálogo ya está abierto, ciérralo primero
+        if (isDialogOpen) {
+            setIsDialogOpen(false);
+            // Espera un momento para que el diálogo se cierre completamente
+            setTimeout(() => {
+                setClientToEdit(client);
+                setIsDialogOpen(true);
+            }, 100);
+        } else {
+            setClientToEdit(client);
+            setIsDialogOpen(true);
+        }
+    };
+
+    const handleCloseDialog = (open: boolean) => {
+        setIsDialogOpen(open);
+        if (!open) {
+            // Limpiar después de cerrar para asegurar limpieza completa
+            setTimeout(() => {
+                setClientToEdit(null);
+            }, 300);
+        }
     };
 
     const handleSaveClient = async (clientData: Client) => {
@@ -78,12 +100,20 @@ export default function ClientsPage() {
         setActionLoading(false);
     };
     
-    const handleDeleteClient = async (clientId: string) => {
+    const handleDeleteClick = (client: Client) => {
+        setClientToDelete(client);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!clientToDelete) return;
         setActionLoading(true);
         setActionError(null);
-        const { error } = await deleteClient(clientId);
+        const { error } = await deleteClient(clientToDelete.id);
         if (error) setActionError(error.message);
         setActionLoading(false);
+        setIsDeleteDialogOpen(false);
+        setClientToDelete(null);
     };
 
     // Filtrar clientes: no mostrar el email del admin (ni clientes con email igual al del usuario actual)
@@ -122,12 +152,32 @@ export default function ClientsPage() {
             )}
         </header>
 
-        <ClientDialog 
-            open={isDialogOpen}
-            setOpen={setIsDialogOpen}
-            onSave={handleSaveClient}
-            clientToEdit={clientToEdit}
-        />
+        {isDialogOpen && (
+            <ClientDialog 
+                key={clientToEdit ? `edit-${clientToEdit.id}` : 'create'}
+                open={isDialogOpen}
+                setOpen={handleCloseDialog}
+                onSave={handleSaveClient}
+                clientToEdit={clientToEdit}
+            />
+        )}
+
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente al cliente {clientToDelete?.firstName} {clientToDelete?.lastName} y sus datos.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+                        Eliminar
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -187,38 +237,36 @@ export default function ClientsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0" disabled={subrole === 'encargado'}>
                           <span className="sr-only">Abrir menú</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                         {subrole !== 'encargado' && (
-                          <DropdownMenuItem className="cursor-pointer" onClick={() => handleEditClick(client)}>Editar</DropdownMenuItem >
+                          <DropdownMenuItem 
+                            className="cursor-pointer" 
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              setTimeout(() => handleEditClick(client), 0);
+                            }}
+                          >
+                            Editar
+                          </DropdownMenuItem>
                         )}
                         {subrole !== 'encargado' && (
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
-                                    Eliminar
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Esta acción no se puede deshacer. Esto eliminará permanentemente al cliente y sus datos.
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteClient(client.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                          <DropdownMenuItem 
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              setTimeout(() => handleDeleteClick(client), 0);
+                            }}
+                          >
+                            Eliminar
+                          </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
