@@ -1,5 +1,5 @@
 # Stella Maris Manager
-V  1.0.4
+V  1.0.5
 
 Sistema de gestión de tareas para guardería de lanchas.
 
