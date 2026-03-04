@@ -52,7 +52,10 @@ export const TaskDialog = ({
     const [extras, setExtras] = React.useState<TaskExtra[]>([]);
 
     const { employees, isLoading } = useEmployees();
-    const qualifiedEmployees = employees.filter(e => e.subrole === 'empleado');
+    const qualifiedEmployees = React.useMemo(() => 
+        employees.filter(e => e.subrole === 'empleado'), 
+        [employees]
+    );
 
     React.useEffect(() => {
         if (isEditMode && taskToEdit) {
@@ -63,16 +66,18 @@ export const TaskDialog = ({
             setRequiresDriving(taskToEdit.requiresDriving);
             setSelectedEmployees(taskToEdit.qualifiedEmployeeIds || []);
             setExtras(taskToEdit.extras || []);
-        } else {
+        } else if (open && !isEditMode) {
+            // Solo resetear cuando se abre el diálogo y NO está en modo edición
             setTitle("");
             setDescription("");
             setDuration("");
             setType("");
             setRequiresDriving(false);
-            setSelectedEmployees([]);
+            // Preseleccionar todos los empleados por defecto cuando se crea una nueva tarea
+            setSelectedEmployees(qualifiedEmployees.map(emp => emp.id));
             setExtras([]);
         }
-    }, [taskToEdit, isEditMode, open]); // Depend on `open` to reset form
+    }, [taskToEdit, isEditMode, open, qualifiedEmployees]); // Depend on `open` and `qualifiedEmployees` to reset form
     
     const handleEmployeeSelect = (employeeId: string) => {
         setSelectedEmployees(prev =>
@@ -187,29 +192,38 @@ export const TaskDialog = ({
                                             <ChevronDown className="h-4 w-4 opacity-50" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                                        <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuCheckboxItem
-                                            checked={selectedEmployees.length === qualifiedEmployees.length}
-                                            onCheckedChange={handleSelectAllEmployees}
-                                        >
-                                            Seleccionar Todos
-                                        </DropdownMenuCheckboxItem>
-                                        <DropdownMenuSeparator />
-                                        {qualifiedEmployees.map(emp => (
-                                            <DropdownMenuCheckboxItem
-                                                key={emp.id}
-                                                checked={selectedEmployees.includes(emp.id)}
-                                                onSelect={(e) => e.preventDefault()}
-                                                onCheckedChange={() => handleEmployeeSelect(emp.id)}
-                                            >
-                                                <div className="flex items-center justify-between w-full">
-                                                    <span>{emp.name} {emp.lastName}</span>
-                                                    {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground" />}
-                                                </div>
-                                            </DropdownMenuCheckboxItem>
-                                        ))}
+                                    <DropdownMenuContent 
+                                        className="w-[--radix-dropdown-menu-trigger-width] max-h-[400px] !overflow-hidden p-0"
+                                    >
+                                        <div className="max-h-[400px] overflow-y-auto overflow-x-hidden">
+                                            <div className="p-1 sticky top-0 bg-popover z-10 border-b">
+                                                <DropdownMenuLabel>Asignar a</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuCheckboxItem
+                                                    checked={selectedEmployees.length === qualifiedEmployees.length && qualifiedEmployees.length > 0}
+                                                    onCheckedChange={handleSelectAllEmployees}
+                                                    onSelect={(e) => e.preventDefault()}
+                                                >
+                                                    Seleccionar Todos
+                                                </DropdownMenuCheckboxItem>
+                                                <DropdownMenuSeparator />
+                                            </div>
+                                            <div className="p-1">
+                                                {qualifiedEmployees.map(emp => (
+                                                    <DropdownMenuCheckboxItem
+                                                        key={emp.id}
+                                                        checked={selectedEmployees.includes(emp.id)}
+                                                        onSelect={(e) => e.preventDefault()}
+                                                        onCheckedChange={() => handleEmployeeSelect(emp.id)}
+                                                    >
+                                                        <div className="flex items-center justify-between w-full">
+                                                            <span>{emp.name} {emp.lastName}</span>
+                                                            {emp.canDrive && <Car className="h-4 w-4 text-muted-foreground ml-2" />}
+                                                        </div>
+                                                    </DropdownMenuCheckboxItem>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 <div className="flex flex-wrap gap-1 mt-2">

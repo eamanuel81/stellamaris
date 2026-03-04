@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual de Usuario — Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+  <style>
+    .home-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      border-radius: 12px;
+      padding: 40px 40px 36px;
+      margin-bottom: 36px;
+      color: white;
+    }
+    .home-hero h1 { color: white; font-size: 26px; margin-bottom: 8px; }
+    .home-hero h1::before { display: none; }
+    .home-hero p { color: rgba(255,255,255,.75); font-size: 14px; margin: 0; }
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .module-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all .15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .module-card:hover {
+      border-color: var(--navy);
+      box-shadow: 0 4px 16px rgba(28,45,94,.12);
+      transform: translateY(-2px);
+    }
+    .module-card .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--navy);
+      color: white;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .module-card .info h3 { font-size: 14px; color: var(--navy); margin: 0 0 4px; }
+    .module-card .info p  { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.5; }
+    .role-section { margin-top: 36px; }
+    .role-badges { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+    .role-badge {
+      background: var(--accent-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 13px;
+    }
+    .role-badge strong { color: var(--navy); display: block; margin-bottom: 4px; }
+    .role-badge span { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html" class="active"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="home-hero">
+      <h1>Bienvenido al Manual de Usuario</h1>
+      <p>Guía completa del sistema de gestión de guardería náutica Stella Maris Manager.<br>
+         Seleccioná un módulo del menú lateral o de la lista de abajo para comenzar.</p>
+    </div>
+
+    <h2>Módulos del sistema</h2>
+    <div class="module-grid">
+      <a href="01-login.html" class="module-card">
+        <span class="num">01</span>
+        <div class="info">
+          <h3>Inicio de Sesión</h3>
+          <p>Cómo ingresar al sistema y redirección según rol</p>
+        </div>
+      </a>
+      <a href="02-dashboard.html" class="module-card">
+        <span class="num">02</span>
+        <div class="info">
+          <h3>Dashboard</h3>
+          <p>Resumen general: métricas, gráficos y tareas recientes</p>
+        </div>
+      </a>
+      <a href="03-tareas-del-dia.html" class="module-card">
+        <span class="num">03</span>
+        <div class="info">
+          <h3>Tareas del Día</h3>
+          <p>Vista operativa del día: filtros, estados y asignaciones</p>
+        </div>
+      </a>
+      <a href="04-tipos-de-tareas.html" class="module-card">
+        <span class="num">04</span>
+        <div class="info">
+          <h3>Tipos de Tareas</h3>
+          <p>Plantillas de trabajo: crear, editar y configurar extras</p>
+        </div>
+      </a>
+      <a href="05-empleados.html" class="module-card">
+        <span class="num">05</span>
+        <div class="info">
+          <h3>Empleados</h3>
+          <p>Alta, edición y gestión del personal con subroles</p>
+        </div>
+      </a>
+      <a href="06-clientes.html" class="module-card">
+        <span class="num">06</span>
+        <div class="info">
+          <h3>Clientes</h3>
+          <p>Clientes y embarcaciones: registro y personas responsables</p>
+        </div>
+      </a>
+      <a href="07-asignar-tareas.html" class="module-card">
+        <span class="num">07</span>
+        <div class="info">
+          <h3>Asignar Tareas</h3>
+          <p>Calendario semanal/diario para asignar trabajo a empleados</p>
+        </div>
+      </a>
+      <a href="08-configuracion.html" class="module-card">
+        <span class="num">08</span>
+        <div class="info">
+          <h3>Configuración</h3>
+          <p>Perfil, cambio de contraseña y cierre de sesión</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="role-section">
+      <h2>Roles del sistema</h2>
+      <div class="role-badges">
+        <div class="role-badge">
+          <strong>Administrador</strong>
+          <span>Acceso completo: todas las pantallas y configuraciones</span>
+        </div>
+        <div class="role-badge">
+          <strong>Encargado</strong>
+          <span>Ve tareas del día; no puede dar alta de clientes</span>
+        </div>
+        <div class="role-badge">
+          <strong>Empleado</strong>
+          <span>Solo ve sus propias tareas y calendario personal</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

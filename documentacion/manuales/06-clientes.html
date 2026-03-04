@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>06 — Clientes | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html" class="active"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Clientes</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 06</div>
+      <h1>Clientes</h1>
+      <p>Gestión de los clientes de la guardería y sus embarcaciones.</p>
+    </div>
+
+    <h2>Vista general</h2>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/12-clients.png" alt="Lista de clientes">
+      <figcaption>Lista de clientes</figcaption>
+    </figure>
+
+    <p>La tabla muestra: Avatar del cliente, Nombre completo, Contacto (email y teléfono), y Embarcaciones (chips con los nombres de las lanchas registradas).</p>
+
+    <h2>Agregar un cliente</h2>
+    <ol class="steps">
+      <li>Hacer clic en <strong>Agregar Cliente</strong> (arriba a la derecha)</li>
+      <li>Se abre el formulario</li>
+    </ol>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/13-client-dialog.png" alt="Formulario de nuevo cliente">
+      <figcaption>Formulario de nuevo cliente</figcaption>
+    </figure>
+
+    <h3>Sección: Datos del Cliente</h3>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Obligatorio</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Nombre</strong></td><td>Sí</td><td>Nombre del cliente</td></tr>
+        <tr><td><strong>Apellido</strong></td><td>Sí</td><td>Apellido del cliente</td></tr>
+        <tr><td><strong>DNI</strong></td><td>No</td><td>Documento de identidad</td></tr>
+        <tr><td><strong>Celular</strong></td><td>No</td><td>Número de contacto</td></tr>
+        <tr><td><strong>Email</strong></td><td>No</td><td>Correo electrónico</td></tr>
+        <tr><td><strong>Nota Interna</strong></td><td>No</td><td>Observaciones privadas (solo visibles para el admin)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Sección: Embarcaciones</h3>
+    <p>Se pueden agregar una o varias embarcaciones al cliente:</p>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Nombre</strong></td><td>Nombre de la lancha (ej: "La Linda")</td></tr>
+        <tr><td><strong>Tipo de casco</strong></td><td>Material o modelo del casco</td></tr>
+        <tr><td><strong>Motor</strong></td><td>Descripción del motor</td></tr>
+        <tr><td><strong>Número de registro</strong></td><td>Matrícula oficial</td></tr>
+        <tr><td><strong>Fotos</strong></td><td>Imágenes de la embarcación (opcional)</td></tr>
+      </tbody>
+    </table>
+    <p>Para agregar una embarcación: clic en <strong>+ Agregar Embarcación</strong><br>
+       Para eliminar: clic en el ícono de papelera</p>
+
+    <h3>Sección: Personas Responsables</h3>
+    <p>Contactos adicionales autorizados por el cliente:</p>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Nombre y Apellido</strong></td><td>Persona responsable</td></tr>
+        <tr><td><strong>DNI</strong></td><td>Documento de identidad</td></tr>
+        <tr><td><strong>Celular</strong></td><td>Teléfono de contacto</td></tr>
+      </tbody>
+    </table>
+    <p>Para agregar: clic en <strong>+ Agregar Responsable</strong></p>
+
+    <ol class="steps" style="counter-reset: step 2;">
+      <li>Hacer clic en <strong>Guardar Cliente</strong></li>
+    </ol>
+
+    <h2>Editar un cliente</h2>
+    <ol class="steps">
+      <li>Hacer clic en los <strong>tres puntos (···)</strong> de la fila</li>
+      <li>Seleccionar <strong>Editar</strong></li>
+      <li>Modificar los datos (incluyendo embarcaciones y responsables)</li>
+      <li>Hacer clic en <strong>Guardar Cliente</strong></li>
+    </ol>
+
+    <h2>Eliminar un cliente</h2>
+    <ol class="steps">
+      <li>Hacer clic en los <strong>tres puntos (···)</strong></li>
+      <li>Seleccionar <strong>Eliminar</strong></li>
+      <li>Confirmar en el diálogo de alerta</li>
+    </ol>
+
+    <h2>Buscar clientes</h2>
+    <p>Usar el buscador para filtrar por <strong>nombre</strong>, <strong>email</strong> o <strong>nombre de embarcación</strong>.</p>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Visible para <strong>Administrador</strong>.<br>
+      Los <strong>Encargados</strong> pueden ver la lista pero no agregar ni eliminar clientes.<br>
+      Ruta: <code>/clients</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="05-empleados.html">← Empleados</a>
+      <a href="07-asignar-tareas.html">Asignar Tareas →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

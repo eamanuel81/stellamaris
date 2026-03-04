@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario para Empleados - Stella Maris Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PT Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 4px solid #64B5F6;
+        }
+
+        .header h1 {
+            color: #64B5F6;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .header .meta {
+            color: #999;
+            font-size: 0.95em;
+            margin-top: 15px;
+        }
+
+        .toc {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .toc h2 {
+            color: #64B5F6;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .toc ul {
+            list-style: none;
+        }
+
+        .toc li {
+            margin: 10px 0;
+        }
+
+        .toc a {
+            color: #555;
+            text-decoration: none;
+            font-size: 1.05em;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: #64B5F6;
+            text-decoration: underline;
+        }
+
+        .toc ul ul {
+            margin-left: 30px;
+            margin-top: 5px;
+        }
+
+        .content h1 {
+            color: #64B5F6;
+            font-size: 2.2em;
+            margin-top: 50px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e0e0e0;
+            page-break-after: avoid;
+        }
+
+        .content h2 {
+            color: #64B5F6;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            page-break-after: avoid;
+        }
+
+        .content h3 {
+            color: #FFAB40;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+
+        .content h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        .content p {
+            margin-bottom: 18px;
+            text-align: justify;
+            font-size: 1.05em;
+        }
+
+        .content ul, .content ol {
+            margin-left: 40px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+        }
+
+        .content li {
+            margin-bottom: 10px;
+        }
+
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .content table th,
+        .content table td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .content table th {
+            background: #64B5F6;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .content table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .content table tr:hover {
+            background: #f0f7ff;
+        }
+
+        .content blockquote {
+            border-left: 5px solid #FFAB40;
+            padding: 20px 25px;
+            margin: 25px 0;
+            background: #fff3e0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .content code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #e83e8c;
+        }
+
+        .content pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 25px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .content img {
+            max-width: 100%;
+            height: auto;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            margin: 30px auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            page-break-inside: avoid;
+        }
+
+        .content hr {
+            border: none;
+            border-top: 3px solid #64B5F6;
+            margin: 40px 0;
+        }
+
+        .content strong {
+            color: #555;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .badge-required {
+            background: #ff5252;
+            color: white;
+        }
+
+        .note, .warning, .success {
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            border-left: 5px solid;
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-color: #64B5F6;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-color: #FFAB40;
+        }
+
+        .success {
+            background: #e8f5e9;
+            border-color: #66bb6a;
+        }
+
+        .print-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: #64B5F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #42a5f5;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn-secondary {
+            background: #FFAB40;
+        }
+
+        .btn-secondary:hover {
+            background: #ff9800;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 20px;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .print-buttons {
+                display: none;
+            }
+
+            .content h1, .content h2 {
+                page-break-after: avoid;
+            }
+
+            .content img {
+                page-break-inside: avoid;
+                max-width: 100%;
+            }
+
+            .content table {
+                page-break-inside: avoid;
+            }
+
+            .content pre {
+                page-break-inside: avoid;
+            }
+
+            @page {
+                margin: 2cm;
+            }
+
+            a[href^="http"]:after {
+                content: " (" attr(href) ")";
+                font-size: 0.85em;
+                color: #666;
+            }
+
+            a[href^="#"]:after {
+                content: "";
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .content {
+                font-size: 0.95em;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Manual de Usuario para Empleados</h1>
+            <div class="subtitle">Stella Maris Manager</div>
+            <div class="meta">
+                Versión 1.0 | Diciembre 2025
+            </div>
+        </div>
+
+        <div class="content">
+            <h1 id="manual-de-usuario-stella-maris-manager">Manual de Usuario - Stella Maris Manager</h1>
+<h2 id="gua-para-empleados">Guía para Empleados</h2>
+
+<strong>Versión:</strong> 1.0  
+<strong>Fecha:</strong> Diciembre 2025  
+<strong>Sistema:</strong> Stella Maris Manager
+
+<p>---</p>
+
+<h2 id="tabla-de-contenidos">Tabla de Contenidos</h2>
+
+<p>1. <a href="#introducción">Introducción</a></p>
+<p>2. <a href="#acceso-al-sistema">Acceso al Sistema</a></p>
+<p>3. <a href="#interfaz-principal">Interfaz Principal</a></p>
+<p>4. <a href="#mis-tareas">Mis Tareas</a></p>
+<p>5. <a href="#mi-calendario">Mi Calendario</a></p>
+<p>6. <a href="#perfil-de-usuario">Perfil de Usuario</a></p>
+<p>7. <a href="#notificaciones">Notificaciones</a></p>
+<p>8. <a href="#preguntas-frecuentes">Preguntas Frecuentes</a></p>
+
+<p>---</p>
+
+<h2 id="1-introduccin">1. Introducción</h2>
+
+<p>Bienvenido al <strong>Stella Maris Manager</strong>, el sistema de gestión de tareas para la guardería de lanchas. Este manual te guiará paso a paso en el uso de todas las funcionalidades disponibles para empleados.</p>
+
+<h3 id="qu-puedes-hacer-en-el-sistema">¿Qué puedes hacer en el sistema?</h3>
+
+<p>- ✅ Ver tus tareas asignadas</p>
+<p>- ✅ Cambiar el estado de tus tareas (Pendiente, Aceptada, Terminada, Rechazada, Cancelada)</p>
+<p>- ✅ Visualizar tu calendario personal</p>
+<p>- ✅ Ver observaciones y detalles de cada tarea</p>
+<p>- ✅ Recibir notificaciones sobre nuevas asignaciones</p>
+
+<p>---</p>
+
+<h2 id="2-acceso-al-sistema">2. Acceso al Sistema</h2>
+
+<h3 id="21-iniciar-sesin">2.1 Iniciar Sesión</h3>
+
+<p>1. Abre tu navegador web (Chrome, Firefox, Edge, Safari)</p>
+<p>2. Ingresa la URL proporcionada por tu administrador</p>
+<p>3. Verás la pantalla de inicio de sesión</p>
+
+<strong>Pasos para iniciar sesión:</strong>
+
+<p>1. <strong>Ingresa tu correo electrónico</strong> en el campo "Email"</p>
+<p>2. <strong>Ingresa tu contraseña</strong> en el campo "Contraseña"</p>
+<p>3. Selecciona el tipo de usuario: <strong>"Empleado"</strong></p>
+<p>4. Haz clic en el botón <strong>"Iniciar Sesión"</strong></p>
+
+<p>> <strong>Nota:</strong> Si olvidaste tu contraseña, contacta al administrador del sistema.</p>
+
+<h3 id="22-pantalla-de-inicio-de-sesin">2.2 Pantalla de Inicio de Sesión</h3>
+
+<img src="imagenes/01-login-empleado.png" alt="Pantalla de Inicio de Sesión" />
+
+<p>La pantalla de inicio muestra:</p>
+<p>- Logo del sistema</p>
+<p>- Campo de Email</p>
+<p>- Campo de Contraseña</p>
+<p>- Botón para mostrar/ocultar contraseña</p>
+<p>- Opciones de tipo de usuario (Empleado/Administrador)</p>
+<p>- Botón "Iniciar Sesión"</p>
+
+<p>---</p>
+
+<h2 id="3-interfaz-principal">3. Interfaz Principal</h2>
+
+<p>Una vez que inicias sesión, verás la interfaz principal con:</p>
+
+<h3 id="31-barra-lateral-sidebar">3.1 Barra Lateral (Sidebar)</h3>
+
+<p>En el lado izquierdo encontrarás el menú de navegación:</p>
+
+<p>- <strong>📋 Mis Tareas</strong> - Ver y gestionar tus tareas asignadas</p>
+<p>- <strong>📅 Calendario</strong> - Ver tu calendario personal</p>
+
+<h3 id="32-barra-superior">3.2 Barra Superior</h3>
+
+<p>En la parte superior encontrarás:</p>
+
+<p>- <strong>Icono de menú</strong> (☰) - Mostrar/ocultar la barra lateral</p>
+<p>- <strong>Título de la sección actual</strong></p>
+<p>- <strong>🔔 Notificaciones</strong> - Icono de campana para ver notificaciones</p>
+<p>- <strong>👤 Tu perfil</strong> - Menú desplegable con opciones:</p>
+<p>- Ver perfil</p>
+<p>- Configuración</p>
+<p>- Cerrar Sesión</p>
+
+<h3 id="33-rea-principal">3.3 Área Principal</h3>
+
+<p>El área central muestra el contenido de la sección seleccionada (Mis Tareas o Calendario).</p>
+
+<p>---</p>
+
+<h2 id="4-mis-tareas">4. Mis Tareas</h2>
+
+<p>La sección <strong>"Mis Tareas"</strong> es donde verás todas las tareas que te han asignado.</p>
+
+<h3 id="41-ver-tareas-asignadas">4.1 Ver Tareas Asignadas</h3>
+
+<img src="imagenes/02-mis-tareas-vista-general.png" alt="Vista General de Mis Tareas" />
+
+<p>Al ingresar a "Mis Tareas", verás:</p>
+
+<p>- <strong>Tarjetas de tareas</strong> organizadas por estado</p>
+<p>- Cada tarjeta muestra:</p>
+<p>- <strong>Título de la tarea</strong></p>
+<p>- <strong>Cliente</strong> (si aplica)</p>
+<p>- <strong>Embarcación</strong> (si aplica)</p>
+<p>- <strong>Fecha y hora</strong> de inicio</p>
+<p>- <strong>Fecha y hora</strong> de finalización</p>
+<p>- <strong>Estado actual</strong> (con colores distintivos)</p>
+<p>- <strong>Observaciones</strong> (si las hay)</p>
+
+<img src="imagenes/03-tarjeta-tarea-detalle.png" alt="Ejemplo de Tarjeta de Tarea" />
+
+<h3 id="42-estados-de-tareas">4.2 Estados de Tareas</h3>
+
+<p>Las tareas pueden tener los siguientes estados:</p>
+
+<p><table><tr><td>Estado</td><td>Color</td><td>Descripción</td></tr></table></p>
+<p><table><tr><td>--------</td><td>-------</td><td>-------------</td></tr></table></p>
+<p><table><tr><td><strong>Pendiente</strong></td><td>Amarillo</td><td>Tarea recién asignada, aún no aceptada</td></tr></table></p>
+<p><table><tr><td><strong>Aceptada</strong></td><td>Azul</td><td>Has aceptado la tarea</td></tr></table></p>
+<p><table><tr><td><strong>Terminada</strong></td><td>Verde</td><td>Tarea completada</td></tr></table></p>
+<p><table><tr><td><strong>Rechazada</strong></td><td>Rojo</td><td>Has rechazado la tarea</td></tr></table></p>
+<p><table><tr><td><strong>Cancelada</strong></td><td>Gris</td><td>Tarea cancelada</td></tr></table></p>
+
+<h3 id="43-cambiar-estado-de-una-tarea">4.3 Cambiar Estado de una Tarea</h3>
+
+<img src="imagenes/04-menu-cambiar-estado.png" alt="Menú Cambiar Estado" />
+
+<p>Para cambiar el estado de una tarea:</p>
+
+<p>1. Localiza la tarjeta de la tarea que deseas modificar</p>
+<p>2. En la parte inferior de la tarjeta, encontrarás el <strong>estado actual</strong> y un botón <strong>"Cambiar Estado"</strong></p>
+<p>3. Haz clic en <strong>"Cambiar Estado"</strong></p>
+<p>4. Selecciona el nuevo estado deseado:</p>
+<p>- Marcar como Aceptada</p>
+<p>- Marcar como Terminada</p>
+<p>- Marcar como Pendiente</p>
+<p>- Marcar como Rechazada</p>
+<p>- Marcar como Cancelada</p>
+
+<p>> <strong>Nota:</strong> El sistema te notificará automáticamente a los administradores cuando cambies el estado de una tarea.</p>
+
+<h3 id="44-ver-detalles-de-una-tarea">4.4 Ver Detalles de una Tarea</h3>
+
+<img src="imagenes/05-detalles-tarea.png" alt="Diálogo de Detalles de Tarea" />
+
+<p>Para ver información detallada de una tarea:</p>
+
+<p>1. Haz clic en la tarjeta de la tarea</p>
+<p>2. Se abrirá un diálogo con:</p>
+<p>- Información completa de la tarea</p>
+<p>- Detalles del cliente</p>
+<p>- Información de la embarcación</p>
+<p>- Empleados asignados</p>
+<p>- Observaciones (si las hay)</p>
+<p>- Extras adicionales (si aplica)</p>
+
+<h3 id="45-observaciones">4.5 Observaciones</h3>
+
+<p>Si una tarea tiene observaciones, las verás:</p>
+
+<p>- <strong>En la tarjeta:</strong> Un ícono de documento (📄) junto al título</p>
+<p>- <strong>En los detalles:</strong> Una sección completa con las observaciones escritas</p>
+
+<p>> <strong>Importante:</strong> Las observaciones contienen información adicional importante sobre la tarea. Asegúrate de leerlas antes de comenzar.</p>
+
+<p>---</p>
+
+<h2 id="5-mi-calendario">5. Mi Calendario</h2>
+
+<p>La sección <strong>"Calendario"</strong> te permite ver tus tareas en formato de calendario mensual.</p>
+
+<h3 id="51-vista-del-calendario">5.1 Vista del Calendario</h3>
+
+<img src="imagenes/06-calendario-vista.png" alt="Vista del Calendario" />
+
+<p>El calendario muestra:</p>
+
+<p>- <strong>Vista mensual</strong> con todos los días del mes</p>
+<p>- <strong>Tareas marcadas</strong> en los días correspondientes</p>
+<p>- <strong>Navegación</strong> entre meses (botones anterior/siguiente)</p>
+
+<h3 id="52-ver-detalles-en-el-calendario">5.2 Ver Detalles en el Calendario</h3>
+
+<p>1. Haz clic en un día que tenga tareas</p>
+<p>2. Se mostrará un diálogo con todas las tareas de ese día</p>
+<p>3. Puedes hacer clic en cada tarea para ver más detalles</p>
+
+<h3 id="53-navegacin-del-calendario">5.3 Navegación del Calendario</h3>
+
+<p>- <strong>Flecha izquierda</strong> (<) - Mes anterior</p>
+<p>- <strong>Flecha derecha</strong> (>) - Mes siguiente</p>
+<p>- <strong>Botón "Hoy"</strong> - Volver al mes actual</p>
+
+<p>---</p>
+
+<h2 id="6-perfil-de-usuario">6. Perfil de Usuario</h2>
+
+<h3 id="61-acceder-a-tu-perfil">6.1 Acceder a tu Perfil</h3>
+
+<p>1. Haz clic en tu <strong>avatar o nombre</strong> en la barra superior</p>
+<p>2. Selecciona <strong>"Ver Perfil"</strong> o <strong>"Configuración"</strong></p>
+
+<h3 id="62-informacin-del-perfil">6.2 Información del Perfil</h3>
+
+<img src="imagenes/07-perfil-usuario.png" alt="Perfil de Usuario" />
+
+<p>En tu perfil podrás ver:</p>
+
+<p>- Tu nombre completo</p>
+<p>- Tu correo electrónico</p>
+<p>- Tu rol (Empleado)</p>
+<p>- Tu subrol (si aplica)</p>
+<p>- Tu avatar/foto de perfil</p>
+
+<p>---</p>
+
+<h2 id="7-notificaciones">7. Notificaciones</h2>
+
+<h3 id="71-ver-notificaciones">7.1 Ver Notificaciones</h3>
+
+<img src="imagenes/08-notificaciones.png" alt="Panel de Notificaciones" />
+
+<p>1. Haz clic en el <strong>icono de campana</strong> (🔔) en la barra superior</p>
+<p>2. Se abrirá un panel con todas tus notificaciones</p>
+<p>3. Las notificaciones más recientes aparecen primero</p>
+
+<h3 id="72-tipos-de-notificaciones">7.2 Tipos de Notificaciones</h3>
+
+<p>Recibirás notificaciones cuando:</p>
+
+<p>- ✉️ Te asignen una nueva tarea</p>
+<p>- ✉️ Cambien el estado de una tarea asignada a ti</p>
+<p>- ✉️ Haya actualizaciones importantes</p>
+
+<h3 id="73-marcar-notificaciones-como-ledas">7.3 Marcar Notificaciones como Leídas</h3>
+
+<p>- Las notificaciones se marcan automáticamente como leídas al abrirlas</p>
+<p>- También puedes marcarlas manualmente si es necesario</p>
+
+<p>---</p>
+
+<h2 id="8-preguntas-frecuentes">8. Preguntas Frecuentes</h2>
+
+<h3 id="cmo-cambio-mi-contrasea">¿Cómo cambio mi contraseña?</h3>
+
+<p>Contacta al administrador del sistema para cambiar tu contraseña.</p>
+
+<h3 id="puedo-rechazar-una-tarea">¿Puedo rechazar una tarea?</h3>
+
+<p>Sí, puedes cambiar el estado de una tarea a "Rechazada" si no puedes realizarla. Esto notificará automáticamente a los administradores.</p>
+
+<h3 id="qu-hago-si-no-veo-mis-tareas">¿Qué hago si no veo mis tareas?</h3>
+
+<p>1. Verifica que estés en la sección "Mis Tareas"</p>
+<p>2. Revisa el filtro de búsqueda (asegúrate de que esté vacío)</p>
+<p>3. Si persiste el problema, contacta al administrador</p>
+
+<h3 id="puedo-ver-tareas-de-otros-empleados">¿Puedo ver tareas de otros empleados?</h3>
+
+<p>No, como empleado solo puedes ver tus propias tareas asignadas.</p>
+
+<h3 id="qu-significa-el-estado-pendiente">¿Qué significa el estado "Pendiente"?</h3>
+
+<p>Una tarea con estado "Pendiente" es una nueva asignación que aún no has aceptado. Debes cambiar su estado a "Aceptada" cuando estés listo para comenzar.</p>
+
+<h3 id="qu-pasa-si-marco-una-tarea-como-terminada-por-error">¿Qué pasa si marco una tarea como "Terminada" por error?</h3>
+
+<p>Puedes cambiar el estado nuevamente. Sin embargo, es importante verificar el estado correcto antes de marcarlo, ya que esto notifica a los administradores.</p>
+
+<h3 id="las-notificaciones-aparecen-en-tiempo-real">¿Las notificaciones aparecen en tiempo real?</h3>
+
+<p>Sí, las notificaciones aparecen automáticamente cuando hay cambios relevantes en tus tareas.</p>
+
+<h3 id="puedo-editar-los-detalles-de-una-tarea">¿Puedo editar los detalles de una tarea?</h3>
+
+<p>No, solo los administradores pueden editar los detalles de las tareas. Como empleado, solo puedes cambiar el estado.</p>
+
+<p>---</p>
+
+<h2 id="9-cerrar-sesin">9. Cerrar Sesión</h2>
+
+<p>Para cerrar tu sesión:</p>
+
+<p>1. Haz clic en tu <strong>avatar o nombre</strong> en la barra superior</p>
+<p>2. Selecciona <strong>"Cerrar Sesión"</strong></p>
+<p>3. Serás redirigido a la pantalla de inicio de sesión</p>
+
+<p>> <strong>Importante:</strong> Siempre cierra tu sesión al terminar tu jornada, especialmente si usas una computadora compartida.</p>
+
+<p>---</p>
+
+<h2 id="10-soporte-y-ayuda">10. Soporte y Ayuda</h2>
+
+<p>Si encuentras problemas o tienes preguntas:</p>
+
+<p>1. Revisa esta guía primero</p>
+<p>2. Consulta con tu supervisor inmediato</p>
+<p>3. Contacta al administrador del sistema</p>
+
+<p>---</p>
+
+<strong>Fin del Manual de Usuario para Empleados</strong>
+
+<p><em>Última actualización: Diciembre 2025</em></p>
+
+
+        </div>
+    </div>
+
+    <div class="print-buttons">
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑ Inicio</button>
+    </div>
+</body>
+</html>

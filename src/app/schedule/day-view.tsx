@@ -95,24 +95,24 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
     clientMap: Map<string, Client>, 
     employeeMap: Map<string, Employee> 
 }) => {
-    if (!assignmentGroup || assignmentGroup.length === 0) return null;
-
-    const firstAssignment = assignmentGroup[0];
-    const task = getTaskById(firstAssignment.taskId, taskMap);
-    const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clientMap) : null;
-    const boats = client && firstAssignment.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
-    const assignedEmployees = assignmentGroup.flatMap(a => 
+    const firstAssignment = assignmentGroup?.[0];
+    const task = firstAssignment ? getTaskById(firstAssignment.taskId, taskMap) : undefined;
+    const client = firstAssignment?.clientId ? getClientById(firstAssignment.clientId, clientMap) : null;
+    const boats = client && firstAssignment?.boatIds ? client.boats.filter(b => firstAssignment.boatIds?.includes(b.id)) : [];
+    const assignedEmployees = (assignmentGroup ?? []).flatMap(a =>
         a.employeeId.map(empId => getEmployeeById(empId, employeeMap)).filter(Boolean)
     ) as Employee[];
-    const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
+    const statusInfo = firstAssignment ? (statusStyles[firstAssignment.status] || statusStyles.pending) : statusStyles.pending;
 
     const calculateExtrasTotal = React.useMemo(() => {
-        if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
+        if (!task || !task.extras || !firstAssignment?.selectedExtras) return 0;
         return firstAssignment.selectedExtras.reduce((total, selected) => {
             const extraDetails = task.extras!.find(e => e.id === selected.extraId);
             return total + (extraDetails?.price || 0) * selected.quantity;
         }, 0);
-    }, [task, firstAssignment.selectedExtras]);
+    }, [task, firstAssignment?.selectedExtras]);
+
+    if (!assignmentGroup || assignmentGroup.length === 0) return null;
 
     return (
         <div className="space-y-2 p-2 text-sm">

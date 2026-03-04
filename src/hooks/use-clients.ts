@@ -33,7 +33,7 @@ export function useClients() {
           return true;
         });
         
-        setClients(filteredClients);
+        setClients(filteredClients as Client[]);
         setError(null);
       }
     } catch (err) {
@@ -80,7 +80,7 @@ export function useClients() {
             return prev;
           }
           
-          return [...prev, data[0]];
+          return [...prev, data[0] as Client];
         });
         
         return { data: data[0], error: null };
@@ -114,7 +114,7 @@ export function useClients() {
         setError(error.message);
         return { data: null, error };
       } else if (data && data.length > 0) {
-        setClients(prev => prev.map(c => c.id === client.id ? data[0] : c));
+        setClients(prev => prev.map(c => c.id === client.id ? data[0] as Client : c));
         return { data: data[0], error: null };
       }
     } catch (err) {

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 — Empleados | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html" class="active"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Empleados</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 05</div>
+      <h1>Empleados</h1>
+      <p>Gestión del personal de la guardería: altas, ediciones y subroles de acceso.</p>
+    </div>
+
+    <h2>Vista general</h2>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/09-employees.png" alt="Lista de empleados">
+      <figcaption>Lista de empleados</figcaption>
+    </figure>
+
+    <p>La tabla incluye: Avatar generado automáticamente, Nombre completo y email, DNI, Apodo, Celular, e indicador de <strong>Sabe Conducir</strong>.</p>
+
+    <h2>Agregar un empleado</h2>
+    <ol class="steps">
+      <li>Hacer clic en <strong>Agregar Empleado</strong> (arriba a la derecha)</li>
+      <li>Se abre el formulario</li>
+    </ol>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/11-employee-dialog.png" alt="Formulario de nuevo empleado">
+      <figcaption>Formulario de nuevo empleado</figcaption>
+    </figure>
+
+    <h3>Campos del formulario</h3>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Obligatorio</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Avatar</strong></td><td>No</td><td>Clic en "Cambiar Avatar" para generar uno aleatorio</td></tr>
+        <tr><td><strong>Nombre</strong></td><td>Sí</td><td>Nombre del empleado</td></tr>
+        <tr><td><strong>Apellido</strong></td><td>Sí</td><td>Apellido del empleado</td></tr>
+        <tr><td><strong>Apodo</strong></td><td>No</td><td>Nombre corto usado internamente</td></tr>
+        <tr><td><strong>DNI</strong></td><td>Sí</td><td>Documento Nacional de Identidad</td></tr>
+        <tr><td><strong>Domicilio</strong></td><td>No</td><td>Dirección del empleado</td></tr>
+        <tr><td><strong>Número de Celular</strong></td><td>No</td><td>Teléfono de contacto</td></tr>
+        <tr><td><strong>Email</strong></td><td>Sí</td><td>Se usa para crear el acceso al sistema</td></tr>
+        <tr><td><strong>Sabe Conducir</strong></td><td>No</td><td>Marcar si puede operar vehículos</td></tr>
+        <tr><td><strong>Subrol</strong></td><td>Sí</td><td>Nivel de acceso: Empleado / Encargado / Admin</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      Al guardar, el sistema crea automáticamente un usuario con el email ingresado.<br>
+      La contraseña inicial es <strong>NombreDNI</strong> (ej: <code>Juan12345678</code>). El empleado debe cambiarla desde Configuración.
+    </div>
+
+    <ol class="steps" style="counter-reset: step 2;">
+      <li>Hacer clic en <strong>Guardar Empleado</strong></li>
+    </ol>
+
+    <h2>Editar un empleado</h2>
+    <ol class="steps">
+      <li>Hacer clic en los <strong>tres puntos (···)</strong> de la fila</li>
+      <li>Seleccionar <strong>Editar</strong></li>
+      <li>Modificar los datos</li>
+      <li>Hacer clic en <strong>Guardar Empleado</strong></li>
+    </ol>
+
+    <h2>Eliminar un empleado</h2>
+    <ol class="steps">
+      <li>Hacer clic en los <strong>tres puntos (···)</strong></li>
+      <li>Seleccionar <strong>Eliminar</strong></li>
+      <li>Confirmar en el diálogo de alerta</li>
+    </ol>
+    <div class="callout">
+      <strong>Atención:</strong> Eliminar un empleado no elimina su usuario de acceso. Para revocar el acceso, cambiar el rol o contactar al administrador del sistema.
+    </div>
+
+    <h2>Buscar empleados</h2>
+    <p>Usar el buscador para filtrar por <strong>nombre</strong>, <strong>DNI</strong> o <strong>apodo</strong>.</p>
+
+    <h2>Subroles disponibles</h2>
+    <table>
+      <thead>
+        <tr><th>Subrol</th><th>Acceso</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Empleado</strong></td><td>Solo ve sus tareas y calendario</td></tr>
+        <tr><td><strong>Encargado</strong></td><td>Ve tareas del día (sin alta de clientes)</td></tr>
+        <tr><td><strong>Admin</strong></td><td>Acceso completo al sistema</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Solo visible para <strong>Administrador</strong>.<br>
+      Ruta: <code>/employees</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="04-tipos-de-tareas.html">← Tipos de Tareas</a>
+      <a href="06-clientes.html">Clientes →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

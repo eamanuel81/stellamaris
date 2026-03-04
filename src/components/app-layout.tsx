@@ -146,7 +146,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="hidden sm:flex items-center gap-2">
               <SidebarTrigger />
               <h1 className="font-semibold text-lg">
-                {navItems.find(item => pathname.startsWith(item.href))?.label}
+                {navItems.find(item => pathname.startsWith(item.href))?.label ?? (pathname === '/settings' ? 'Configuración' : '')}
               </h1>
             </div>
           <div className="flex items-center gap-4">

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 — Tipos de Tareas | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html" class="active"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Tipos de Tareas</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 04</div>
+      <h1>Tipos de Tareas</h1>
+      <p>Plantillas de trabajo que se usan al asignar tareas a los empleados.</p>
+    </div>
+
+    <h2>Vista general</h2>
+    <p>Aquí se definen los <strong>tipos de tarea</strong> disponibles en el sistema. Estas plantillas son las que luego se usan al asignar trabajo a los empleados.</p>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/05-tasks.png" alt="Lista de tipos de tareas">
+      <figcaption>Lista de tipos de tareas</figcaption>
+    </figure>
+
+    <h2>Crear un nuevo tipo de tarea</h2>
+    <ol class="steps">
+      <li>Hacer clic en <strong>Crear Tarea</strong> (arriba a la derecha)</li>
+      <li>Se abre el formulario de creación</li>
+    </ol>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/06-task-dialog.png" alt="Formulario de nueva tarea">
+      <figcaption>Formulario de nueva tarea</figcaption>
+    </figure>
+
+    <h3>Pestaña General</h3>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Obligatorio</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Título de la Tarea</strong></td><td>Sí</td><td>Nombre que identifica el tipo de tarea (ej: "Bajada de lancha")</td></tr>
+        <tr><td><strong>Descripción</strong></td><td>No</td><td>Detalle adicional de la tarea</td></tr>
+        <tr><td><strong>Duración (minutos)</strong></td><td>Sí</td><td>Tiempo estimado para completarla</td></tr>
+        <tr><td><strong>Tipo</strong></td><td>No</td><td>Categoría libre (ej: "Mantenimiento", "Operativo")</td></tr>
+        <tr><td><strong>Requiere conducir</strong></td><td>No</td><td>Marcar si el empleado debe saber conducir</td></tr>
+        <tr><td><strong>Empleados Cualificados</strong></td><td>No</td><td>Qué empleados pueden realizar esta tarea. Por defecto: todos</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Pestaña Extras Opcionales</h3>
+    <p>Permite agregar ítems adicionales con precio que se pueden incluir al asignar la tarea.</p>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Nombre del extra</strong></td><td>Ej: "Nafta", "Aceite"</td></tr>
+        <tr><td><strong>Precio (AR$)</strong></td><td>Precio unitario (opcional)</td></tr>
+      </tbody>
+    </table>
+    <p>Para agregar un extra: clic en <strong>+ Agregar Extra</strong><br>
+       Para eliminar: clic en el ícono de papelera</p>
+
+    <ol class="steps" style="counter-reset: step 2;">
+      <li>Hacer clic en <strong>Crear Tarea</strong> para guardar</li>
+    </ol>
+
+    <h2>Editar un tipo de tarea</h2>
+    <ol class="steps">
+      <li>En la tabla, hacer clic en los <strong>tres puntos (···)</strong> de la fila</li>
+      <li>Seleccionar <strong>Editar</strong></li>
+      <li>Modificar los campos necesarios</li>
+      <li>Hacer clic en <strong>Guardar Cambios</strong></li>
+    </ol>
+
+    <h2>Eliminar un tipo de tarea</h2>
+    <ol class="steps">
+      <li>En la tabla, hacer clic en los <strong>tres puntos (···)</strong></li>
+      <li>Seleccionar <strong>Eliminar</strong></li>
+      <li>Confirmar en el diálogo de alerta</li>
+    </ol>
+    <div class="callout">
+      <strong>Atención:</strong> Esta acción no se puede deshacer. Si la tarea tiene asignaciones activas, se recomienda cancelarlas antes de eliminar el tipo.
+    </div>
+
+    <h2>Buscar una tarea</h2>
+    <p>Usar el campo de búsqueda para filtrar por título.</p>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Solo visible para <strong>Administrador</strong>.<br>
+      Ruta: <code>/tasks</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="03-tareas-del-dia.html">← Tareas del Día</a>
+      <a href="05-empleados.html">Empleados →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 — Dashboard | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html" class="active"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Dashboard</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 02</div>
+      <h1>Dashboard</h1>
+      <p>Pantalla principal del administrador con resumen del estado de la guardería.</p>
+    </div>
+
+    <h2>Vista general</h2>
+    <p>El Dashboard muestra en tiempo real el estado operativo de la guardería náutica.</p>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/03-dashboard-content.png" alt="Dashboard">
+      <figcaption>Dashboard — vista principal del administrador</figcaption>
+    </figure>
+
+    <h2>Tarjetas de métricas</h2>
+    <p>En la parte superior hay 4 indicadores actualizados en tiempo real:</p>
+    <table>
+      <thead>
+        <tr><th>Tarjeta</th><th>Muestra</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Tareas Totales (Hoy)</strong></td><td>Cantidad de tareas asignadas para el día de hoy</td></tr>
+        <tr><td><strong>Empleados Activos</strong></td><td>Total de empleados registrados en el sistema</td></tr>
+        <tr><td><strong>Clientes</strong></td><td>Total de clientes registrados</td></tr>
+        <tr><td><strong>Actividad Reciente</strong></td><td>Tareas completadas hoy</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Gráfico de horas por empleado</h2>
+    <p>Muestra un gráfico de barras con las horas trabajadas por cada empleado durante la <strong>última semana</strong>, considerando solo las tareas con estado <strong>Completada</strong>.</p>
+    <div class="callout info">
+      Si no hay datos aún, se muestra el mensaje <em>"No hay datos de horas trabajadas en la última semana"</em>.<br>
+      Los empleados aparecen ordenados de mayor a menor carga horaria.
+    </div>
+
+    <h2>Tabla de tareas recientes</h2>
+    <p>Lista las últimas asignaciones creadas con:</p>
+    <ul style="margin-left:20px; font-size:14px; line-height:2; color:#374151;">
+      <li>Nombre de la tarea</li>
+      <li>Empleado asignado</li>
+      <li>Estado actual (Pendiente / Aceptada / Completada / Rechazada / Cancelada)</li>
+    </ul>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Solo visible para usuarios con rol <strong>Administrador</strong>.<br>
+      Ruta: <code>/dashboard</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="01-login.html">← Inicio de Sesión</a>
+      <a href="03-tareas-del-dia.html">Tareas del Día →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

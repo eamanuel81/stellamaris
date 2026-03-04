@@ -534,9 +534,9 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
-                observations: observations?.trim() || null
+                observations: observations?.trim() || undefined
             };
-            
+
             // Verificar conflictos para edición
             if (selectedEmployees && selectedEmployees.length > 0) {
                 for (const employeeId of selectedEmployees) {
@@ -586,7 +586,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
-                observations: observations?.trim() || null
+                observations: observations?.trim() || undefined
             };
 
             // Verificar conflictos para todos los empleados seleccionados

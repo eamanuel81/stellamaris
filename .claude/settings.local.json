@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run typecheck)",
+      "Bash(npm run build)",
+      "Bash(npm install --save-dev @playwright/test)",
+      "Bash(dir \"d:\\\\Cursor\\\\Stella\\\\stella ultima\\\\tests\\\\screenshots\")"
+    ],
+    "additionalDirectories": [
+      "d:\\Cursor\\Stella\\stella ultima\\ia",
+      "C:\\Users\\manuel.emmert\\.claude\\projects\\d--Cursor-Stella-stella-ultima",
+      "d:\\Cursor\\Stella\\stella ultima\\documentacion\\manuales"
+    ]
+  }
+}

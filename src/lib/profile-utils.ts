@@ -72,7 +72,7 @@ export async function updateUserProfile(userId: string, userEmail: string, profi
                     address: profileData.address,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', existingEmployee.id);
+                .eq('id', (existingEmployee as any).id);
 
             if (updateError) {
                 throw new Error(`Error updating employee: ${updateError.message}`);

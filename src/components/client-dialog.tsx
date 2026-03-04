@@ -203,7 +203,7 @@ export const ClientDialog = ({
                     alert('Error: No se pudo guardar el cliente');
                     return;
                 }
-                savedClient = result.data;
+                savedClient = result.data as Client;
             } else {
                 const result = await updateClient(clientData);
                 if (result.error) {
@@ -214,7 +214,7 @@ export const ClientDialog = ({
                     alert('Error: No se pudo actualizar el cliente');
                     return;
                 }
-                savedClient = result.data;
+                savedClient = result.data as Client;
             }
 
             // Llamar a onSave con el cliente guardado

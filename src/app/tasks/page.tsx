@@ -46,6 +46,8 @@ export default function TasksPage() {
     const [searchTerm, setSearchTerm] = React.useState("");
     const [actionLoading, setActionLoading] = React.useState(false);
     const [actionError, setActionError] = React.useState<string | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+    const [taskToDelete, setTaskToDelete] = React.useState<Task | null>(null);
 
     const handleCreateClick = () => {
         setTaskToEdit(null);
@@ -74,11 +76,22 @@ export default function TasksPage() {
         setTaskToEdit(null);
     };
 
-    const handleDeleteTask = async (taskId: string) => {
+    const handleDeleteClick = (task: Task) => {
+        setTaskToDelete(task);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleDeleteTask = async () => {
+        if (!taskToDelete) return;
         setActionLoading(true);
         setActionError(null);
-        const { error } = await deleteTask(taskId);
-        if (error) setActionError(error.message);
+        const { error } = await deleteTask(taskToDelete.id);
+        if (error) {
+            setActionError(error.message);
+        } else {
+            setIsDeleteDialogOpen(false);
+            setTaskToDelete(null);
+        }
         setActionLoading(false);
     };
 
@@ -113,6 +126,23 @@ export default function TasksPage() {
             onTaskSave={handleSaveTask}
             taskToEdit={taskToEdit}
         />
+
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el tipo de tarea.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteTask} className="bg-destructive hover:bg-destructive/90">
+                        Eliminar
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -171,30 +201,20 @@ export default function TasksPage() {
                                   className="cursor-pointer" 
                                   onSelect={(e) => {
                                     e.preventDefault();
-                                    setTimeout(() => handleEditClick(task), 0);
+                                    setTimeout(() => handleEditClick(task), 100);
                                   }}
                                 >
                                   Editar
                                 </DropdownMenuItem>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
-                                            Eliminar
-                                        </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                        <AlertDialogTitle>¿Está seguro?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Esta acción no se puede deshacer. Esto eliminará permanentemente el tipo de tarea.
-                                        </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDeleteTask(task.id)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                                <DropdownMenuItem 
+                                  className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                    setTimeout(() => handleDeleteClick(task), 100);
+                                  }}
+                                >
+                                  Eliminar
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>

@@ -63,14 +63,92 @@ Los manuales se actualizarán cuando:
 
 ---
 
+## 📄 Versión HTML para Visualizar e Imprimir
+
+¡Los manuales están disponibles en formato HTML para visualizar e imprimir fácilmente!
+
+### Archivos HTML Generados
+
+- **`index.html`** - Página principal para elegir entre manuales
+- **`manual-administrador.html`** - Manual completo de administrador
+- **`manual-empleado.html`** - Manual completo de empleado
+
+### ⚠️ IMPORTANTE: Cómo Ver las Imágenes
+
+Las imágenes pueden no mostrarse si abres el HTML directamente desde el sistema de archivos debido a restricciones de seguridad del navegador.
+
+**SOLUCIÓN RECOMENDADA: Usar un servidor local**
+
+1. **Opción A - Script Automático (Windows):**
+   ```bash
+   cd documentacion/manuales
+   servir-manual.bat
+   ```
+   Luego abre: http://localhost:8000/index.html
+
+2. **Opción B - Python (Windows/Mac/Linux):**
+   ```bash
+   cd documentacion/manuales
+   python -m http.server 8000
+   ```
+   Luego abre: http://localhost:8000/index.html
+
+3. **Opción C - Abrir directamente:**
+   - Haz doble clic en `index.html`
+   - Si las imágenes no se ven, usa las opciones A o B
+
+### Cómo Usar
+
+1. **Ver los manuales:**
+   - Usa un servidor local (recomendado) o abre directamente `index.html`
+   - Navega entre los manuales desde la página principal
+
+2. **Imprimir:**
+   - Haz clic en el botón "🖨️ Imprimir" en cualquier manual
+   - O usa `Ctrl+P` (Windows/Linux) o `Cmd+P` (Mac)
+   - Los estilos están optimizados para impresión
+
+3. **Regenerar HTML:**
+   Si actualizas los archivos `.md`, regenera los HTML con:
+   ```bash
+   cd documentacion/manuales
+   node generar-html.js
+   ```
+
+### Características de los HTML
+
+- ✅ Diseño responsive (se adapta a móviles y tablets)
+- ✅ Estilos optimizados para impresión
+- ✅ Navegación fácil con botones
+- ✅ Imágenes incluidas automáticamente
+- ✅ Tablas de contenido
+- ✅ Tipografía clara y legible
+
+---
+
 ## Estado de las Capturas de Pantalla
 
-Las referencias a las imágenes ya están agregadas en los manuales. Para completar la documentación:
+✅ **13 capturas de administrador** ya han sido tomadas automáticamente.
 
-1. Consulta el archivo **`INSTRUCCIONES-CAPTURAS.md`** para ver la lista completa de capturas necesarias
-2. Toma las capturas siguiendo las instrucciones
-3. Guárdalas en la carpeta `imagenes/` con los nombres especificados
-4. Las imágenes aparecerán automáticamente en los manuales
+⏳ **Faltan:**
+- 14-busqueda-embarcacion.png
+- 15-conflicto-horarios.png (requiere crear un conflicto manualmente)
+- 16-formulario-extras.png (si hay una tarea con extras disponibles)
+- 18-crear-tipo-tarea.png
+- 8 capturas de empleado (ver `tomar-capturas-empleado.js`)
+
+### Scripts Automáticos Disponibles
+
+1. **`tomar-capturas.js`** - Toma las capturas de administrador (ya ejecutado ✅)
+2. **`tomar-capturas-empleado.js`** - Toma las capturas de empleado (requiere credenciales de empleado)
+
+### Para Completar las Capturas Faltantes
+
+1. Consulta **`INSTRUCCIONES-CAPTURAS.md`** para ver detalles específicos
+2. Consulta **`README-CAPTURAS.md`** para instrucciones paso a paso
+3. Usa los scripts o toma las capturas manualmente
+4. Guárdalas en la carpeta `imagenes/` con los nombres exactos especificados
+5. Las imágenes aparecerán automáticamente en los manuales
 
 ### Herramientas Recomendadas para Capturas
 

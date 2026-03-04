@@ -1,0 +1,25 @@
+IMPORTANTE: Si no ves las imágenes en los archivos HTML
+
+1. Asegúrate de abrir el HTML desde la carpeta correcta:
+   - Los archivos HTML deben estar en: documentacion/manuales/
+   - La carpeta imagenes/ debe estar en: documentacion/manuales/imagenes/
+
+2. Si abres el HTML directamente (doble clic), las rutas relativas deberían funcionar.
+   Si no funcionan, prueba:
+   
+   OPCIÓN A: Usar un servidor local
+   - Desde la carpeta "documentacion/manuales", ejecuta:
+     python -m http.server 8000
+   - Luego abre: http://localhost:8000/index.html
+
+   OPCIÓN B: Usar Live Server (si tienes VS Code)
+   - Click derecho en index.html > "Open with Live Server"
+
+3. Verifica que las imágenes existan:
+   - Debe haber archivos .png en la carpeta imagenes/
+   - Los nombres deben coincidir exactamente con las referencias
+
+4. Si todo lo anterior falla, las imágenes pueden estar en otra ubicación.
+   Verifica la estructura de carpetas.
+
+

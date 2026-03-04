@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07 — Asignar Tareas | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html" class="active"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Asignar Tareas</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 07</div>
+      <h1>Asignar Tareas</h1>
+      <p>Calendario semanal y diario para asignar y visualizar tareas a los empleados.</p>
+    </div>
+
+    <h2>Vista general</h2>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/16-schedule.png" alt="Calendario de asignación">
+      <figcaption>Calendario de asignación de tareas</figcaption>
+    </figure>
+
+    <h2>Modos de vista</h2>
+    <table>
+      <thead>
+        <tr><th>Vista</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Semana</strong></td><td>Muestra 7 días en columnas, con las tareas como bloques de tiempo</td></tr>
+        <tr><td><strong>Hoy</strong></td><td>Vista del día actual con mayor detalle de horarios</td></tr>
+      </tbody>
+    </table>
+    <p>Para cambiar entre vistas: botones <strong>Hoy</strong> / <strong>Semana</strong> en la esquina superior derecha del calendario.</p>
+
+    <h2>Navegar entre semanas</h2>
+    <ul style="margin-left:20px; font-size:14px; line-height:2.2; color:#374151;">
+      <li><strong>← Semana Anterior</strong> — retrocede una semana</li>
+      <li><strong>Hoy</strong> — vuelve a la semana actual</li>
+      <li><strong>Próxima Semana →</strong> — avanza una semana</li>
+    </ul>
+
+    <h2>Referencias de colores (estados)</h2>
+    <div class="badges">
+      <span class="badge pending">Pendiente</span>
+      <span class="badge accepted">Aceptada</span>
+      <span class="badge done">Completada</span>
+      <span class="badge rejected">Rechazada</span>
+      <span class="badge cancelled">Cancelada</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Color</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Amarillo</td><td>Pendiente</td></tr>
+        <tr><td>Azul</td><td>Aceptada</td></tr>
+        <tr><td>Verde</td><td>Completada</td></tr>
+        <tr><td>Gris</td><td>Rechazada</td></tr>
+        <tr><td>Rojo</td><td>Cancelada</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Crear una nueva asignación</h2>
+    <ol class="steps">
+      <li>Hacer clic en <strong>Asignar Tarea</strong> (arriba a la derecha)</li>
+      <li>Se abre el formulario de asignación</li>
+    </ol>
+
+    <h3>Campos del formulario</h3>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Obligatorio</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Tipo de Tarea</strong></td><td>Sí</td><td>Seleccionar de la lista de tipos creados</td></tr>
+        <tr><td><strong>Fecha</strong></td><td>Sí</td><td>Día en que se realizará</td></tr>
+        <tr><td><strong>Hora de inicio</strong></td><td>Sí</td><td>Hora de comienzo</td></tr>
+        <tr><td><strong>Hora de fin</strong></td><td>Sí</td><td>Hora de finalización (se sugiere según duración del tipo)</td></tr>
+        <tr><td><strong>Empleado/s</strong></td><td>No</td><td>Uno o varios empleados asignados</td></tr>
+        <tr><td><strong>Estado</strong></td><td>Sí</td><td>Estado inicial (por defecto: Pendiente)</td></tr>
+        <tr><td><strong>Cliente</strong></td><td>No</td><td>Cliente al que pertenece la tarea</td></tr>
+        <tr><td><strong>Embarcación</strong></td><td>No</td><td>Lancha específica del cliente</td></tr>
+        <tr><td><strong>Extras</strong></td><td>No</td><td>Ítems adicionales definidos en el tipo de tarea</td></tr>
+        <tr><td><strong>Observaciones</strong></td><td>No</td><td>Notas libres para el empleado</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <strong>Detección de conflictos:</strong> Si el empleado seleccionado ya tiene otra tarea en ese horario, el sistema muestra una advertencia antes de guardar.
+    </div>
+
+    <ol class="steps" style="counter-reset: step 2;">
+      <li>Hacer clic en <strong>Guardar</strong> o <strong>Guardar de todas formas</strong> si hay conflicto aceptado</li>
+    </ol>
+
+    <h2>Editar una asignación existente</h2>
+    <ol class="steps">
+      <li>Hacer clic sobre el bloque de tarea en el calendario</li>
+      <li>Se muestra el detalle de la asignación</li>
+      <li>Hacer clic en <strong>Editar</strong> para modificar los datos</li>
+      <li>Guardar los cambios</li>
+    </ol>
+
+    <h2>Eliminar una asignación</h2>
+    <ol class="steps">
+      <li>Hacer clic sobre el bloque de tarea</li>
+      <li>En el detalle, hacer clic en <strong>Eliminar</strong></li>
+      <li>Confirmar la acción</li>
+    </ol>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Solo visible para <strong>Administrador</strong>.<br>
+      Ruta: <code>/schedule</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="06-clientes.html">← Clientes</a>
+      <a href="08-configuracion.html">Configuración →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

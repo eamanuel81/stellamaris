@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 — Tareas del Día | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html" class="active"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Tareas del Día</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 03</div>
+      <h1>Tareas del Día</h1>
+      <p>Vista operativa del día a día: todas las tareas asignadas para una fecha específica.</p>
+    </div>
+
+    <h2>Vista general</h2>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/04-today-tasks.png" alt="Tareas del Día">
+      <figcaption>Pantalla de Tareas del Día</figcaption>
+    </figure>
+
+    <h2>Controles de la pantalla</h2>
+
+    <h3>Filtros disponibles</h3>
+    <table>
+      <thead>
+        <tr><th>Control</th><th>Función</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Buscador</strong></td><td>Filtra por nombre de tarea, cliente o embarcación</td></tr>
+        <tr><td><strong>Selector de fecha</strong></td><td>Cambia el día consultado (por defecto: hoy)</td></tr>
+        <tr><td><strong>Estado</strong></td><td>Filtra por estado: Todos, Pendiente, Aceptada, Completada, etc.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Pestañas</h3>
+    <ul style="margin-left:20px; font-size:14px; line-height:2; color:#374151;">
+      <li><strong>Tareas Asignadas</strong> — Muestra las tareas activas (pendientes y aceptadas)</li>
+      <li><strong>Tareas Terminadas</strong> — Muestra las tareas completadas del día</li>
+    </ul>
+
+    <h2>Asignar una tarea desde esta pantalla</h2>
+    <ol class="steps">
+      <li>Hacer clic en el botón <strong>+ Asignar Tarea</strong> (arriba a la derecha)</li>
+      <li>Se abre el diálogo de asignación (ver módulo <a href="07-asignar-tareas.html">07 — Asignar Tareas</a>)</li>
+      <li>La fecha se pre-completa con el día seleccionado</li>
+    </ol>
+
+    <h2>Estados de las tareas</h2>
+    <div class="badges">
+      <span class="badge pending">Pendiente</span>
+      <span class="badge accepted">Aceptada</span>
+      <span class="badge done">Completada</span>
+      <span class="badge rejected">Rechazada</span>
+      <span class="badge cancelled">Cancelada</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Estado</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Pendiente</strong></td><td>Asignada, esperando confirmación del empleado</td></tr>
+        <tr><td><strong>Aceptada</strong></td><td>El empleado confirmó que la realizará</td></tr>
+        <tr><td><strong>Completada</strong></td><td>La tarea fue finalizada</td></tr>
+        <tr><td><strong>Rechazada</strong></td><td>El empleado rechazó la tarea</td></tr>
+        <tr><td><strong>Cancelada</strong></td><td>La tarea fue cancelada por el administrador</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Visible para <strong>Administrador</strong> y <strong>Encargado</strong>.<br>
+      Ruta: <code>/today-tasks</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="02-dashboard.html">← Dashboard</a>
+      <a href="04-tipos-de-tareas.html">Tipos de Tareas →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

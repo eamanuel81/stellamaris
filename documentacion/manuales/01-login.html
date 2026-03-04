@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01 — Inicio de Sesión | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html" class="active"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Inicio de Sesión</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 01</div>
+      <h1>Inicio de Sesión</h1>
+      <p>Pantalla de acceso al sistema para todos los usuarios.</p>
+    </div>
+
+    <h2>Pantalla de ingreso</h2>
+    <p>Al abrir la aplicación se muestra la pantalla de login.</p>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/01-login.png" alt="Pantalla de login">
+      <figcaption>Pantalla de inicio de sesión</figcaption>
+    </figure>
+
+    <h2>Cómo ingresar</h2>
+    <ol class="steps">
+      <li>Ingresar el <strong>Email</strong> en el campo correspondiente</li>
+      <li>Ingresar la <strong>Contraseña</strong> — el ícono del ojo permite mostrar u ocultar la contraseña</li>
+      <li>Hacer clic en <strong>Ingresar</strong></li>
+    </ol>
+
+    <h2>Redirección según rol</h2>
+    <table>
+      <thead>
+        <tr><th>Rol</th><th>Redirige a</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Administrador</strong></td><td>Dashboard</td></tr>
+        <tr><td><strong>Empleado</strong></td><td>Mis Tareas</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Notas importantes</h2>
+    <div class="callout info">
+      Si la sesión ya está activa al entrar a la pantalla de login, se muestra el botón <strong>Cerrar Sesión</strong> para cambiar de usuario.
+    </div>
+    <div class="callout">
+      La contraseña inicial de cada empleado nuevo es: <strong>NombreDNI</strong> (ej: <code>Juan12345678</code>). Se recomienda cambiarla desde Configuración.
+    </div>
+    <p>Si las credenciales son incorrectas, aparece un mensaje de error en rojo debajo del formulario.</p>
+
+    <nav class="page-nav">
+      <span></span>
+      <a href="02-dashboard.html">Dashboard →</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

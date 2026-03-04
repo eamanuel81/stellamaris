@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Administrador - Stella Maris Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PT Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 4px solid #64B5F6;
+        }
+
+        .header h1 {
+            color: #64B5F6;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .header .meta {
+            color: #999;
+            font-size: 0.95em;
+            margin-top: 15px;
+        }
+
+        .toc {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .toc h2 {
+            color: #64B5F6;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .toc ul {
+            list-style: none;
+        }
+
+        .toc li {
+            margin: 10px 0;
+        }
+
+        .toc a {
+            color: #555;
+            text-decoration: none;
+            font-size: 1.05em;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: #64B5F6;
+            text-decoration: underline;
+        }
+
+        .toc ul ul {
+            margin-left: 30px;
+            margin-top: 5px;
+        }
+
+        .content h1 {
+            color: #64B5F6;
+            font-size: 2.2em;
+            margin-top: 50px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e0e0e0;
+            page-break-after: avoid;
+        }
+
+        .content h2 {
+            color: #64B5F6;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            page-break-after: avoid;
+        }
+
+        .content h3 {
+            color: #FFAB40;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+
+        .content h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        .content p {
+            margin-bottom: 18px;
+            text-align: justify;
+            font-size: 1.05em;
+        }
+
+        .content ul, .content ol {
+            margin-left: 40px;
+            margin-bottom: 20px;
+            font-size: 1.05em;
+        }
+
+        .content li {
+            margin-bottom: 10px;
+        }
+
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .content table th,
+        .content table td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: left;
+        }
+
+        .content table th {
+            background: #64B5F6;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+
+        .content table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .content table tr:hover {
+            background: #f0f7ff;
+        }
+
+        .content blockquote {
+            border-left: 5px solid #FFAB40;
+            padding: 20px 25px;
+            margin: 25px 0;
+            background: #fff3e0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .content code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #e83e8c;
+        }
+
+        .content pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 25px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .content img {
+            max-width: 100%;
+            height: auto;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            margin: 30px auto;
+            display: block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            page-break-inside: avoid;
+        }
+
+        .content hr {
+            border: none;
+            border-top: 3px solid #64B5F6;
+            margin: 40px 0;
+        }
+
+        .content strong {
+            color: #555;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .badge-required {
+            background: #ff5252;
+            color: white;
+        }
+
+        .note, .warning, .success {
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            border-left: 5px solid;
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-color: #64B5F6;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-color: #FFAB40;
+        }
+
+        .success {
+            background: #e8f5e9;
+            border-color: #66bb6a;
+        }
+
+        .print-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: #64B5F6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #42a5f5;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn-secondary {
+            background: #FFAB40;
+        }
+
+        .btn-secondary:hover {
+            background: #ff9800;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 20px;
+                box-shadow: none;
+                border-radius: 0;
+            }
+
+            .print-buttons {
+                display: none;
+            }
+
+            .content h1, .content h2 {
+                page-break-after: avoid;
+            }
+
+            .content img {
+                page-break-inside: avoid;
+                max-width: 100%;
+            }
+
+            .content table {
+                page-break-inside: avoid;
+            }
+
+            .content pre {
+                page-break-inside: avoid;
+            }
+
+            @page {
+                margin: 2cm;
+            }
+
+            a[href^="http"]:after {
+                content: " (" attr(href) ")";
+                font-size: 0.85em;
+                color: #666;
+            }
+
+            a[href^="#"]:after {
+                content: "";
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .content {
+                font-size: 0.95em;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Manual de Administrador</h1>
+            <div class="subtitle">Stella Maris Manager</div>
+            <div class="meta">
+                Versión 1.0 | Diciembre 2025
+            </div>
+        </div>
+
+        <div class="content">
+            <h1 id="manual-de-administrador-stella-maris-manager">Manual de Administrador - Stella Maris Manager</h1>
+<h2 id="gua-completa-para-administradores">Guía Completa para Administradores</h2>
+
+<strong>Versión:</strong> 1.0  
+<strong>Fecha:</strong> Diciembre 2025  
+<strong>Sistema:</strong> Stella Maris Manager
+
+<p>---</p>
+
+<h2 id="tabla-de-contenidos">Tabla de Contenidos</h2>
+
+<p>1. <a href="#introducción">Introducción</a></p>
+<p>2. <a href="#acceso-al-sistema">Acceso al Sistema</a></p>
+<p>3. <a href="#dashboard">Dashboard</a></p>
+<p>4. <a href="#tareas-del-día">Tareas del Día</a></p>
+<p>5. <a href="#asignar-tareas">Asignar Tareas</a></p>
+<p>6. <a href="#tipos-de-tareas">Tipos de Tareas</a></p>
+<p>7. <a href="#gestión-de-empleados">Gestión de Empleados</a></p>
+<p>8. <a href="#gestión-de-clientes">Gestión de Clientes</a></p>
+<p>9. <a href="#configuración">Configuración</a></p>
+<p>10. <a href="#notificaciones">Notificaciones</a></p>
+<p>11. <a href="#preguntas-frecuentes">Preguntas Frecuentes</a></p>
+
+<p>---</p>
+
+<h2 id="1-introduccin">1. Introducción</h2>
+
+<p>Este manual está dirigido a <strong>administradores</strong> del sistema Stella Maris Manager. Como administrador, tienes acceso completo a todas las funcionalidades del sistema para gestionar tareas, empleados, clientes y asignaciones.</p>
+
+<h3 id="funcionalidades-disponibles-para-administradores">Funcionalidades Disponibles para Administradores</h3>
+
+<p>- ✅ Ver dashboard con resumen general</p>
+<p>- ✅ Gestionar tareas del día</p>
+<p>- ✅ Asignar tareas a empleados</p>
+<p>- ✅ Crear, editar y eliminar tipos de tareas</p>
+<p>- ✅ Gestionar empleados (crear, editar, eliminar)</p>
+<p>- ✅ Gestionar clientes y sus embarcaciones</p>
+<p>- ✅ Ver y gestionar notificaciones</p>
+<p>- ✅ Configurar el sistema</p>
+
+<p>---</p>
+
+<h2 id="2-acceso-al-sistema">2. Acceso al Sistema</h2>
+
+<h3 id="21-iniciar-sesin-como-administrador">2.1 Iniciar Sesión como Administrador</h3>
+
+<p>1. Abre tu navegador web</p>
+<p>2. Ingresa la URL del sistema</p>
+<p>3. En la pantalla de inicio de sesión:</p>
+<p>- <strong>Email:</strong> Ingresa tu correo de administrador</p>
+<p>- <strong>Contraseña:</strong> Ingresa tu contraseña</p>
+<p>- <strong>Tipo de usuario:</strong> Selecciona <strong>"Administrador"</strong></p>
+<p>4. Haz clic en <strong>"Iniciar Sesión"</strong></p>
+
+<p>> <strong>Nota:</strong> Si olvidaste tu contraseña o necesitas recuperarla, usa las funciones de recuperación de contraseña de Supabase.</p>
+
+<img src="imagenes/09-login-admin.png" alt="Pantalla de Login Administrador" />
+
+<h3 id="22-seguridad">2.2 Seguridad</h3>
+
+<p>- Nunca compartas tus credenciales de administrador</p>
+<p>- Cambia tu contraseña periódicamente</p>
+<p>- Cierra sesión al terminar tu trabajo, especialmente en computadoras compartidas</p>
+
+<p>---</p>
+
+<h2 id="3-dashboard">3. Dashboard</h2>
+
+<p>El <strong>Dashboard</strong> es tu pantalla principal donde verás un resumen general del sistema.</p>
+
+<h3 id="31-acceso-al-dashboard">3.1 Acceso al Dashboard</h3>
+
+<p>Una vez que inicias sesión, serás redirigido automáticamente al Dashboard.</p>
+
+<h3 id="32-informacin-mostrada">3.2 Información Mostrada</h3>
+
+<img src="imagenes/10-dashboard.png" alt="Dashboard Administrador" />
+
+<p>El Dashboard muestra:</p>
+
+<p>- <strong>Resumen de tareas</strong> por estado</p>
+<p>- <strong>Estadísticas generales</strong> del sistema</p>
+<p>- <strong>Información relevante</strong> sobre empleados y asignaciones</p>
+
+<h3 id="33-navegacin">3.3 Navegación</h3>
+
+<p>Desde el Dashboard puedes acceder a todas las secciones del sistema usando la barra lateral izquierda.</p>
+
+<p>---</p>
+
+<h2 id="4-tareas-del-da">4. Tareas del Día</h2>
+
+<p>La sección <strong>"Tareas del Día"</strong> te permite ver y gestionar todas las tareas asignadas para el día actual.</p>
+
+<h3 id="41-acceder-a-tareas-del-da">4.1 Acceder a Tareas del Día</h3>
+
+<p>1. En la barra lateral, haz clic en <strong>"Tareas del Día"</strong></p>
+<p>2. Verás todas las tareas asignadas para la fecha seleccionada</p>
+
+<h3 id="42-funcionalidades-disponibles">4.2 Funcionalidades Disponibles</h3>
+
+<img src="imagenes/11-tareas-dia-vista.png" alt="Vista Tareas del Día" />
+
+<h4 id="ver-tareas">Ver Tareas</h4>
+
+<p>Las tareas se organizan en pestañas:</p>
+
+<p>- <strong>📋 Tareas Asignadas</strong> - Todas las tareas con estado Pendiente, Aceptada, etc.</p>
+<p>- <strong>✅ Tareas Terminadas</strong> - Tareas completadas</p>
+
+<h4 id="buscar-tareas">Buscar Tareas</h4>
+
+<p>1. Usa el campo <strong>"Buscar"</strong> en la parte superior</p>
+<p>2. Puedes buscar por:</p>
+<p>- Nombre de la tarea</p>
+<p>- Cliente</p>
+<p>- Embarcación</p>
+<p>- Empleado</p>
+
+<h4 id="filtrar-por-fecha">Filtrar por Fecha</h4>
+
+<p>1. Haz clic en el <strong>selector de fecha</strong> (icono de calendario)</p>
+<p>2. Selecciona la fecha que deseas ver</p>
+<p>3. Las tareas se actualizarán automáticamente</p>
+
+<h4 id="filtrar-por-estado">Filtrar por Estado</h4>
+
+<p>1. Usa el <strong>combo de estados</strong> en la parte superior</p>
+<p>2. Selecciona el estado deseado:</p>
+<p>- Todo</p>
+<p>- Pendiente</p>
+<p>- Aceptada</p>
+<p>- Terminada</p>
+<p>- Rechazada</p>
+<p>- Cancelada</p>
+
+<h3 id="43-editar-una-tarea">4.3 Editar una Tarea</h3>
+
+<p>1. Localiza la tarea que deseas editar</p>
+<p>2. Haz clic en el botón <strong>"Editar"</strong> en la tarjeta de la tarea</p>
+<p>3. Se abrirá el formulario de edición</p>
+<p>4. Realiza los cambios necesarios</p>
+<p>5. Haz clic en <strong>"Guardar Cambios"</strong></p>
+
+<h3 id="44-cambiar-estado-de-una-tarea">4.4 Cambiar Estado de una Tarea</h3>
+
+<p>1. Localiza la tarea</p>
+<p>2. Haz clic en <strong>"Cambiar Estado"</strong></p>
+<p>3. Selecciona el nuevo estado</p>
+<p>4. El estado se actualizará inmediatamente</p>
+
+<h3 id="45-ver-detalles-completos">4.5 Ver Detalles Completos</h3>
+
+<p>1. Haz clic en la tarjeta de la tarea</p>
+<p>2. Se mostrará un diálogo con:</p>
+<p>- Información completa de la tarea</p>
+<p>- Cliente y embarcación</p>
+<p>- Empleados asignados</p>
+<p>- Observaciones</p>
+<p>- Extras adicionales</p>
+
+<h3 id="46-observaciones">4.6 Observaciones</h3>
+
+<p>Las observaciones son notas adicionales que puedes agregar a las tareas:</p>
+
+<p>- Se muestran en la tarjeta con un ícono 📄</p>
+<p>- Son visibles tanto para administradores como para empleados</p>
+<p>- Puedes editarlas al editar la tarea</p>
+
+<p>---</p>
+
+<h2 id="5-asignar-tareas">5. Asignar Tareas</h2>
+
+<p>La sección <strong>"Asignar Tareas"</strong> te permite crear nuevas asignaciones de tareas a empleados.</p>
+
+<h3 id="51-acceder-a-asignar-tareas">5.1 Acceder a Asignar Tareas</h3>
+
+<img src="imagenes/25-calendario-asignar.png" alt="Calendario Asignar Tareas" />
+
+<p>1. En la barra lateral, haz clic en <strong>"Asignar Tareas"</strong></p>
+<p>2. Verás un calendario con vista semanal</p>
+
+<h3 id="52-crear-una-nueva-asignacin">5.2 Crear una Nueva Asignación</h3>
+
+<h4 id="desde-tareas-del-da">Desde "Tareas del Día"</h4>
+
+<p>1. Haz clic en el botón <strong>"Asignar Tarea"</strong> en la parte superior</p>
+<p>2. Se abrirá el formulario de asignación</p>
+
+<h4 id="desde-asignar-tareas-calendario">Desde "Asignar Tareas" (Calendario)</h4>
+
+<p>1. Haz clic en el <strong>día y hora</strong> donde deseas asignar la tarea</p>
+<p>2. Se abrirá el formulario de asignación</p>
+
+<h3 id="53-formulario-de-asignacin">5.3 Formulario de Asignación</h3>
+
+<p>El formulario tiene dos pestañas: <strong>"General"</strong> y <strong>"Extras"</strong> (si la tarea tiene extras).</p>
+
+<img src="imagenes/12-formulario-asignar-general.png" alt="Formulario Asignar Tarea - General" />
+
+<h4 id="pestaa-general">Pestaña General</h4>
+
+<strong>Campos obligatorios:</strong>
+
+<p>1. <strong>Tarea</strong> ⭐</p>
+<p>- Selecciona el tipo de tarea de la lista desplegable</p>
+<p>- Puedes crear una nueva tarea con el botón "+" si no existe</p>
+
+<p>2. <strong>Empleado(s)</strong> ⭐</p>
+<p>- Selecciona uno o más empleados del menú desplegable</p>
+<p>- Puedes seleccionar múltiples empleados para la misma tarea</p>
+
+<p>3. <strong>Fecha</strong> ⭐</p>
+<p>- Selecciona la fecha de la asignación</p>
+
+<p>4. <strong>Hora de Inicio</strong> ⭐</p>
+<p>- Ingresa la hora de inicio (formato HH:MM)</p>
+
+<strong>Campos opcionales:</strong>
+
+<p>5. <strong>Cliente</strong></p>
+<p>- Busca y selecciona un cliente usando el campo de búsqueda</p>
+<p>- Puedes escribir nombre, DNI o email para buscar</p>
+<p>- Si no existe, puedes crear uno nuevo con el botón "+"</p>
+
+<p>6. <strong>Embarcación(es)</strong></p>
+<p>- Solo aparece si seleccionaste un cliente</p>
+<p>- Busca y selecciona una o más embarcaciones</p>
+<p>- Puedes buscar por nombre, patente o tipo de casco</p>
+
+<p>7. <strong>Hora de Fin</strong></p>
+<p>- Se calcula automáticamente según la duración de la tarea</p>
+<p>- Puedes marcarlo como manual para editarlo</p>
+
+<p>8. <strong>Estado</strong></p>
+<p>- Selecciona el estado inicial (por defecto: Pendiente)</p>
+
+<p>9. <strong>Observaciones</strong></p>
+<p>- Campo de texto libre para notas adicionales</p>
+<p>- Visible tanto para administradores como empleados</p>
+
+<h4 id="pestaa-extras-si-aplica">Pestaña Extras (si aplica)</h4>
+
+<img src="imagenes/16-formulario-extras.png" alt="Formulario Asignar - Extras" />
+
+<p>Si la tarea tiene extras disponibles:</p>
+
+<p>1. Selecciona los extras deseados</p>
+<p>2. Ingresa la cantidad para cada extra</p>
+<p>3. El costo total se calcula automáticamente</p>
+
+<h3 id="54-bsqueda-de-clientes-y-embarcaciones">5.4 Búsqueda de Clientes y Embarcaciones</h3>
+
+<p>El sistema cuenta con búsqueda avanzada:</p>
+
+<h4 id="buscar-cliente">Buscar Cliente</h4>
+
+<img src="imagenes/13-busqueda-cliente.png" alt="Búsqueda de Cliente" />
+
+<p>- Escribe en el campo "Buscar cliente..."</p>
+<p>- Busca por:</p>
+<p>- Nombre</p>
+<p>- Apellido</p>
+<p>- DNI</p>
+<p>- Email</p>
+<p>- Los resultados se filtran en tiempo real</p>
+<p>- Al seleccionar un cliente, se limpia el filtro y se muestran todas las opciones</p>
+
+<h4 id="buscar-embarcacin">Buscar Embarcación</h4>
+
+<img src="imagenes/14-busqueda-embarcacion.png" alt="Búsqueda de Embarcación" />
+
+<p>- Si hay un cliente seleccionado, solo muestra sus embarcaciones</p>
+<p>- Si no hay cliente, muestra todas las embarcaciones</p>
+<p>- Busca por:</p>
+<p>- Nombre de la embarcación</p>
+<p>- Número de registro/patente</p>
+<p>- Nombre del cliente</p>
+<p>- Tipo de casco</p>
+
+<h3 id="55-deteccin-de-conflictos">5.5 Detección de Conflictos</h3>
+
+<p>El sistema detecta automáticamente conflictos de horarios:</p>
+
+<img src="imagenes/15-conflicto-horarios.png" alt="Diálogo de Conflicto de Horarios" />
+
+<p>- Si un empleado ya tiene una tarea en el mismo horario</p>
+<p>- Te mostrará un diálogo de confirmación</p>
+<p>- Puedes:</p>
+<p>- <strong>Cancelar</strong> y ajustar los horarios</p>
+<p>- <strong>Continuar</strong> con el conflicto (no recomendado)</p>
+
+<h3 id="56-guardar-la-asignacin">5.6 Guardar la Asignación</h3>
+
+<p>1. Completa los campos obligatorios</p>
+<p>2. Revisa toda la información</p>
+<p>3. Haz clic en <strong>"Asignar"</strong></p>
+<p>4. El botón cambiará a "Guardando..." y se deshabilitará para prevenir envíos múltiples</p>
+<p>5. La tarea se creará y notificará automáticamente a los empleados asignados</p>
+
+<h3 id="57-restricciones-del-formulario">5.7 Restricciones del Formulario</h3>
+
+<p>- <strong>No se puede cerrar haciendo clic fuera</strong> - Solo se puede cerrar con:</p>
+<p>- Botón "Cancelar"</p>
+<p>- Botón "X" (cerrar)</p>
+<p>- Tecla Escape</p>
+<p>- <strong>No se pueden crear múltiples tareas</strong> - El botón se deshabilita durante el guardado</p>
+
+<p>---</p>
+
+<h2 id="6-tipos-de-tareas">6. Tipos de Tareas</h2>
+
+<p>La sección <strong>"Tipos de Tareas"</strong> te permite gestionar los diferentes tipos de tareas que se pueden asignar.</p>
+
+<h3 id="61-acceder-a-tipos-de-tareas">6.1 Acceder a Tipos de Tareas</h3>
+
+<p>1. En la barra lateral, haz clic en <strong>"Tipos de Tareas"</strong></p>
+<p>2. Verás una tabla con todos los tipos de tareas existentes</p>
+
+<h3 id="62-ver-tipos-de-tareas">6.2 Ver Tipos de Tareas</h3>
+
+<img src="imagenes/17-tipos-tareas-tabla.png" alt="Tabla de Tipos de Tareas" />
+
+<p>La tabla muestra:</p>
+
+<p>- <strong>Título</strong> - Nombre de la tarea</p>
+<p>- <strong>Descripción</strong> - Detalles de la tarea</p>
+<p>- <strong>Duración</strong> - Tiempo estimado de ejecución</p>
+<p>- <strong>Habilidades requeridas</strong> - Empleados calificados</p>
+<p>- <strong>Acciones</strong> - Botones para editar o eliminar</p>
+
+<h3 id="63-crear-un-nuevo-tipo-de-tarea">6.3 Crear un Nuevo Tipo de Tarea</h3>
+
+<img src="imagenes/18-crear-tipo-tarea.png" alt="Formulario Crear Tipo de Tarea" />
+
+<p>1. Haz clic en el botón <strong>"Agregar Tarea"</strong> en la parte superior</p>
+<p>2. Se abrirá el formulario de creación</p>
+<p>3. Completa los campos:</p>
+
+<p><strong>Campos obligatorios:</strong></p>
+
+<p>- <strong>Título</strong> ⭐ - Nombre descriptivo de la tarea</p>
+<p>- <strong>Descripción</strong> ⭐ - Detalles sobre qué implica la tarea</p>
+<p>- <strong>Duración estimada</strong> ⭐ - Tiempo en horas (ej: 2.5)</p>
+
+<p><strong>Campos opcionales:</strong></p>
+
+<p>- <strong>Empleados calificados</strong> - Selecciona qué empleados están calificados para esta tarea</p>
+<p>- <strong>Extras</strong> - Agrega servicios adicionales con precio (si aplica)</p>
+<p>- <strong>Tipo de tarea</strong> - Categoría opcional</p>
+
+<p>4. Haz clic en <strong>"Guardar"</strong></p>
+
+<h3 id="64-editar-un-tipo-de-tarea">6.4 Editar un Tipo de Tarea</h3>
+
+<p>1. En la tabla, localiza la tarea que deseas editar</p>
+<p>2. Haz clic en los <strong>tres puntos</strong> (⋮) en la columna de acciones</p>
+<p>3. Selecciona <strong>"Editar"</strong></p>
+<p>4. Modifica los campos necesarios</p>
+<p>5. Haz clic en <strong>"Guardar Cambios"</strong></p>
+
+<h3 id="65-eliminar-un-tipo-de-tarea">6.5 Eliminar un Tipo de Tarea</h3>
+
+<p>1. En la tabla, localiza la tarea que deseas eliminar</p>
+<p>2. Haz clic en los <strong>tres puntos</strong> (⋮)</p>
+<p>3. Selecciona <strong>"Eliminar"</strong></p>
+<p>4. Confirma la eliminación en el diálogo</p>
+
+<p>> <strong>⚠️ Advertencia:</strong> Solo puedes eliminar tipos de tareas que no tienen asignaciones activas. Si una tarea tiene asignaciones, primero deberás eliminar o completar todas sus asignaciones.</p>
+
+<h3 id="66-empleados-calificados">6.6 Empleados Calificados</h3>
+
+<p>Al crear o editar una tarea, puedes especificar qué empleados están calificados:</p>
+
+<p>- Si especificas empleados calificados, solo esos empleados aparecerán al asignar esta tarea</p>
+<p>- Si no especificas, todos los empleados estarán disponibles</p>
+
+<p>---</p>
+
+<h2 id="7-gestin-de-empleados">7. Gestión de Empleados</h2>
+
+<p>La sección <strong>"Empleados"</strong> te permite gestionar toda la información de los empleados del sistema.</p>
+
+<h3 id="71-acceder-a-empleados">7.1 Acceder a Empleados</h3>
+
+<p>1. En la barra lateral, haz clic en <strong>"Empleados"</strong></p>
+<p>2. Verás una tabla con todos los empleados</p>
+
+<h3 id="72-ver-lista-de-empleados">7.2 Ver Lista de Empleados</h3>
+
+<img src="imagenes/19-empleados-tabla.png" alt="Tabla de Empleados" />
+
+<p>La tabla muestra:</p>
+
+<p>- <strong>Nombre completo</strong> con avatar</p>
+<p>- <strong>DNI</strong></p>
+<p>- <strong>Apodo/Nickname</strong></p>
+<p>- <strong>Celular</strong></p>
+<p>- <strong>Sabe conducir</strong> (Sí/No)</p>
+<p>- <strong>Acciones</strong> - Menú con opciones</p>
+
+<h3 id="73-buscar-empleados">7.3 Buscar Empleados</h3>
+
+<p>Usa el campo de búsqueda en la parte superior para buscar por:</p>
+
+<p>- Nombre</p>
+<p>- Apellido</p>
+<p>- DNI</p>
+<p>- Apodo</p>
+
+<h3 id="74-crear-un-nuevo-empleado">7.4 Crear un Nuevo Empleado</h3>
+
+<img src="imagenes/20-crear-empleado.png" alt="Formulario Crear Empleado" />
+
+<p>1. Haz clic en el botón <strong>"Agregar Empleado"</strong></p>
+<p>2. Se abrirá el formulario de creación</p>
+
+<strong>Campos del formulario:</strong>
+
+<p>- <strong>Nombre</strong> ⭐ (obligatorio)</p>
+<p>- <strong>Apellido</strong> ⭐ (obligatorio)</p>
+<p>- <strong>Apodo/Nickname</strong> (opcional)</p>
+<p>- <strong>DNI</strong> (opcional)</p>
+<p>- <strong>Dirección</strong> (opcional)</p>
+<p>- <strong>Celular</strong> (opcional)</p>
+<p>- <strong>Email</strong> ⭐ (obligatorio) - Se usará para el login</p>
+<p>- <strong>Sabe conducir</strong> - Checkbox</p>
+<p>- <strong>Subrol</strong> - Solo visible para administradores:</p>
+<p>- Empleado</p>
+<p>- Encargado</p>
+<p>- Admin</p>
+
+<p>3. Haz clic en <strong>"Guardar"</strong></p>
+
+<p>> <strong>Nota:</strong> Al crear un empleado, el sistema automáticamente:</p>
+<p>> - Crea una cuenta de usuario con el email proporcionado</p>
+<p>> - Genera una contraseña temporal</p>
+<p>> - Asigna un avatar automático</p>
+
+<h3 id="75-editar-un-empleado">7.5 Editar un Empleado</h3>
+
+<p>1. En la tabla, localiza el empleado</p>
+<p>2. Haz clic en los <strong>tres puntos</strong> (⋮)</p>
+<p>3. Selecciona <strong>"Editar"</strong></p>
+<p>4. Modifica los campos necesarios</p>
+<p>5. Haz clic en <strong>"Guardar Cambios"</strong></p>
+
+<p>> <strong>Importante:</strong></p>
+<p>> - El email NO se puede cambiar después de crear el empleado</p>
+<p>> - El subrol solo puede ser modificado por administradores principales</p>
+
+<h3 id="76-ver-tareas-de-un-empleado">7.6 Ver Tareas de un Empleado</h3>
+
+<p>1. En la tabla, haz clic en los <strong>tres puntos</strong> (⋮)</p>
+<p>2. Selecciona <strong>"Ver Tareas"</strong></p>
+<p>3. Se mostrará un diálogo con todas las tareas asignadas a ese empleado</p>
+
+<h3 id="77-eliminar-un-empleado">7.7 Eliminar un Empleado</h3>
+
+<p>1. En la tabla, haz clic en los <strong>tres puntos</strong> (⋮)</p>
+<p>2. Selecciona <strong>"Eliminar"</strong></p>
+<p>3. Confirma la eliminación</p>
+
+<p>> <strong>⚠️ Advertencia:</strong> Eliminar un empleado también eliminará su cuenta de usuario y acceso al sistema. Esta acción no se puede deshacer.</p>
+
+<h3 id="78-subroles-de-empleados">7.8 Subroles de Empleados</h3>
+
+<p>El sistema tiene tres subroles:</p>
+
+<p>- <strong>Empleado</strong> - Acceso estándar (Mis Tareas, Calendario)</p>
+<p>- <strong>Encargado</strong> - Similar a empleado, pero con algunas restricciones en edición</p>
+<p>- <strong>Admin</strong> - Acceso completo de administrador</p>
+
+<p>---</p>
+
+<h2 id="8-gestin-de-clientes">8. Gestión de Clientes</h2>
+
+<p>La sección <strong>"Clientes"</strong> te permite gestionar clientes y sus embarcaciones.</p>
+
+<h3 id="81-acceder-a-clientes">8.1 Acceder a Clientes</h3>
+
+<p>1. En la barra lateral, haz clic en <strong>"Clientes"</strong></p>
+<p>2. Verás una tabla con todos los clientes</p>
+
+<h3 id="82-ver-lista-de-clientes">8.2 Ver Lista de Clientes</h3>
+
+<img src="imagenes/21-clientes-tabla.png" alt="Tabla de Clientes" />
+
+<p>La tabla muestra:</p>
+
+<p>- <strong>Nombre completo</strong> con avatar</p>
+<p>- <strong>Contacto</strong> - Email y teléfono</p>
+<p>- <strong>Embarcaciones</strong> - Lista de embarcaciones del cliente</p>
+<p>- <strong>Acciones</strong> - Menú con opciones</p>
+
+<h3 id="83-buscar-clientes">8.3 Buscar Clientes</h3>
+
+<p>Usa el campo de búsqueda para buscar por:</p>
+
+<p>- Nombre</p>
+<p>- Apellido</p>
+<p>- Email</p>
+<p>- DNI</p>
+<p>- Nombre de embarcación</p>
+
+<h3 id="84-crear-un-nuevo-cliente">8.4 Crear un Nuevo Cliente</h3>
+
+<p>1. Haz clic en el botón <strong>"Agregar Cliente"</strong></p>
+<p>2. Se abrirá el formulario de creación</p>
+
+<img src="imagenes/22-crear-cliente-datos.png" alt="Formulario Crear Cliente - Datos" />
+
+<strong>Sección: Datos del Cliente</strong>
+
+<p>- <strong>Nombre</strong> ⭐ (obligatorio)</p>
+<p>- <strong>Apellido</strong> ⭐ (obligatorio)</p>
+<p>- <strong>DNI</strong> (opcional)</p>
+<p>- <strong>Celular</strong> (opcional)</p>
+<p>- <strong>Email</strong> (opcional)</p>
+<p>- <strong>Nota Interna</strong> (opcional) - Solo visible para administradores</p>
+
+<img src="imagenes/23-crear-cliente-embarcaciones.png" alt="Formulario Crear Cliente - Embarcaciones" />
+
+<strong>Sección: Embarcaciones</strong>
+
+<p>- Puedes agregar una o más embarcaciones:</p>
+<p>- <strong>Nombre</strong> - Nombre de la embarcación</p>
+<p>- <strong>Patente</strong> - Número de registro</p>
+<p>- <strong>Tipo de Casco</strong> - Tipo de embarcación</p>
+<p>- <strong>Motor</strong> - Información del motor</p>
+<p>- <strong>Foto</strong> (opcional) - Subir foto de la embarcación</p>
+
+<img src="imagenes/24-crear-cliente-responsables.png" alt="Formulario Crear Cliente - Responsables" />
+
+<strong>Sección: Otro Responsable</strong>
+
+<p>- Puedes agregar responsables adicionales:</p>
+<p>- Nombre y Apellido</p>
+<p>- DNI</p>
+<p>- Celular</p>
+
+<p>3. Haz clic en <strong>"Guardar Cambios"</strong></p>
+
+<h3 id="85-editar-un-cliente">8.5 Editar un Cliente</h3>
+
+<p>1. En la tabla, haz clic en los <strong>tres puntos</strong> (⋮)</p>
+<p>2. Selecciona <strong>"Editar"</strong></p>
+<p>3. Modifica los campos necesarios</p>
+<p>4. Haz clic en <strong>"Guardar Cambios"</strong></p>
+
+<h3 id="86-gestionar-embarcaciones-de-un-cliente">8.6 Gestionar Embarcaciones de un Cliente</h3>
+
+<p>Al editar un cliente, puedes:</p>
+
+<p>- <strong>Agregar embarcación:</strong> Haz clic en "Agregar Embarcación"</p>
+<p>- <strong>Eliminar embarcación:</strong> Haz clic en el botón de eliminar (🗑️) de la embarcación</p>
+<p>- <strong>Subir foto:</strong> Haz clic en "Agregar Foto" en cada embarcación</p>
+
+<h3 id="87-gestionar-responsables">8.7 Gestionar Responsables</h3>
+
+<p>Al editar un cliente, puedes:</p>
+
+<p>- <strong>Agregar responsable:</strong> Haz clic en "Agregar Responsable"</p>
+<p>- <strong>Eliminar responsable:</strong> Haz clic en el botón de eliminar del responsable</p>
+
+<h3 id="88-eliminar-un-cliente">8.8 Eliminar un Cliente</h3>
+
+<p>1. En la tabla, haz clic en los <strong>tres puntos</strong> (⋮)</p>
+<p>2. Selecciona <strong>"Eliminar"</strong></p>
+<p>3. Confirma la eliminación</p>
+
+<p>> <strong>⚠️ Advertencia:</strong> Eliminar un cliente también eliminará todas sus embarcaciones y datos asociados. Esta acción no se puede deshacer.</p>
+
+<p>---</p>
+
+<h2 id="9-configuracin">9. Configuración</h2>
+
+<p>La sección <strong>"Configuración"</strong> te permite gestionar tu perfil y preferencias.</p>
+
+<h3 id="91-acceder-a-configuracin">9.1 Acceder a Configuración</h3>
+
+<p>1. Haz clic en tu <strong>avatar o nombre</strong> en la barra superior</p>
+<p>2. Selecciona <strong>"Configuración"</strong></p>
+
+<h3 id="92-informacin-del-perfil">9.2 Información del Perfil</h3>
+
+<p>Puedes ver:</p>
+
+<p>- Tu nombre completo</p>
+<p>- Tu correo electrónico</p>
+<p>- Tu rol (Administrador)</p>
+<p>- Tu subrol (si aplica)</p>
+<p>- Tu avatar</p>
+
+<h3 id="93-cambiar-contrasea">9.3 Cambiar Contraseña</h3>
+
+<p>Para cambiar tu contraseña, usa las funciones de recuperación de contraseña de Supabase o contacta al administrador del sistema.</p>
+
+<p>---</p>
+
+<h2 id="10-notificaciones">10. Notificaciones</h2>
+
+<h3 id="101-ver-notificaciones">10.1 Ver Notificaciones</h3>
+
+<p>1. Haz clic en el <strong>icono de campana</strong> (🔔) en la barra superior</p>
+<p>2. Se abrirá un panel con todas las notificaciones</p>
+
+<h3 id="102-tipos-de-notificaciones">10.2 Tipos de Notificaciones</h3>
+
+<p>Como administrador recibirás notificaciones cuando:</p>
+
+<p>- ✉️ Un empleado cambie el estado de una tarea</p>
+<p>- ✉️ Haya cambios importantes en asignaciones</p>
+<p>- ✉️ Eventos relevantes del sistema</p>
+
+<h3 id="103-configurar-notificaciones">10.3 Configurar Notificaciones</h3>
+
+<p>Las notificaciones se configuran automáticamente. Puedes revisarlas desde el panel de notificaciones.</p>
+
+<p>---</p>
+
+<h2 id="11-preguntas-frecuentes">11. Preguntas Frecuentes</h2>
+
+<h3 id="cmo-asigno-una-tarea-a-mltiples-empleados">¿Cómo asigno una tarea a múltiples empleados?</h3>
+
+<p>En el formulario de asignación, el campo "Empleado" permite seleccionar múltiples empleados. Cada empleado recibirá una notificación individual.</p>
+
+<h3 id="qu-pasa-si-un-empleado-rechaza-una-tarea">¿Qué pasa si un empleado rechaza una tarea?</h3>
+
+<p>Cuando un empleado rechaza una tarea, recibirás una notificación. Puedes entonces reasignar la tarea a otro empleado o ajustar los detalles.</p>
+
+<h3 id="puedo-editar-una-tarea-despus-de-asignarla">¿Puedo editar una tarea después de asignarla?</h3>
+
+<p>Sí, puedes editar cualquier tarea desde la sección "Tareas del Día". Los empleados serán notificados de los cambios relevantes.</p>
+
+<h3 id="cmo-funcionan-los-conflictos-de-horarios">¿Cómo funcionan los conflictos de horarios?</h3>
+
+<p>El sistema detecta automáticamente si un empleado ya tiene una tarea en el mismo horario. Te mostrará una advertencia, pero puedes continuar si es necesario.</p>
+
+<h3 id="puedo-eliminar-un-tipo-de-tarea-que-ya-tiene-asignaciones">¿Puedo eliminar un tipo de tarea que ya tiene asignaciones?</h3>
+
+<p>No, primero debes eliminar o completar todas las asignaciones de ese tipo de tarea antes de poder eliminarla.</p>
+
+<h3 id="cmo-busco-clientes-o-embarcaciones-rpidamente">¿Cómo busco clientes o embarcaciones rápidamente?</h3>
+
+<p>Usa los campos de búsqueda que aparecen en los combos. Puedes buscar por nombre, DNI, email, patente, etc. La búsqueda se actualiza en tiempo real.</p>
+
+<h3 id="qu-es-un-encargado">¿Qué es un "encargado"?</h3>
+
+<p>Un encargado es un subrol de empleado con algunas restricciones adicionales. Pueden ver tareas pero tienen limitaciones en edición de ciertos elementos.</p>
+
+<h3 id="puedo-cambiar-el-email-de-un-empleado">¿Puedo cambiar el email de un empleado?</h3>
+
+<p>No, el email no se puede cambiar después de crear el empleado, ya que se usa como identificador único para el login.</p>
+
+<h3 id="cmo-funcionan-las-observaciones">¿Cómo funcionan las observaciones?</h3>
+
+<p>Las observaciones son notas libres que puedes agregar a cualquier asignación. Son visibles tanto para administradores como para empleados y pueden ser útiles para instrucciones especiales.</p>
+
+<h3 id="qu-pasa-si-olvido-cerrar-el-formulario-de-asignacin">¿Qué pasa si olvido cerrar el formulario de asignación?</h3>
+
+<p>El formulario no se puede cerrar haciendo clic fuera. Debes usar el botón "Cancelar", "X" o la tecla Escape. Esto previene cierres accidentales.</p>
+
+<p>---</p>
+
+<h2 id="12-consejos-y-mejores-prcticas">12. Consejos y Mejores Prácticas</h2>
+
+<h3 id="al-asignar-tareas">Al Asignar Tareas</h3>
+
+<p>- ✅ Revisa los conflictos de horarios antes de guardar</p>
+<p>- ✅ Completa las observaciones cuando sea necesario</p>
+<p>- ✅ Selecciona empleados calificados para la tarea</p>
+<p>- ✅ Verifica que el cliente y embarcación estén correctos</p>
+
+<h3 id="al-gestionar-empleados">Al Gestionar Empleados</h3>
+
+<p>- ✅ Asegúrate de que el email sea correcto (no se puede cambiar después)</p>
+<p>- ✅ Asigna subroles apropiados según las responsabilidades</p>
+<p>- ✅ Mantén la información de contacto actualizada</p>
+
+<h3 id="al-gestionar-clientes">Al Gestionar Clientes</h3>
+
+<p>- ✅ Agrega todas las embarcaciones del cliente</p>
+<p>- ✅ Incluye fotos de las embarcaciones cuando sea posible</p>
+<p>- ✅ Agrega responsables adicionales si es necesario</p>
+
+<h3 id="seguridad">Seguridad</h3>
+
+<p>- ✅ Cierra sesión al terminar tu trabajo</p>
+<p>- ✅ No compartas tus credenciales</p>
+<p>- ✅ Cambia tu contraseña periódicamente</p>
+
+<p>---</p>
+
+<strong>Fin del Manual de Administrador</strong>
+
+<p><em>Última actualización: Diciembre 2025</em></p>
+
+
+        </div>
+    </div>
+
+    <div class="print-buttons">
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑ Inicio</button>
+    </div>
+</body>
+</html>

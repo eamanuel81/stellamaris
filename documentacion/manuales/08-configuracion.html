@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08 — Configuración | Stella Maris Manager</title>
+  <link rel="stylesheet" href="manual.css">
+</head>
+<body>
+
+<header class="site-header">
+  <img src="../../logotrans-170x83.png" alt="Stella Maris" class="logo">
+  <div class="divider"></div>
+  <div>
+    <div class="header-title">Manual de Usuario</div>
+    <div class="header-subtitle">Stella Maris Manager</div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="sidebar-section-title">Inicio</div>
+    <a href="index.html"><span class="num">&#8962;</span> Índice general</a>
+
+    <div class="sidebar-section-title">Módulos</div>
+    <a href="01-login.html"><span class="num">01</span> Inicio de Sesión</a>
+    <a href="02-dashboard.html"><span class="num">02</span> Dashboard</a>
+    <a href="03-tareas-del-dia.html"><span class="num">03</span> Tareas del Día</a>
+    <a href="04-tipos-de-tareas.html"><span class="num">04</span> Tipos de Tareas</a>
+    <a href="05-empleados.html"><span class="num">05</span> Empleados</a>
+    <a href="06-clientes.html"><span class="num">06</span> Clientes</a>
+    <a href="07-asignar-tareas.html"><span class="num">07</span> Asignar Tareas</a>
+    <a href="08-configuracion.html" class="active"><span class="num">08</span> Configuración</a>
+  </nav>
+
+  <main class="content">
+    <div class="breadcrumb">
+      <a href="index.html">Índice</a>
+      <span class="sep">›</span>
+      <span>Configuración</span>
+    </div>
+
+    <div class="page-header">
+      <div class="tag">Módulo 08</div>
+      <h1>Configuración</h1>
+      <p>Pantalla de perfil y preferencias personales. Accesible para todos los usuarios.</p>
+    </div>
+
+    <h2>Vista general</h2>
+
+    <figure class="screenshot">
+      <img src="../../tests/screenshots/17-settings.png" alt="Configuración">
+      <figcaption>Pantalla de configuración y perfil</figcaption>
+    </figure>
+
+    <h2>Sección: Perfil</h2>
+    <p>Muestra y permite editar los datos personales del usuario logueado.</p>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Avatar</strong></td><td>Imagen de perfil generada automáticamente. Clic en "Cambiar Avatar" para obtener un nuevo avatar aleatorio</td></tr>
+        <tr><td><strong>Nombre</strong></td><td>Nombre del usuario</td></tr>
+        <tr><td><strong>Apellido</strong></td><td>Apellido del usuario</td></tr>
+        <tr><td><strong>Apodo</strong></td><td>Nombre corto para uso interno</td></tr>
+        <tr><td><strong>Teléfono</strong></td><td>Número de contacto</td></tr>
+        <tr><td><strong>Dirección</strong></td><td>Domicilio</td></tr>
+      </tbody>
+    </table>
+    <p>Para guardar los cambios del perfil: hacer clic en <strong>Guardar Perfil</strong>.</p>
+
+    <h2>Sección: Cambiar Contraseña</h2>
+    <p>Permite actualizar la contraseña de acceso al sistema.</p>
+    <table>
+      <thead>
+        <tr><th>Campo</th><th>Descripción</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Contraseña actual</strong></td><td>La contraseña con la que ingresaste</td></tr>
+        <tr><td><strong>Nueva contraseña</strong></td><td>La nueva contraseña deseada</td></tr>
+        <tr><td><strong>Confirmar contraseña</strong></td><td>Repetir la nueva contraseña</td></tr>
+      </tbody>
+    </table>
+    <p>Para aplicar el cambio: hacer clic en <strong>Cambiar Contraseña</strong>.</p>
+
+    <div class="callout">
+      <strong>Recomendación:</strong> Los empleados nuevos deben cambiar su contraseña inicial (que es <strong>NombreDNI</strong>) en esta sección.
+    </div>
+
+    <h2>Cerrar Sesión</h2>
+    <p>Desde cualquier pantalla se puede cerrar sesión de dos formas:</p>
+    <ol class="steps">
+      <li><strong>Barra lateral izquierda</strong> → botón <strong>Cerrar Sesión</strong> (al pie del menú)</li>
+      <li><strong>Avatar superior derecho</strong> → menú desplegable → <strong>Cerrar Sesión</strong></li>
+    </ol>
+    <p>Al cerrar sesión se vuelve a la pantalla de login.</p>
+
+    <h2>Acceso</h2>
+    <div class="callout info">
+      Visible para <strong>todos los usuarios</strong> autenticados.<br>
+      Ruta: <code>/settings</code>
+    </div>
+
+    <nav class="page-nav">
+      <a href="07-asignar-tareas.html">← Asignar Tareas</a>
+      <a href="index.html">Volver al Índice</a>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>

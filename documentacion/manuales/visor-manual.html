@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Stella Maris Manager - Visor</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PT Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar - Tabla de Contenidos */
+        .sidebar {
+            width: 300px;
+            background: #ffffff;
+            border-right: 2px solid #e0e0e0;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h2 {
+            color: #64B5F6;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #64B5F6;
+            padding-bottom: 10px;
+        }
+
+        .manual-selector {
+            margin-bottom: 30px;
+        }
+
+        .manual-selector select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #64B5F6;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .toc {
+            list-style: none;
+        }
+
+        .toc li {
+            margin: 8px 0;
+        }
+
+        .toc a {
+            color: #555;
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .toc a:hover {
+            background: #e3f2fd;
+            color: #64B5F6;
+            transform: translateX(5px);
+        }
+
+        .toc a.active {
+            background: #64B5F6;
+            color: white;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+
+        /* Contenido Principal */
+        .content {
+            flex: 1;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .manual-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #64B5F6;
+        }
+
+        .manual-header h1 {
+            color: #64B5F6;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .manual-header .meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Estilos para Markdown */
+        #manual-content h1 {
+            color: #64B5F6;
+            font-size: 2em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        #manual-content h2 {
+            color: #64B5F6;
+            font-size: 1.6em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        #manual-content h3 {
+            color: #FFAB40;
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        #manual-content h4 {
+            color: #555;
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        #manual-content p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        #manual-content ul, #manual-content ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        #manual-content li {
+            margin-bottom: 8px;
+        }
+
+        #manual-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        #manual-content table th,
+        #manual-content table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        #manual-content table th {
+            background: #64B5F6;
+            color: white;
+            font-weight: bold;
+        }
+
+        #manual-content table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        #manual-content blockquote {
+            border-left: 4px solid #FFAB40;
+            padding-left: 20px;
+            margin: 20px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        #manual-content code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        #manual-content pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        #manual-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        #manual-content img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #manual-content hr {
+            border: none;
+            border-top: 2px solid #64B5F6;
+            margin: 30px 0;
+        }
+
+        /* Botones de Acción */
+        .action-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: #64B5F6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #42a5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+            background: #FFAB40;
+        }
+
+        .btn-secondary:hover {
+            background: #ff9800;
+        }
+
+        /* Estilos de Impresión */
+        @media print {
+            body {
+                background: white;
+            }
+
+            .container {
+                display: block;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .action-buttons {
+                display: none;
+            }
+
+            .content {
+                max-width: 100%;
+                padding: 20px;
+                box-shadow: none;
+            }
+
+            .manual-header {
+                page-break-after: avoid;
+            }
+
+            #manual-content h1,
+            #manual-content h2 {
+                page-break-after: avoid;
+            }
+
+            #manual-content img {
+                max-width: 100%;
+                page-break-inside: avoid;
+            }
+
+            #manual-content table {
+                page-break-inside: avoid;
+            }
+
+            #manual-content pre {
+                page-break-inside: avoid;
+            }
+
+            @page {
+                margin: 2cm;
+            }
+
+            /* No imprimir enlaces como URLs */
+            a[href^="http"]:after {
+                content: " (" attr(href) ")";
+                font-size: 0.8em;
+                color: #666;
+            }
+
+            a[href^="#"]:after {
+                content: "";
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+                max-height: 300px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+
+        /* Badges y elementos destacados */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .badge-required {
+            background: #ff5252;
+            color: white;
+        }
+
+        .badge-optional {
+            background: #66bb6a;
+            color: white;
+        }
+
+        .note {
+            background: #e3f2fd;
+            border-left: 4px solid #64B5F6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .warning {
+            background: #fff3e0;
+            border-left: 4px solid #FFAB40;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            border-left: 4px solid #66bb6a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar - Tabla de Contenidos -->
+        <aside class="sidebar">
+            <h2>📚 Manuales</h2>
+            
+            <div class="manual-selector">
+                <select id="manualSelector">
+                    <option value="administrador">Manual de Administrador</option>
+                    <option value="empleado">Manual de Empleado</option>
+                </select>
+            </div>
+
+            <h3>Tabla de Contenidos</h3>
+            <ul class="toc" id="tableOfContents">
+                <!-- Se llenará dinámicamente -->
+            </ul>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="content">
+            <div class="manual-header">
+                <h1 id="manualTitle">Manual Stella Maris Manager</h1>
+                <div class="meta">
+                    <p>Versión 1.0 | Diciembre 2025</p>
+                </div>
+            </div>
+
+            <div id="manual-content">
+                <!-- El contenido se cargará aquí -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="action-buttons">
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑ Arriba</button>
+    </div>
+
+    <script>
+        // Configuración
+        const manuals = {
+            administrador: 'manual-administrador.md',
+            empleado: 'manual-usuario-empleado.md'
+        };
+
+        let currentManual = 'administrador';
+
+        // Función para cargar markdown y convertir a HTML
+        async function loadManual(manualName) {
+            const fileName = manuals[manualName];
+            if (!fileName) return;
+
+            try {
+                const response = await fetch(fileName);
+                const markdown = await response.text();
+                
+                // Convertir markdown a HTML
+                const html = marked.parse(markdown, {
+                    breaks: true,
+                    gfm: true
+                });
+                
+                // Actualizar contenido
+                document.getElementById('manual-content').innerHTML = html;
+                
+                // Actualizar título
+                const titleMatch = markdown.match(/^# (.+)$/m);
+                if (titleMatch) {
+                    document.getElementById('manualTitle').textContent = titleMatch[1];
+                }
+                
+                // Generar tabla de contenidos
+                generateTableOfContents();
+                
+                // Scroll al inicio
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (error) {
+                console.error('Error cargando manual:', error);
+                document.getElementById('manual-content').innerHTML = `
+                    <div class="warning">
+                        <p><strong>Error:</strong> No se pudo cargar el archivo ${fileName}</p>
+                        <p>Por favor, asegúrate de que el archivo existe en la misma carpeta que este HTML.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Función para generar tabla de contenidos
+        function generateTableOfContents() {
+            const content = document.getElementById('manual-content');
+            const headings = content.querySelectorAll('h1, h2, h3');
+            const toc = document.getElementById('tableOfContents');
+            
+            toc.innerHTML = '';
+            
+            headings.forEach((heading, index) => {
+                // Crear ID único si no existe
+                if (!heading.id) {
+                    heading.id = `section-${index}`;
+                }
+                
+                const level = heading.tagName.charAt(1); // h1 -> 1, h2 -> 2, etc.
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                
+                a.href = `#${heading.id}`;
+                a.textContent = heading.textContent;
+                a.onclick = function(e) {
+                    e.preventDefault();
+                    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    updateActiveTOC(a);
+                };
+                
+                li.appendChild(a);
+                
+                if (level === '1') {
+                    toc.appendChild(li);
+                } else if (level === '2') {
+                    const lastLi = toc.lastElementChild;
+                    if (lastLi && !lastLi.querySelector('ul')) {
+                        const ul = document.createElement('ul');
+                        lastLi.appendChild(ul);
+                    }
+                    const parentUl = toc.lastElementChild.querySelector('ul') || toc.appendChild(document.createElement('ul'));
+                    parentUl.appendChild(li);
+                } else if (level === '3') {
+                    const lastUl = Array.from(toc.querySelectorAll('ul')).pop();
+                    if (lastUl) {
+                        const lastLi = lastUl.lastElementChild;
+                        if (lastLi && !lastLi.querySelector('ul')) {
+                            const ul = document.createElement('ul');
+                            lastLi.appendChild(ul);
+                        }
+                        const parentUl = lastUl.lastElementChild.querySelector('ul');
+                        if (parentUl) parentUl.appendChild(li);
+                    }
+                }
+            });
+        }
+
+        // Actualizar TOC activo al hacer scroll
+        function updateActiveTOC(activeLink) {
+            document.querySelectorAll('.toc a').forEach(link => {
+                link.classList.remove('active');
+            });
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Observar scroll para actualizar TOC
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const headings = document.querySelectorAll('#manual-content h1, #manual-content h2');
+                    let current = '';
+                    
+                    headings.forEach(heading => {
+                        const rect = heading.getBoundingClientRect();
+                        if (rect.top <= 100) {
+                            current = heading.id;
+                        }
+                    });
+                    
+                    if (current) {
+                        const activeLink = document.querySelector(`.toc a[href="#${current}"]`);
+                        updateActiveTOC(activeLink);
+                    }
+                    
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Cambiar manual
+        document.getElementById('manualSelector').addEventListener('change', (e) => {
+            currentManual = e.target.value;
+            loadManual(currentManual);
+        });
+
+        // Cargar manual inicial
+        loadManual(currentManual);
+
+        // Procesar imágenes para usar rutas relativas
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const images = document.querySelectorAll('#manual-content img');
+                images.forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                        // Si la ruta es relativa, ajustarla
+                        if (src.startsWith('imagenes/')) {
+                            img.src = src; // Mantener como está
+                        } else if (!src.includes('/')) {
+                            img.src = 'imagenes/' + src;
+                        }
+                    }
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
+
