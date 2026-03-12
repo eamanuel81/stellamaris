@@ -18,7 +18,6 @@ import {
 import { PlusCircle, Trash2, Camera } from "lucide-react"
 import { Client, Boat, ResponsibleParty } from "@/lib/data"
 import Image from "next/image"
-import { supabase } from '@/lib/supabaseClient';
 import { useClients } from '@/hooks/use-clients';
 
 export const ClientDialog = ({
@@ -106,14 +105,6 @@ export const ClientDialog = ({
     };
 
     const handleRemovePhoto = async (boatIndex: number, photoIndex: number) => {
-        const photoUrl = boats[boatIndex].photos[photoIndex];
-        // Extraer el path del URL para borrar del storage
-        if (photoUrl && photoUrl.includes('/storage/v1/object/public/stellamaris/')) {
-            const pathMatch = photoUrl.match(/stellamaris\/(.+)$/);
-            if (pathMatch) {
-                await supabase.storage.from('stellamaris').remove([pathMatch[1]]);
-            }
-        }
         const newBoats = [...boats];
         newBoats[boatIndex].photos.splice(photoIndex, 1);
         setBoats(newBoats);
@@ -138,33 +129,21 @@ export const ClientDialog = ({
         }
     };
 
-    // Subir imagen a Supabase Storage
     const handleFileChange = async (boatIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const fileExt = file.name.split('.').pop();
-        const filePath = `boats/${getNextId('upload')}.${fileExt}`;
-        const { error } = await supabase.storage.from('stellamaris').upload(filePath, file);
-        if (error) {
-            alert('Error al subir la imagen');
-            return;
-        }
-        // Obtener URL pública
-        const { data } = supabase.storage.from('stellamaris').getPublicUrl(filePath);
-        if (data?.publicUrl) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const dataUrl = ev.target?.result as string;
             const newBoats = [...boats];
             if (!newBoats[boatIndex].photos) newBoats[boatIndex].photos = [];
-            newBoats[boatIndex].photos.push(data.publicUrl);
+            newBoats[boatIndex].photos.push(dataUrl);
             setBoats(newBoats);
-            setUploadedPhotos(prev => [...prev, filePath]);
-        }
+        };
+        reader.readAsDataURL(file);
     };
 
-    // Borrar fotos subidas si se cancela
     const handleCancel = async () => {
-        for (const path of uploadedPhotos) {
-            await supabase.storage.from('stellamaris').remove([path]);
-        }
         setUploadedPhotos([]);
         setOpen(false);
     };

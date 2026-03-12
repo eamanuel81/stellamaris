@@ -72,7 +72,7 @@ test.describe('Admin – smoke test completo', () => {
     await page.locator('[role="dialog"] button[type="submit"]').click();
     await page.waitForTimeout(2000);
     await shot(page, '08-task-saved');
-    await expect(page.locator('text=TEST Limpieza Casco')).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('text=TEST Limpieza Casco').first()).toBeVisible({ timeout: 8000 });
   });
 
   test('06 – Empleados lista', async ({ page }) => {

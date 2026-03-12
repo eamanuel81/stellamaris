@@ -7,7 +7,7 @@ import { useAssignments } from "@/hooks/use-assignments"
 import { useTasks } from "@/hooks/use-tasks"
 import { useClients } from "@/hooks/use-clients"
 import { useEmployees } from "@/hooks/use-employees"
-import { supabase } from "@/lib/supabaseClient"
+import { useSession } from "next-auth/react"
 import {
   Badge,
   Button,
@@ -177,6 +177,7 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
 
 export default function MyTasksPage() {
     const { role, subrole } = useAuth();
+    const { data: session } = useSession();
     const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment } = useAssignments();
     const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
     const { clients, isLoading: clientsLoading, error: clientsError } = useClients();
@@ -184,35 +185,9 @@ export default function MyTasksPage() {
     const [searchTerm, setSearchTerm] = React.useState("");
     const [statusFilter, setStatusFilter] = React.useState<AssignmentStatus | "all">("all");
     const [sortOrder, setSortOrder] = React.useState<"oldest" | "newest">("oldest");
-    const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
 
-    // Obtener el email del usuario actual
-    React.useEffect(() => {
-        const getUserEmail = async () => {
-            try {
-                const { data: { user }, error } = await supabase.auth.getUser();
-                if (user && !error && user.email) {
-                    setCurrentUserEmail(user.email);
-                    
-                    // Verificar si el usuario existe en la tabla de empleados
-                    const { data: employee, error: employeeError } = await supabase
-                        .from('employees')
-                        .select('*')
-                        .eq('email', user.email)
-                        .single();
-                    
-                    if (employeeError) {
-                        // Employee not found, handle silently
-                    } else {
-                        // Employee found, handle silently
-                    }
-                }
-            } catch (error) {
-                // Handle error silently
-            }
-        };
-        getUserEmail();
-    }, []);
+    const currentUserEmail = session?.user?.email ?? null;
+    const currentEmployeeId = (session?.user as any)?.employeeId as string | null ?? null;
 
     // Filtrar asignaciones del empleado actual
     const myAssignments = React.useMemo(() => {
@@ -225,12 +200,16 @@ export default function MyTasksPage() {
             return assignments;
         }
         
-        // Para empleados, filtrar solo sus asignaciones
+        // Para empleados, filtrar solo sus asignaciones usando employeeId del token
+        if (currentEmployeeId) {
+            return assignments.filter(a => Array.isArray(a.employeeId) && a.employeeId.includes(currentEmployeeId));
+        }
+
         if (!currentUserEmail) {
             return [];
         }
-        
-        // Encontrar el empleado actual basado en el email
+
+        // Fallback: buscar por email
         const currentEmployees = employees.filter(emp => emp.email === currentUserEmail);
         
         if (currentEmployees.length === 0) {
@@ -294,7 +273,7 @@ export default function MyTasksPage() {
         });
         
         return filteredAssignments;
-    }, [assignments, role, subrole, currentUserEmail, employees]);
+    }, [assignments, role, subrole, currentUserEmail, currentEmployeeId, employees]);
 
     const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
         

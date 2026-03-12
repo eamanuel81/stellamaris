@@ -185,7 +185,7 @@ export function NotificationsDialog({ children }: NotificationsDialogProps) {
                 <div
                   key={notification.id}
                   className={`p-4 rounded-lg border ${getNotificationColor(notification.type)} ${
-                    !notification.isread ? 'ring-2 ring-primary/20' : '' // Changed from isRead to isread
+                    !notification.isRead ? 'ring-2 ring-primary/20' : '' // Changed from isRead to isread
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -194,7 +194,7 @@ export function NotificationsDialog({ children }: NotificationsDialogProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="font-medium text-sm">{notification.title}</h4>
-                          {!notification.isread && ( // Changed from isRead to isread
+                          {!notification.isRead && ( // Changed from isRead to isread
                             <Badge variant="secondary" className="text-xs">
                               Nuevo
                             </Badge>
@@ -204,12 +204,12 @@ export function NotificationsDialog({ children }: NotificationsDialogProps) {
                           {notification.message}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(notification.createdat), "dd 'de' MMMM 'a las' HH:mm", { locale: es })} {/* Changed from createdAt to createdat */}
+                          {format(new Date(notification.createdAt), "dd 'de' MMMM 'a las' HH:mm", { locale: es })} {/* Changed from createdAt to createdat */}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 ml-2">
-                      {!notification.isread && ( // Changed from isRead to isread
+                      {!notification.isRead && ( // Changed from isRead to isread
                         <Button
                           variant="ghost"
                           size="sm"

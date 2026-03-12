@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 
 export interface NotificationPreferences {
   enabled: boolean;
@@ -9,160 +8,70 @@ export interface NotificationPreferences {
   systemNotifications: boolean;
 }
 
+const DEFAULT_PREFS: NotificationPreferences = {
+  enabled: true,
+  taskAssignments: true,
+  taskModifications: true,
+  taskCompletions: true,
+  systemNotifications: true,
+};
+
 export function useNotificationPreferences() {
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    enabled: true,
-    taskAssignments: true,
-    taskModifications: true,
-    taskCompletions: true,
-    systemNotifications: true,
-  });
+  const [preferences, setPreferences] = useState<NotificationPreferences>(DEFAULT_PREFS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPreferences = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        if (process.env.NODE_ENV === 'development') {
-
-          console.error('Error getting user:', userError);
-
-        }
-        setError('Error de autenticación');
-        setIsLoading(false);
-        return;
+      const res = await fetch('/api/profile');
+      if (!res.ok) throw new Error('Error cargando preferencias');
+      const data = await res.json();
+      if (data.preferences && typeof data.preferences === 'object' && 'enabled' in data.preferences) {
+        setPreferences(data.preferences as NotificationPreferences);
       }
-      
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      // Intentar obtener preferencias desde la tabla user_preferences
-      const { data, error } = await supabase
-        .from('user_preferences')
-        .select('notification_preferences')
-        .eq('user_id', user.id)
-        .single();
-        
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        if (process.env.NODE_ENV === 'development') {
-
-          console.error('Error fetching notification preferences:', error);
-
-        }
-        setError(`Error cargando preferencias: ${error.message}`);
-      } else if (data && data.notification_preferences) {
-        // Verificar que notification_preferences tiene la estructura correcta
-        const prefs = data.notification_preferences as any;
-        if (prefs && typeof prefs === 'object' && 'enabled' in prefs) {
-          setPreferences(prefs as NotificationPreferences);
-        } else {
-          // Si la estructura no es correcta, usar valores por defecto
-          setPreferences({
-            enabled: true,
-            taskAssignments: true,
-            taskModifications: true,
-            taskCompletions: true,
-            systemNotifications: true,
-          });
-        }
-      }
-      // Si no hay datos, usar los valores por defecto
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-
-        console.error('Unexpected error fetching notification preferences:', err);
-
-      }
-      setError(`Error inesperado al cargar las preferencias: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchPreferences();
-  }, [fetchPreferences]);
+  useEffect(() => { fetchPreferences(); }, [fetchPreferences]);
 
   const updatePreferences = useCallback(async (newPreferences: Partial<NotificationPreferences>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setError('Usuario no autenticado');
-        return { error: new Error('Usuario no autenticado') };
-      }
-
       const updatedPreferences = { ...preferences, ...newPreferences };
-      
-      // Intentar actualizar o insertar en user_preferences
-      const { error } = await supabase
-        .from('user_preferences')
-        .upsert({
-          user_id: user.id,
-          notification_preferences: updatedPreferences,
-          updated_at: new Date().toISOString()
-        });
-        
-      if (error) {
-        if (process.env.NODE_ENV === 'development') {
-
-          console.error('Error updating notification preferences:', error);
-
-        }
-        setError(error.message);
-        return { error };
-      } else {
-        setPreferences(updatedPreferences);
-        setError(null);
-        return { error: null };
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationPreferences: updatedPreferences }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error ?? 'Error actualizando preferencias');
+        return { error: new Error(err.error) };
       }
+      setPreferences(updatedPreferences);
+      setError(null);
+      return { error: null };
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-
-        console.error('Unexpected error updating notification preferences:', err);
-
-      }
       setError('Error inesperado al actualizar las preferencias');
       return { error: new Error('Error inesperado') };
     }
   }, [preferences]);
 
-  const toggleNotifications = useCallback(async (enabled: boolean) => {
-    return updatePreferences({ enabled });
-  }, [updatePreferences]);
-
-  const toggleTaskAssignments = useCallback(async (enabled: boolean) => {
-    return updatePreferences({ taskAssignments: enabled });
-  }, [updatePreferences]);
-
-  const toggleTaskModifications = useCallback(async (enabled: boolean) => {
-    return updatePreferences({ taskModifications: enabled });
-  }, [updatePreferences]);
-
-  const toggleTaskCompletions = useCallback(async (enabled: boolean) => {
-    return updatePreferences({ taskCompletions: enabled });
-  }, [updatePreferences]);
-
-  const toggleSystemNotifications = useCallback(async (enabled: boolean) => {
-    return updatePreferences({ systemNotifications: enabled });
-  }, [updatePreferences]);
+  const toggleNotifications = useCallback((enabled: boolean) => updatePreferences({ enabled }), [updatePreferences]);
+  const toggleTaskAssignments = useCallback((enabled: boolean) => updatePreferences({ taskAssignments: enabled }), [updatePreferences]);
+  const toggleTaskModifications = useCallback((enabled: boolean) => updatePreferences({ taskModifications: enabled }), [updatePreferences]);
+  const toggleTaskCompletions = useCallback((enabled: boolean) => updatePreferences({ taskCompletions: enabled }), [updatePreferences]);
+  const toggleSystemNotifications = useCallback((enabled: boolean) => updatePreferences({ systemNotifications: enabled }), [updatePreferences]);
 
   return {
-    preferences,
-    isLoading,
-    error,
-    updatePreferences,
-    toggleNotifications,
-    toggleTaskAssignments,
-    toggleTaskModifications,
-    toggleTaskCompletions,
-    toggleSystemNotifications,
-    refetch: fetchPreferences
+    preferences, isLoading, error,
+    updatePreferences, toggleNotifications, toggleTaskAssignments,
+    toggleTaskModifications, toggleTaskCompletions, toggleSystemNotifications,
+    refetch: fetchPreferences,
   };
-} 
+}

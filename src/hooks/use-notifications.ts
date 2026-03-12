@@ -1,19 +1,14 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 
 export interface Notification {
   id: string;
-  userid: string; // Changed from userId to userid
+  userId: string;
   title: string;
   message: string;
   type: 'task_assigned' | 'task_modified' | 'task_completed' | 'system';
-  isread: boolean; // Changed from isRead to isread
-  createdat: string; // Changed from createdAt to createdat
-  data?: {
-    assignmentId?: string;
-    taskId?: string;
-    employeeId?: string;
-  };
+  isRead: boolean;
+  createdAt: string;
+  assignmentId?: string;
 }
 
 export function useNotifications() {
@@ -25,40 +20,26 @@ export function useNotifications() {
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        setError('Error de autenticación');
-        setNotifications([]);
-        setIsLoading(false);
-        return;
-      }
-      
-      if (!user) {
-        setNotifications([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('userid', user.id)
-        .order('createdat', { ascending: false });
-        
-      if (error) {
-        setError(`Error cargando notificaciones: ${error.message}`);
-        setNotifications([]);
-      } else {
-        const notificationsData = (data as unknown as Notification[]) || [];
-        setNotifications(notificationsData);
-        setUnreadCount(notificationsData.filter(n => !n.isread).length);
-        setError(null);
-      }
+      const res = await fetch('/api/notifications');
+      if (!res.ok) throw new Error('Error cargando notificaciones');
+      const data: any[] = await res.json();
+      // Normalize field names from DB (isRead, userId)
+      const mapped: Notification[] = data.map(n => ({
+        id: n.id,
+        userId: n.userId,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        isRead: n.isRead ?? false,
+        createdAt: n.createdAt,
+        assignmentId: n.assignmentId ?? undefined,
+      }));
+      setNotifications(mapped);
+      setUnreadCount(mapped.filter(n => !n.isRead).length);
+      setError(null);
     } catch (err) {
-      setError(`Error inesperado al cargar las notificaciones: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
       setNotifications([]);
     } finally {
       setIsLoading(false);
@@ -67,167 +48,87 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifications();
-    
-    // Polling para actualizar notificaciones cada 30 segundos
-    const interval = setInterval(() => {
-      fetchNotifications();
-    }, 30000); // 30 segundos
-    
+    const interval = setInterval(() => fetchNotifications(), 30000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .update({ isread: true }) // Changed from isRead to isread
-        .eq('id', notificationId);
-        
-      if (error) {
-        return { error };
-      } else {
-        setNotifications(prev => 
-          prev.map(n => n.id === notificationId ? { ...n, isread: true } : n) // Changed from isRead to isread
-        );
-        setUnreadCount(prev => Math.max(0, prev - 1));
-        return { error: null };
-      }
-    } catch (err) {
+      const res = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isRead: true }),
+      });
+      if (!res.ok) return { error: new Error('Error marcando notificación') };
+      setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      return { error: null };
+    } catch {
       return { error: new Error('Error inesperado') };
     }
   }, []);
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { error: new Error('Usuario no autenticado') };
-
-      const { error } = await supabase
-        .from('notifications')
-        .update({ isread: true }) // Changed from isRead to isread
-        .eq('userid', user.id) // Changed from userId to userid
-        .eq('isread', false); // Changed from isRead to isread
-        
-      if (error) {
-        return { error };
-      } else {
-        setNotifications(prev => prev.map(n => ({ ...n, isread: true }))); // Changed from isRead to isread
-        setUnreadCount(0);
-        return { error: null };
-      }
-    } catch (err) {
+      const res = await fetch('/api/notifications/all', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isRead: true }),
+      });
+      if (!res.ok) return { error: new Error('Error marcando notificaciones') };
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+      return { error: null };
+    } catch {
       return { error: new Error('Error inesperado') };
     }
   }, []);
 
-  const createNotification = useCallback(async (notification: Omit<Notification, 'id' | 'createdat'>) => { // Changed from createdAt to createdat
+  const createNotification = useCallback(async (notification: Omit<Notification, 'id' | 'createdAt'>) => {
     try {
-      
-      // Validar que todos los campos requeridos estén presentes
-      if (!notification.userid) {
-        return { data: null, error: new Error('userid is required') };
-      }
-      
-      if (!notification.title) {
-        return { data: null, error: new Error('title is required') };
-      }
-      
-      if (!notification.message) {
-        return { data: null, error: new Error('message is required') };
-      }
-      
-      if (!notification.type) {
-        return { data: null, error: new Error('type is required') };
-      }
-      
-      // Verificar autenticación antes de insertar
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) {
-        return { data: null, error: authError };
-      }
-      
-      if (!user) {
-        return { data: null, error: new Error('No authenticated user') };
-      }
-      
-      const { data, error } = await supabase
-        .from('notifications')
-        .insert([notification])
-        .select();
-        
-      if (error) {
-        return { data: null, error };
-      } else if (data && data.length > 0) {
-        const newNotification = data[0] as unknown as Notification;
-        setNotifications(prev => [newNotification, ...prev]);
-        if (!newNotification.isread) { // Changed from isRead to isread
-          setUnreadCount(prev => prev + 1);
-        }
-        return { data: newNotification, error: null };
-      } else {
-        return { data: null, error: new Error('No data returned from insert') };
-      }
-    } catch (err) {
+      const res = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(notification),
+      });
+      if (!res.ok) return { data: null, error: new Error('Error creando notificación') };
+      const data = await res.json();
+      setNotifications(prev => [data, ...prev]);
+      if (!data.isRead) setUnreadCount(prev => prev + 1);
+      return { data, error: null };
+    } catch {
       return { data: null, error: new Error('Error inesperado') };
     }
-    
-    return { data: null, error: new Error('No se pudo crear la notificación') };
   }, []);
 
   const deleteNotification = useCallback(async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('id', notificationId);
-        
-      if (error) {
-        return { error };
-      } else {
-        const notification = notifications.find(n => n.id === notificationId);
-        setNotifications(prev => prev.filter(n => n.id !== notificationId));
-        if (notification && !notification.isread) { // Changed from isRead to isread
-          setUnreadCount(prev => Math.max(0, prev - 1));
-        }
-        return { error: null };
-      }
-    } catch (err) {
+      const notification = notifications.find(n => n.id === notificationId);
+      const res = await fetch(`/api/notifications/${notificationId}`, { method: 'DELETE' });
+      if (!res.ok) return { error: new Error('Error eliminando notificación') };
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      if (notification && !notification.isRead) setUnreadCount(prev => Math.max(0, prev - 1));
+      return { error: null };
+    } catch {
       return { error: new Error('Error inesperado') };
     }
   }, [notifications]);
 
   const clearAllNotifications = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { error: new Error('Usuario no autenticado') };
-
-      const { error } = await supabase
-        .from('notifications')
-        .delete()
-        .eq('userid', user.id); // Changed from userId to userid
-        
-      if (error) {
-        return { error };
-      } else {
-        setNotifications([]);
-        setUnreadCount(0);
-        return { error: null };
-      }
-    } catch (err) {
+      const res = await fetch('/api/notifications/all', { method: 'DELETE' });
+      if (!res.ok) return { error: new Error('Error limpiando notificaciones') };
+      setNotifications([]);
+      setUnreadCount(0);
+      return { error: null };
+    } catch {
       return { error: new Error('Error inesperado') };
     }
   }, []);
 
-  return {
-    notifications,
-    isLoading,
-    error,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    createNotification,
-    deleteNotification,
-    clearAllNotifications,
-    refetch: fetchNotifications
-  };
-} 
+  return useMemo(() => ({
+    notifications, isLoading, error, unreadCount,
+    markAsRead, markAllAsRead, createNotification, deleteNotification, clearAllNotifications,
+    refetch: fetchNotifications,
+  }), [notifications, isLoading, error, unreadCount, markAsRead, markAllAsRead, createNotification, deleteNotification, clearAllNotifications, fetchNotifications]);
+}

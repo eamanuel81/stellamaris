@@ -1,281 +1,129 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { Assignment } from '@/lib/data';
-import { useNotifications } from './use-notifications';
+import type { Assignment } from '@/lib/data';
+
+function mapAssignment(row: any): Assignment {
+  return {
+    id: row.id,
+    taskId: row.taskId,
+    employeeId: Array.isArray(row.employeeId) ? row.employeeId : [],
+    startTime: new Date(row.startTime),
+    endTime: new Date(row.endTime),
+    status: row.status,
+    clientId: row.clientId ?? undefined,
+    boatIds: row.boatIds ?? undefined,
+    selectedExtras: row.selectedExtras ?? undefined,
+    observations: row.observations ?? undefined,
+  };
+}
 
 export function useAssignments() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { createNotification } = useNotifications();
-  
-  // Usar ref para evitar llamadas duplicadas
   const fetchingRef = useRef(false);
   const mountedRef = useRef(true);
-  const initializedRef = useRef(false);
 
-  // Cleanup al desmontar
   useEffect(() => {
     mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
+    return () => { mountedRef.current = false; };
   }, []);
 
   const fetchAssignments = useCallback(async (isPolling = false) => {
-    // Prevenir llamadas concurrentes
-    if (fetchingRef.current) {
-      return;
-    }
-    
+    if (fetchingRef.current) return;
     fetchingRef.current = true;
-    
-    // Solo mostrar loading en la carga inicial, no en polling
-    if (!isPolling) {
-      setIsLoading(true);
-    }
+    if (!isPolling) setIsLoading(true);
     setError(null);
-    
     try {
-      // Verificar si el usuario está autenticado
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Error de autenticación:', userError);
-        }
-        if (mountedRef.current) {
-          setError('Error de autenticación');
-          setAssignments([]);
-          setIsLoading(false);
-        }
-        return;
-      }
-      
-      if (!user) {
-        if (mountedRef.current) {
-          setAssignments([]);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      // Query original - seleccionar todas las columnas
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('*')
-        .order('startTime', { ascending: true });
-        
-      // Solo actualizar estado si el componente está montado
+      const res = await fetch('/api/assignments');
       if (!mountedRef.current) return;
-        
-      if (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Error cargando asignaciones:', error);
-        }
-        setError(`Error cargando asignaciones: ${error.message}`);
-        setAssignments([]);
-      } else {
-        const assignmentsData = (data as Assignment[]) || [];
-        setAssignments(assignmentsData);
+      if (!res.ok) throw new Error('Error cargando asignaciones');
+      const data = await res.json();
+      if (mountedRef.current) {
+        setAssignments((data as any[]).map(mapAssignment));
         setError(null);
       }
     } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Error inesperado al cargar las asignaciones:', err);
-      }
-      setError(`Error inesperado al cargar las asignaciones: ${err instanceof Error ? err.message : 'Error desconocido'}`);
-      setAssignments([]);
-    } finally {
       if (mountedRef.current) {
-        // Solo ocultar loading si no es polling
-        if (!isPolling) {
-          setIsLoading(false);
-        }
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setAssignments([]);
       }
+    } finally {
+      if (mountedRef.current && !isPolling) setIsLoading(false);
       fetchingRef.current = false;
     }
   }, []);
 
-  // Ejecutar fetchAssignments al montar y configurar polling
   useEffect(() => {
-    //console.log('🔄 Iniciando polling de assignments...');
-    fetchAssignments(false); // Carga inicial
-    
-    // Polling para actualizar assignments cada 30 segundos
-    const interval = setInterval(() => {
-     // console.log('🔄 Polling: actualizando assignments...');
-      fetchAssignments(true); // Polling
-    }, 30000); // 30 segundos
-    
-    return () => {
-      //console.log('🔄 Deteniendo polling de assignments...');
-      clearInterval(interval);
-    };
+    fetchAssignments(false);
+    const interval = setInterval(() => fetchAssignments(true), 30000);
+    return () => clearInterval(interval);
   }, [fetchAssignments]);
 
-  // Memoizar las funciones CRUD para evitar re-renders
   const addAssignment = useCallback(async (assignment: Omit<Assignment, 'id'>) => {
     try {
-      // Asegurar que employeeId sea un array válido
-      if (assignment.employeeId && !Array.isArray(assignment.employeeId)) {
-        setError('employeeId debe ser un array');
-        return { data: null, error: new Error('employeeId debe ser un array') };
+      const res = await fetch('/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(assignment),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error ?? 'Error creando asignación');
+        return { data: null, error: new Error(err.error) };
       }
-      
-      const { data, error } = await supabase.from('assignments').insert([assignment]).select();
-      
-      if (error) {
-        setError(error.message);
-        return { data: null, error };
-      } else if (data && data.length > 0) {
-        const newAssignment = data[0] as Assignment;
-        // Optimización: usar función callback para evitar stale closures
-        setAssignments(prev => [newAssignment, ...prev]);
-        setError(null);
-
-        // Crear notificaciones para los empleados asignados
-        if (assignment.employeeId && assignment.employeeId.length > 0) {
-          for (const employeeId of assignment.employeeId) {
-            const { data: employeeData } = await supabase
-              .from('employees')
-              .select('*')
-              .eq('id', employeeId)
-              .single();
-
-            const { data: taskData } = await supabase
-              .from('tasks')
-              .select('*')
-              .eq('id', assignment.taskId)
-              .single();
-
-            // Usar el auth_id del empleado (UUID del usuario autenticado)
-            const userid = (employeeData as any)?.auth_id;
-            
-            if (userid && taskData && typeof taskData.title === 'string') {
-              const notificationResult = await createNotification({
-                userid: userid as string,
-                title: 'Nueva tarea asignada',
-                message: `Se te ha asignado la tarea "${taskData.title}" para el ${new Date(assignment.startTime).toLocaleDateString('es-ES')}`,
-                type: 'task_assigned',
-                isread: false,
-                data: { assignmentId: newAssignment.id, taskId: assignment.taskId, employeeId: employeeId } as { assignmentId: string; taskId: string; employeeId: string }
-              });
-              if (notificationResult.error) {
-                // Silently handle notification creation errors
-              }
-            }
-          }
-        }
-
-        return { data: newAssignment, error: null };
-      }
+      const data = await res.json();
+      const mapped = mapAssignment(data);
+      setAssignments(prev => [mapped, ...prev]);
+      setError(null);
+      return { data: mapped, error: null };
     } catch (err) {
       setError('Error inesperado al crear la asignación');
       return { data: null, error: new Error('Error inesperado') };
     }
-    
-    return { data: null, error: new Error('No se pudo crear la asignación') };
-  }, [createNotification]);
+  }, []);
 
   const updateAssignment = useCallback(async (assignment: Assignment) => {
     try {
-      // Obtener la asignación anterior para comparar
-      const { data: oldAssignmentData } = await supabase
-        .from('assignments')
-        .select('*')
-        .eq('id', assignment.id)
-        .single();
-
-      const { data, error } = await supabase
-        .from('assignments')
-        .update(assignment)
-        .eq('id', assignment.id)
-        .select();
-        
-      if (error) {
-        setError(error.message);
-        return { data: null, error };
-      } else if (data && data.length > 0) {
-        const updatedAssignment = data[0] as Assignment;
-        // Usar función callback para actualización eficiente
-        setAssignments(prev => prev.map(a => a.id === assignment.id ? updatedAssignment : a));
-        setError(null);
-
-        // Crear notificaciones para empleados recién agregados
-        if (assignment.employeeId && assignment.employeeId.length > 0 && oldAssignmentData) {
-          const oldEmployeeIds = oldAssignmentData.employeeId as string[] || [];
-          const newEmployees = assignment.employeeId.filter(id => !oldEmployeeIds.includes(id));
-
-          for (const employeeId of newEmployees) {
-            const { data: employeeData } = await supabase
-              .from('employees')
-              .select('*')
-              .eq('id', employeeId)
-              .single();
-
-            const { data: taskData } = await supabase
-              .from('tasks')
-              .select('*')
-              .eq('id', assignment.taskId)
-              .single();
-
-            // Usar el auth_id del empleado (UUID del usuario autenticado)
-            const userid = (employeeData as any)?.auth_id;
-            
-            if (userid && taskData && typeof taskData.title === 'string') {
-              const notificationResult = await createNotification({
-                userid: userid as string,
-                title: 'Tarea modificada',
-                message: `Has sido agregado a la tarea "${taskData.title}" para el ${new Date(assignment.startTime).toLocaleDateString('es-ES')}`,
-                type: 'task_modified',
-                isread: false,
-                data: { assignmentId: updatedAssignment.id, taskId: assignment.taskId, employeeId: employeeId } as { assignmentId: string; taskId: string; employeeId: string }
-              });
-              if (notificationResult.error) {
-                // Silently handle notification creation errors
-              }
-            }
-          }
-        }
-
-        return { data: updatedAssignment, error: null };
+      const res = await fetch(`/api/assignments/${assignment.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...assignment, _notifyEmployees: true }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error ?? 'Error actualizando asignación');
+        return { data: null, error: new Error(err.error) };
       }
+      const data = await res.json();
+      const mapped = mapAssignment(data);
+      setAssignments(prev => prev.map(a => a.id === assignment.id ? mapped : a));
+      setError(null);
+      return { data: mapped, error: null };
     } catch (err) {
       setError('Error inesperado al actualizar la asignación');
       return { data: null, error: new Error('Error inesperado') };
     }
-    
-    return { data: null, error: new Error('No se pudo actualizar la asignación') };
-  }, [createNotification]);
+  }, []);
 
   const deleteAssignment = useCallback(async (id: string) => {
     try {
-      const { error } = await supabase.from('assignments').delete().eq('id', id);
-      if (error) {
-        setError(error.message);
-        return { error };
-      } else {
-        // Usar función callback para eliminación eficiente
-        setAssignments(prev => prev.filter(a => a.id !== id));
-        setError(null);
-        return { error: null };
+      const res = await fetch(`/api/assignments/${id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json();
+        setError(err.error ?? 'Error eliminando asignación');
+        return { error: new Error(err.error) };
       }
+      setAssignments(prev => prev.filter(a => a.id !== id));
+      setError(null);
+      return { error: null };
     } catch (err) {
       setError('Error inesperado al eliminar la asignación');
       return { error: new Error('Error inesperado') };
     }
   }, []);
 
-  // Memoizar el objeto de retorno para evitar re-renders innecesarios
   const returnValue = useMemo(() => ({
-    assignments,
-    isLoading,
-    error,
-    addAssignment,
-    updateAssignment,
-    deleteAssignment,
-    refetch: fetchAssignments
+    assignments, isLoading, error, addAssignment, updateAssignment, deleteAssignment, refetch: fetchAssignments,
   }), [assignments, isLoading, error, addAssignment, updateAssignment, deleteAssignment, fetchAssignments]);
 
   return returnValue;

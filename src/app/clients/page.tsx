@@ -120,9 +120,8 @@ export default function ClientsPage() {
     const filteredClients = clients.filter(client => {
         const searchTermLower = searchTerm.toLowerCase();
         // No mostrar clientes cuyo email coincide con el del usuario logueado (admin)
-        if (client.email && subrole === 'admin' && typeof window !== 'undefined') {
-            const userEmail = window.localStorage.getItem('supabase.auth.token') ? JSON.parse(window.localStorage.getItem('supabase.auth.token')!).currentSession?.user?.email : null;
-            if (userEmail && client.email === userEmail) return false;
+        if (client.email && subrole === 'admin') {
+            // El filtrado por email del admin se realiza en el servidor; aquí no aplica
         }
         return (
             client.firstName.toLowerCase().includes(searchTermLower) ||

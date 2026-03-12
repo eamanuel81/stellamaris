@@ -12,7 +12,7 @@ import { useTasks } from "@/hooks/use-tasks"
 import { useClients } from "@/hooks/use-clients"
 import { useEmployees } from "@/hooks/use-employees"
 import { useAuth } from "@/components/auth-provider"
-import { supabase } from "@/lib/supabaseClient"
+import { useSession } from "next-auth/react"
 
 const generateTimeSlots = () => {
   const slots = []
@@ -376,10 +376,11 @@ const WeekView = ({ assignments, tasks, clients, onTaskClick, selectedDate }: { 
 export default function MyCalendarPage() {
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
   const [selectedAssignment, setSelectedAssignment] = React.useState<Assignment | null>(null);
-  const [currentUserEmail, setCurrentUserEmail] = React.useState<string | null>(null);
-  const [currentEmployee, setCurrentEmployee] = React.useState<any>(null);
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
   const [activeTab, setActiveTab] = React.useState<string>("week");
+
+  const { data: session } = useSession();
+  const currentEmployeeId = (session?.user as any)?.employeeId ?? null;
 
   // Usar hooks de la base de datos
   const { assignments, updateAssignment, isLoading: assignmentsLoading } = useAssignments();
@@ -387,36 +388,14 @@ export default function MyCalendarPage() {
   const { clients, isLoading: clientsLoading } = useClients();
   const { employees, isLoading: employeesLoading } = useEmployees();
 
-  // Obtener el email del usuario actual
-  React.useEffect(() => {
-    const getUserEmail = async () => {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (user && !error && user.email) {
-          setCurrentUserEmail(user.email);
-          
-          // Verificar si el usuario existe en la tabla de empleados
-          const { data: employee, error: employeeError } = await supabase
-            .from('employees')
-            .select('*')
-            .eq('email', user.email)
-            .single();
-          
-          if (!employeeError && employee) {
-            setCurrentEmployee(employee);
-          }
-        }
-      } catch (error) {
-        // Handle error silently
-      }
-    };
-    getUserEmail();
-  }, []);
+  const currentEmployee = React.useMemo(() => {
+    if (!currentEmployeeId || !employees.length) return null;
+    return employees.find(e => e.id === currentEmployeeId) ?? null;
+  }, [employees, currentEmployeeId]);
 
   // Filtrar asignaciones del empleado actual
   const myAssignments = React.useMemo(() => {
     if (!assignments || assignments.length === 0 || !currentEmployee) return [];
-    
     return assignments.filter(assignment => {
       if (!assignment.employeeId || !Array.isArray(assignment.employeeId)) return false;
       return assignment.employeeId.includes(currentEmployee.id);

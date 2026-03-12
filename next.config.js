@@ -1,4 +1,6 @@
 module.exports = {
+  // Salida standalone para despliegue (Railway, etc.): menor tamaño y usa PORT automático
+  output: 'standalone',
   // Configuración temporal para producción
   typescript: {
     ignoreBuildErrors: true, // ⚠️ TEMPORAL - Solo para permitir build

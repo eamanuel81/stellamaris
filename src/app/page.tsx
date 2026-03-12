@@ -21,7 +21,7 @@ import { useAuth } from "@/components/auth-provider";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading, role } = useAuth();
+  const { login, logout, isLoading, role } = useAuth();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   
@@ -45,10 +45,16 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setHasAttemptedLogin(true);
-    
+
     const result = await login(email, password);
     if (result && result.error) {
       setError(result.error);
+      setHasAttemptedLogin(false);
+    } else if (result) {
+      const dest = result.subrole === 'admin' || result.subrole === 'encargado'
+        ? '/dashboard'
+        : '/my-tasks';
+      router.push(dest);
     }
   };
 
@@ -58,8 +64,7 @@ export default function LoginPage() {
 
   
   const handleLogout = async () => {
-    const { supabase } = await import('@/lib/supabaseClient');
-    await supabase.auth.signOut();
+    await logout();
     setHasAttemptedLogin(false);
     setEmail("");
     setPassword("");
