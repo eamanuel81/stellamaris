@@ -8,6 +8,7 @@ const dbSchema = process.env.DATABASE_SCHEMA ?? 'guarderia';
 const sql = postgres(connectionString, {
   connection: {
     search_path: dbSchema,
+    TimeZone: 'UTC',
   },
   max: 10,
   idle_timeout: 20,

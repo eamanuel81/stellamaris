@@ -4,7 +4,12 @@
       "Bash(npm run typecheck)",
       "Bash(npm run build)",
       "Bash(npm install --save-dev @playwright/test)",
-      "Bash(dir \"d:\\\\Cursor\\\\Stella\\\\stella ultima\\\\tests\\\\screenshots\")"
+      "Bash(dir \"d:\\\\Cursor\\\\Stella\\\\stella ultima\\\\tests\\\\screenshots\")",
+      "Bash(npx playwright test tests/e2e/test-admin.spec.ts --reporter=list)",
+      "Bash(npm install next@^15.5.9)",
+      "Bash(node -e \"console.log\\(require\\(''./package.json''\\).dependencies.next\\)\")",
+      "Bash(npx drizzle-kit push)",
+      "WebFetch(domain:stellamaris-production.up.railway.app)"
     ],
     "additionalDirectories": [
       "d:\\Cursor\\Stella\\stella ultima\\ia",
