@@ -29,7 +29,10 @@ function safeManualPath(slug: string[] | undefined) {
 }
 
 function rewriteManualHtml(html: string) {
-  return html.replaceAll('../../logotrans-170x83.png', '/manual-assets/logotrans-170x83.png');
+  return html
+    .replaceAll('../../logotrans-170x83.png', '/manual-assets/logotrans-170x83.png')
+    .replaceAll('../../tests/screenshots/', '/manual-test-screenshots/')
+    .replaceAll('imagenes/', '/manual-test-screenshots/');
 }
 
 export async function GET(

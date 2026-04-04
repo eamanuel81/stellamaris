@@ -1,0 +1,112 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e6]:
+      - generic [ref=e8]:
+        - img "Stella Maris" [ref=e10]
+        - generic [ref=e11]:
+          - generic [ref=e12]: Stella Maris
+          - generic [ref=e13]: Manager
+      - list [ref=e15]:
+        - listitem [ref=e16]:
+          - link "Dashboard" [ref=e17] [cursor=pointer]:
+            - /url: /dashboard
+            - button "Dashboard" [ref=e18]:
+              - img [ref=e19]
+              - text: Dashboard
+        - listitem [ref=e24]:
+          - link "Tareas del Día" [ref=e25] [cursor=pointer]:
+            - /url: /today-tasks
+            - button "Tareas del Día" [ref=e26]:
+              - img [ref=e27]
+              - text: Tareas del Día
+        - listitem [ref=e29]:
+          - link "Asignar Tareas" [ref=e30] [cursor=pointer]:
+            - /url: /schedule
+            - button "Asignar Tareas" [ref=e31]:
+              - img [ref=e32]
+              - text: Asignar Tareas
+        - listitem [ref=e36]:
+          - link "Tipos de Tareas" [ref=e37] [cursor=pointer]:
+            - /url: /tasks
+            - button "Tipos de Tareas" [ref=e38]:
+              - img [ref=e39]
+              - text: Tipos de Tareas
+        - listitem [ref=e42]:
+          - link "Empleados" [ref=e43] [cursor=pointer]:
+            - /url: /employees
+            - button "Empleados" [ref=e44]:
+              - img [ref=e45]
+              - text: Empleados
+        - listitem [ref=e50]:
+          - link "Clientes" [ref=e51] [cursor=pointer]:
+            - /url: /clients
+            - button "Clientes" [ref=e52]:
+              - img [ref=e53]
+              - text: Clientes
+        - listitem [ref=e57]:
+          - link "Ayuda" [ref=e58] [cursor=pointer]:
+            - /url: /help
+            - button "Ayuda" [ref=e59]:
+              - img [ref=e60]
+              - text: Ayuda
+      - list [ref=e64]:
+        - listitem [ref=e65]:
+          - link "Configuración" [ref=e66] [cursor=pointer]:
+            - /url: /settings
+            - button "Configuración" [ref=e67]:
+              - img [ref=e68]
+              - text: Configuración
+        - listitem [ref=e71]:
+          - button "Cerrar Sesión" [ref=e72] [cursor=pointer]:
+            - img [ref=e73]
+            - text: Cerrar Sesión
+    - main [ref=e76]:
+      - generic [ref=e77]:
+        - generic [ref=e78]:
+          - button "Toggle Sidebar" [ref=e79] [cursor=pointer]:
+            - img
+            - generic [ref=e80]: Toggle Sidebar
+          - heading "Tareas del Día" [level=1] [ref=e81]
+        - generic [ref=e82]:
+          - button "Notificaciones" [ref=e83] [cursor=pointer]:
+            - img
+            - generic [ref=e84]: Notificaciones
+          - button "User" [ref=e85] [cursor=pointer]:
+            - img "User" [ref=e87]
+      - main [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - heading "Tareas del Día" [level=1] [ref=e92]
+              - paragraph [ref=e93]: Todas las tareas asignadas para sábado, 4 de abril.
+            - button "Asignar Tarea" [ref=e94] [cursor=pointer]:
+              - img
+              - text: Asignar Tarea
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - img [ref=e97]
+              - textbox "Buscar por tarea, cliente o embarcación..." [ref=e100]
+            - generic [ref=e101]:
+              - img [ref=e102]
+              - textbox [ref=e104]: 2026-04-04
+            - combobox [ref=e105] [cursor=pointer]:
+              - generic: Todos los estados
+              - img [ref=e106]
+          - generic [ref=e108]:
+            - tablist [ref=e109]:
+              - tab "Tareas Asignadas (0)" [selected] [ref=e110] [cursor=pointer]
+              - tab "Tareas Terminadas (0)" [ref=e111] [cursor=pointer]
+            - tabpanel "Tareas Asignadas (0)" [ref=e112]:
+              - generic [ref=e114]:
+                - img [ref=e115]
+                - heading "No hay tareas asignadas para esta fecha" [level=3] [ref=e117]
+                - paragraph [ref=e118]: Puedes asignar nuevas tareas desde el calendario o cambiar la fecha seleccionada.
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=e124] [cursor=pointer]:
+    - img [ref=e125]
+  - alert [ref=e128]
+```
