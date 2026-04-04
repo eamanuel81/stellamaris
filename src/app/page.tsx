@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useAuth } from "@/components/auth-provider";
-import logoFull from "../../logo.png";
+import logoTransparent from "../../logo sin fondo.png";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -79,7 +79,14 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex justify-center">
-              <Image src={logoFull} alt="Stella Maris" width={280} height={140} className="h-auto w-56" priority />
+              <Image
+                src={logoTransparent}
+                alt="Stella Maris"
+                width={360}
+                height={180}
+                className="h-auto w-64 md:w-72"
+                priority
+              />
             </div>
             <CardTitle className="font-headline text-3xl">Stella Maris Manager</CardTitle>
             <CardDescription>

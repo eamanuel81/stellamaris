@@ -46,7 +46,7 @@ import {
 import { useAuth } from "./auth-provider"
 import { useAvatar } from "@/contexts/avatar-context"
 import { NotificationsDialog } from "./notifications-dialog"
-import logoCompact from "../../logotrans-170x83.png"
+import logoTransparent from "../../logo sin fondo.png"
 
 const adminNavItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
@@ -94,12 +94,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary overflow-hidden">
-              <Image src={logoCompact} alt="Stella Maris" width={40} height={20} className="h-auto w-10" priority />
+          <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/90 p-1 shadow-sm group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10 dark:bg-slate-100">
+              <Image
+                src={logoTransparent}
+                alt="Stella Maris"
+                width={42}
+                height={42}
+                className="h-auto w-full object-contain"
+                priority
+              />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-              <span className="font-headline text-lg">Stella Maris</span>
+              <span className="font-headline text-lg leading-tight">Stella Maris</span>
               <span className="text-xs text-muted-foreground">Manager</span>
             </div>
           </div>

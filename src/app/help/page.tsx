@@ -5,7 +5,7 @@ import Link from "next/link"
 import { BookOpen, CircleHelp, LifeBuoy, MessageSquareWarning } from "lucide-react"
 import { AppLayout } from "@/components/app-layout"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui"
-import logoFull from "../../../logo.png"
+import logoTransparent from "../../../logo sin fondo.png"
 
 const quickGuides = [
   {
@@ -40,11 +40,11 @@ export default function HelpPage() {
               </p>
             </div>
             <Image
-              src={logoFull}
+              src={logoTransparent}
               alt="Logo Stella Maris"
-              width={260}
-              height={130}
-              className="h-auto w-48 md:w-64"
+              width={340}
+              height={170}
+              className="h-auto w-56 md:w-72"
               priority
             />
           </CardContent>
