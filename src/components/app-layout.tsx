@@ -3,6 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import {
   Avatar,
@@ -35,16 +36,17 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
-  Ship,
   Users,
   Contact,
   CalendarDays,
   Calendar,
+  CircleHelp,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
 import { useAvatar } from "@/contexts/avatar-context"
 import { NotificationsDialog } from "./notifications-dialog"
+import logoCompact from "../../logotrans-170x83.png"
 
 const adminNavItems = [
   { href: "/dashboard", icon: <LayoutDashboard />, label: "Dashboard" },
@@ -53,11 +55,13 @@ const adminNavItems = [
   { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
   { href: "/employees", icon: <Users />, label: "Empleados" },
   { href: "/clients", icon: <Contact />, label: "Clientes" },
+  { href: "/help", icon: <CircleHelp />, label: "Ayuda" },
 ];
 
 const employeeNavItems = [
   { href: "/my-tasks", icon: <ClipboardCheck />, label: "Mis Tareas" },
   { href: "/my-calendar", icon: <Calendar />, label: "Calendario" },
+  { href: "/help", icon: <CircleHelp />, label: "Ayuda" },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -91,8 +95,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Ship className="h-6 w-6" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary overflow-hidden">
+              <Image src={logoCompact} alt="Stella Maris" width={40} height={20} className="h-auto w-10" priority />
             </div>
             <div className="flex flex-col group-data-[collapsible=icon]:hidden">
               <span className="font-headline text-lg">Stella Maris</span>
@@ -166,6 +170,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   {/* <Link href="/settings"><DropdownMenuItem>Mi Perfil</DropdownMenuItem></Link> */}
+                  <Link href="/help"><DropdownMenuItem className="cursor-pointer">Ayuda</DropdownMenuItem></Link>
                   <Link href="/settings"><DropdownMenuItem className="cursor-pointer">Configuración</DropdownMenuItem></Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />

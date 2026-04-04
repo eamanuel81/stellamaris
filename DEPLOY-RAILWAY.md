@@ -13,6 +13,7 @@ Pasos para desplegar esta app Next.js en [Railway](https://railway.app).
 2. **New Project** → **Deploy from GitHub repo**.
 3. Conecta tu cuenta de GitHub y elige el repositorio de Stella Maris.
 4. Railway detectará automáticamente **Next.js** y usará:
+   - **Install:** `npm ci` (fijado en `nixpacks.toml`)
    - **Build:** `npm run build`
    - **Start:** `npm start` (usa la variable `PORT` que Railway asigna).
 

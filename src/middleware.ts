@@ -11,6 +11,7 @@ const protectedRoutes = [
   '/my-tasks',
   '/my-calendar',
   '/settings',
+  '/help',
 ];
 
 export default auth((req) => {

@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Anchor, Ship, Eye, EyeOff } from "lucide-react"
 
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useAuth } from "@/components/auth-provider";
+import logoFull from "../../logo.png";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -76,8 +78,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl">
         <form onSubmit={handleLogin}>
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Ship className="h-8 w-8" />
+            <div className="mx-auto mb-4 flex justify-center">
+              <Image src={logoFull} alt="Stella Maris" width={280} height={140} className="h-auto w-56" priority />
             </div>
             <CardTitle className="font-headline text-3xl">Stella Maris Manager</CardTitle>
             <CardDescription>
