@@ -12,6 +12,7 @@ const protectedRoutes = [
   '/my-calendar',
   '/settings',
   '/help',
+  '/manual',
 ];
 
 export default auth((req) => {

@@ -91,6 +91,24 @@ export default function HelpPage() {
 
         <Card>
           <CardHeader>
+            <CardTitle className="text-lg">Manual integrado en el sistema</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Podés navegar todo el manual directamente desde esta pantalla.
+            </p>
+            <div className="overflow-hidden rounded-xl border bg-white">
+              <iframe
+                src="/manual/index.html"
+                title="Manual Stella Maris"
+                className="h-[72vh] w-full min-h-[560px]"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <LifeBuoy className="h-5 w-5" />
               Preguntas frecuentes
