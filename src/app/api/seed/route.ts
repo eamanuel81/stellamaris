@@ -10,8 +10,17 @@ export async function POST() {
     return NextResponse.json({ error: 'Not available in production' }, { status: 403 });
   }
 
-  const adminEmail = 'admin@nauticastellamaris.com.ar';
-  const adminPassword = 'UgJ6CgW!c5X#';
+  const adminEmail = process.env.DEV_ADMIN_EMAIL;
+  const adminPassword = process.env.DEV_ADMIN_PASSWORD;
+  if (!adminEmail?.trim() || !adminPassword) {
+    return NextResponse.json(
+      {
+        error:
+          'Definí DEV_ADMIN_EMAIL y DEV_ADMIN_PASSWORD en .env (solo desarrollo). Ver .env.example.',
+      },
+      { status: 400 }
+    );
+  }
 
   // Verificar si ya existe
   const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.email, adminEmail)).limit(1);

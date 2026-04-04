@@ -1,8 +1,10 @@
 /**
  * Script para tomar capturas de pantalla del sistema Stella Maris Manager
- * 
+ *
+ * Credenciales: definí DEV_ADMIN_EMAIL y DEV_ADMIN_PASSWORD en el .env de la raíz del proyecto.
+ *
  * Ejecutar con: node tomar-capturas.js
- * 
+ *
  * Requiere: npm install playwright
  */
 
@@ -10,10 +12,12 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+
 const BASE_URL = 'http://localhost:9002';
 const OUTPUT_DIR = path.join(__dirname, 'imagenes');
-const ADMIN_EMAIL = 'emapagina@gmail.com';
-const ADMIN_PASSWORD = 'TESTER1111';
+const ADMIN_EMAIL = process.env.DEV_ADMIN_EMAIL || '';
+const ADMIN_PASSWORD = process.env.DEV_ADMIN_PASSWORD || '';
 
 // Asegurar que el directorio existe
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -21,6 +25,13 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 }
 
 async function tomarCapturas() {
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.error(
+      'Faltan DEV_ADMIN_EMAIL y/o DEV_ADMIN_PASSWORD en .env (raíz del proyecto). Ver .env.example.'
+    );
+    process.exit(1);
+  }
+
   console.log('Iniciando navegador...');
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext({

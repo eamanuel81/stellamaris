@@ -7,6 +7,10 @@ Sistema de gestión de tareas para guardería de lanchas.
 
 ### Variables de Entorno
 
+En la raíz del proyecto existe **`.env.example`** con las variables usadas hoy (base de datos, NextAuth, y `DEV_ADMIN_*` para seed en desarrollo y tests E2E). Copialo a `.env` y completalo (no subas `.env` a Git).
+
+La referencia HTML de credenciales para uso interno: plantilla versionada **`documentacion/credenciales.ejemplo.html`**. Para anotar datos reales, copiá ese archivo a **`documentacion/credenciales.html`** (está en `.gitignore` y no se versiona).
+
 Crea un archivo `.env.local` en la raíz del proyecto con las siguientes variables:
 
 ```env

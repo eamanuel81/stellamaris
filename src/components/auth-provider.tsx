@@ -38,11 +38,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await signOut({ redirect: true, redirectTo: '/' });
+    await signOut({ redirect: false });
+    if (typeof window !== 'undefined') {
+      window.location.assign(`${window.location.origin}/`);
+    }
   };
 
   const clearCorruptedSession = async () => {
     await signOut({ redirect: false });
+    if (typeof window !== 'undefined') {
+      window.location.assign(`${window.location.origin}/`);
+    }
   };
 
   return (

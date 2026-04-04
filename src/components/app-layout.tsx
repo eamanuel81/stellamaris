@@ -83,8 +83,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = role === "admin" ? adminNavItems : employeeNavItems
 
   const handleLogout = () => {
-    logout()
-    router.push('/')
+    void logout()
   }
 
   return (

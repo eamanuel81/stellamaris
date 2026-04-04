@@ -24,8 +24,6 @@ export function AuthErrorHandler({ error, onRetry }: AuthErrorHandlerProps) {
     setIsHandling(true);
     try {
       await clearCorruptedSession();
-      // Redirigir a la página de login o recargar
-      window.location.href = '/';
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
 
@@ -41,7 +39,6 @@ export function AuthErrorHandler({ error, onRetry }: AuthErrorHandlerProps) {
     setIsHandling(true);
     try {
       await logout();
-      window.location.href = '/';
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
 

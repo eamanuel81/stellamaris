@@ -1,8 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
 
 const BASE = 'http://localhost:9002';
-const EMAIL = 'admin@nauticastellamaris.com.ar';
-const PASS  = 'UgJ6CgW!c5X#';
+const EMAIL = process.env.DEV_ADMIN_EMAIL ?? '';
+const PASS = process.env.DEV_ADMIN_PASSWORD ?? '';
 
 async function login(page: Page) {
   await page.goto(BASE);
@@ -19,6 +19,12 @@ async function shot(page: Page, name: string) {
 }
 
 test.describe('Admin – smoke test completo', () => {
+  test.beforeEach(() => {
+    test.skip(
+      !EMAIL || !PASS,
+      'Definí DEV_ADMIN_EMAIL y DEV_ADMIN_PASSWORD en .env (ver .env.example)'
+    );
+  });
 
   test('01 – Login', async ({ page }) => {
     await page.goto(BASE);

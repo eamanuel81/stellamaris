@@ -64,7 +64,9 @@ Pega el resultado en `NEXTAUTH_SECRET`.
 ### Dominio público
 
 1. En el servicio de la app: **Settings** → **Networking** → **Generate domain**.
-2. Copia la URL (ej. `https://stella-maris-production.up.railway.app`) y asígnala a **`NEXTAUTH_URL`**.
+2. Copia la URL (ej. `https://stella-maris-production.up.railway.app` o tu dominio tipo `https://gestion.nauticastellamaris.com.ar`) y asígnala a **`NEXTAUTH_URL`** y **`AUTH_URL`**. Debe ser **exactamente** la URL con la que los usuarios entran (mismo host y `https`).
+
+El cierre de sesión en la app redirige al login en **el mismo host** que estés usando; si `NEXTAUTH_URL` apunta a otro dominio caído, el login puede fallar aunque el logout sea correcto.
 
 ## 5. Desplegar
 

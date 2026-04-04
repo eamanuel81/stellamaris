@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "set-admin-password": "npx tsx scripts/set-admin-password.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.13.0",

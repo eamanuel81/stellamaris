@@ -36,8 +36,13 @@ El script automáticamente:
 Si prefieres tomar las capturas manualmente, sigue estas instrucciones:
 
 ### Credenciales de Administrador
-- **Email:** emapagina@gmail.com
-- **Contraseña:** TESTER1111
+
+Definí en el `.env` de la raíz del proyecto (no commitear):
+
+- `DEV_ADMIN_EMAIL`
+- `DEV_ADMIN_PASSWORD`
+
+Mismos valores que uses para `POST /api/seed` en desarrollo. Ver `.env.example`.
 
 ### Lista de Capturas Necesarias
 
@@ -45,7 +50,7 @@ Si prefieres tomar las capturas manualmente, sigue estas instrucciones:
 
 1. **09-login-admin.png**
    - URL: http://localhost:9002
-   - Email: emapagina@gmail.com
+   - Login con el admin configurado en `.env`
    - Tipo: Administrador seleccionado
 
 2. **10-dashboard.png**

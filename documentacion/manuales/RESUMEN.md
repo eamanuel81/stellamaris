@@ -41,7 +41,7 @@
 
 1. **tomar-capturas.js** - ✅ Ejecutado exitosamente
    - Toma capturas de administrador
-   - Usa credenciales: emapagina@gmail.com / TESTER1111
+   - Usa `DEV_ADMIN_EMAIL` y `DEV_ADMIN_PASSWORD` del `.env` (ver `.env.example`)
 
 2. **tomar-capturas-empleado.js** - ⏳ Pendiente
    - Requiere credenciales de empleado

@@ -55,3 +55,6 @@ firestore-debug.log
 *.sql
 
 Santi.txt
+
+# Credenciales reales (solo local; la plantilla versionada es credenciales.ejemplo.html)
+documentacion/credenciales.html
