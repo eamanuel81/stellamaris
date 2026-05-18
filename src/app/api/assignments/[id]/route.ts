@@ -15,7 +15,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     // Extraer campos que no son columnas de la tabla antes de actualizar
     const { _notifyEmployees, id: _id, createdAt: _createdAt, ...updateData } = body;
 
-    const [updated] = await db.update(assignments).set(updateData).where(eq(assignments.id, id)).returning();
+    const [updated] = await db.update(assignments).set({
+      ...updateData,
+      startTime: updateData.startTime ? new Date(updateData.startTime) : undefined,
+      endTime: updateData.endTime ? new Date(updateData.endTime) : undefined,
+    }).where(eq(assignments.id, id)).returning();
 
     const employeeIds: string[] = Array.isArray(body.employeeId) ? body.employeeId.filter(Boolean) : [];
     if (employeeIds.length > 0 && _notifyEmployees) {

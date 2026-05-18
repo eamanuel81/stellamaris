@@ -18,7 +18,11 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const [assignment] = await db.insert(assignments).values(body).returning();
+    const [assignment] = await db.insert(assignments).values({
+      ...body,
+      startTime: new Date(body.startTime),
+      endTime: new Date(body.endTime),
+    }).returning();
 
     const employeeIds: string[] = Array.isArray(body.employeeId) ? body.employeeId.filter(Boolean) : [];
     if (employeeIds.length > 0) {
