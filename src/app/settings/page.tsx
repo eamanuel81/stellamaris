@@ -24,6 +24,7 @@ import {
   Switch,
 } from "@/components/ui"
 import { useToast } from "@/hooks/use-toast"
+import { validatePassword } from '@/lib/password';
 
 interface EmployeeData {
   id: string;
@@ -35,12 +36,6 @@ interface EmployeeData {
   address: string;
   email: string;
   subrole: string;
-}
-
-function validatePassword(password: string): { isValid: boolean; error?: string } {
-  if (password.length < 6) return { isValid: false, error: 'La contraseña debe tener al menos 6 caracteres' };
-  if (password.length > 128) return { isValid: false, error: 'La contraseña no puede tener más de 128 caracteres' };
-  return { isValid: true };
 }
 
 export default function SettingsPage() {

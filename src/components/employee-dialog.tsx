@@ -19,6 +19,7 @@ import {
 } from "@/components/ui"
 import { Employee } from "@/lib/data"
 import { useAuth } from '@/components/auth-provider';
+import { validatePassword } from '@/lib/password';
 
 export const EmployeeDialog = ({
     open,
@@ -45,6 +46,9 @@ export const EmployeeDialog = ({
     const idCounterRef = React.useRef(0);
     const [avatarKey, setAvatarKey] = React.useState('');
     const [subrole, setSubrole] = React.useState<'empleado' | 'encargado' | 'admin'>('empleado');
+    const [adminNewPassword, setAdminNewPassword] = React.useState("");
+    const [adminConfirmPassword, setAdminConfirmPassword] = React.useState("");
+    const [isSaving, setIsSaving] = React.useState(false);
     
     const getNextId = () => {
         idCounterRef.current += 1;
@@ -63,6 +67,8 @@ export const EmployeeDialog = ({
             setCanDrive(employeeToEdit.canDrive);
             setAvatarKey(employeeToEdit.avatarUrl);
             setSubrole(employeeToEdit.subrole || 'empleado');
+            setAdminNewPassword("");
+            setAdminConfirmPassword("");
         } else {
             setName("");
             setLastName("");
@@ -74,6 +80,8 @@ export const EmployeeDialog = ({
             setCanDrive(false);
             setAvatarKey(Date.now().toString());
             setSubrole('empleado');
+            setAdminNewPassword("");
+            setAdminConfirmPassword("");
         }
     }, [employeeToEdit, isEditMode, open]);
 
@@ -85,6 +93,18 @@ export const EmployeeDialog = ({
         if (!name || !lastName || !email) {
             alert("Por favor complete Nombre, Apellido y Email.");
             return;
+        }
+
+        if (mySubrole === 'admin' && isEditMode && (adminNewPassword || adminConfirmPassword)) {
+            if (adminNewPassword !== adminConfirmPassword) {
+                alert("Las contraseñas no coinciden.");
+                return;
+            }
+            const validation = validatePassword(adminNewPassword);
+            if (!validation.isValid) {
+                alert(validation.error);
+                return;
+            }
         }
 
         const employeeData: Employee = {
@@ -102,8 +122,27 @@ export const EmployeeDialog = ({
             subrole,
         };
 
-        await onSave(employeeData);
-        setOpen(false);
+        setIsSaving(true);
+        try {
+            await onSave(employeeData);
+
+            if (mySubrole === 'admin' && isEditMode && employeeToEdit && adminNewPassword) {
+                const res = await fetch(`/api/employees/${employeeToEdit.id}/password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPassword: adminNewPassword }),
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    alert(err.error ?? 'No se pudo actualizar la contraseña del usuario.');
+                    return;
+                }
+            }
+
+            setOpen(false);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -174,12 +213,47 @@ export const EmployeeDialog = ({
                             </p>
                         </div>
                     )}
-                    {isEditMode && employeeToEdit && (
+                    {isEditMode && employeeToEdit && mySubrole !== 'admin' && (
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                             <p className="text-sm text-amber-800">
                                 <strong>Nota:</strong> Si modifica el nombre o DNI, la contraseña se actualizará automáticamente a: <strong>{name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Nombre'}{dni || 'DNI'}</strong>
                             </p>
                         </div>
+                    )}
+                    {mySubrole === 'admin' && isEditMode && (
+                      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+                        <div>
+                          <p className="text-sm font-medium">Contraseña de acceso</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Defina una nueva contraseña para el usuario. Déjelo vacío para no cambiarla.
+                            Si no define una nueva y modifica nombre o DNI, se restablecerá a Nombre+DNI.
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="adminNewPassword">Nueva contraseña</Label>
+                            <Input
+                              id="adminNewPassword"
+                              type="password"
+                              autoComplete="new-password"
+                              placeholder="Mínimo 6 caracteres"
+                              value={adminNewPassword}
+                              onChange={e => setAdminNewPassword(e.target.value)}
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="adminConfirmPassword">Confirmar contraseña</Label>
+                            <Input
+                              id="adminConfirmPassword"
+                              type="password"
+                              autoComplete="new-password"
+                              placeholder="Repita la contraseña"
+                              value={adminConfirmPassword}
+                              onChange={e => setAdminConfirmPassword(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     )}
                     {mySubrole === 'admin' && (
                       <div className="grid gap-2">
@@ -205,7 +279,9 @@ export const EmployeeDialog = ({
                 </div>
                 <DialogFooter>
                     <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                    <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Guardar Empleado'}</Button>
+                    <Button type="submit" onClick={handleSubmit} disabled={isSaving}>
+                      {isSaving ? 'Guardando...' : (isEditMode ? 'Guardar Cambios' : 'Guardar Empleado')}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
