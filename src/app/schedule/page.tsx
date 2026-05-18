@@ -392,17 +392,19 @@ export default function SchedulePage() {
                 assignmentToEdit={null} 
                 initialDate={undefined} 
                 onSave={async (assignmentData) => {
-                  // Asegurar que employeeId sea un array
                   const assignmentToCreate = {
                       ...assignmentData,
-                      employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                      employeeId: Array.isArray(assignmentData.employeeId)
+                          ? assignmentData.employeeId.filter(Boolean)
+                          : (assignmentData.employeeId ? [assignmentData.employeeId] : [])
                   };
-                  await addAssignment(assignmentToCreate);
+                  const result = await addAssignment(assignmentToCreate);
+                  if (result.error) {
+                      alert(`Error al guardar la asignación: ${result.error.message}`);
+                      return;
+                  }
                   await refetch();
-                  // Cerrar el modal después del refresh
-                  setTimeout(() => {
-                      setIsCreateOpen(false);
-                  }, 500);
+                  setIsCreateOpen(false);
               }} />
             </Dialog>
           </div>
@@ -427,17 +429,19 @@ export default function SchedulePage() {
                 initialDate={undefined} 
                 onDelete={onDeleteInEdit} 
                 onSave={async (assignmentData) => {
-                // Asegurar que employeeId sea un array
                 const assignmentToUpdate = {
                     ...assignmentData,
-                    employeeId: Array.isArray(assignmentData.employeeId) ? assignmentData.employeeId : [assignmentData.employeeId]
+                    employeeId: Array.isArray(assignmentData.employeeId)
+                        ? assignmentData.employeeId.filter(Boolean)
+                        : (assignmentData.employeeId ? [assignmentData.employeeId] : [])
                 };
-                await updateAssignment(assignmentToUpdate);
+                const result = await updateAssignment(assignmentToUpdate);
+                if (result.error) {
+                    alert(`Error al actualizar la asignación: ${result.error.message}`);
+                    return;
+                }
                 await refetch();
-                // Cerrar el modal después del refresh
-                setTimeout(() => {
-                    setIsEditOpen(false);
-                }, 500);
+                setIsEditOpen(false);
             }} />
         </Dialog>
 

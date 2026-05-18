@@ -16,21 +16,26 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await req.json();
-  const [assignment] = await db.insert(assignments).values(body).returning();
+  try {
+    const body = await req.json();
+    const [assignment] = await db.insert(assignments).values(body).returning();
 
-  // Notificar a los empleados asignados
-  const employeeIds: string[] = Array.isArray(body.employeeId) ? body.employeeId : [];
-  if (employeeIds.length > 0) {
-    const notifValues = employeeIds.map((empId) => ({
-      userId: empId,
-      title: 'Nueva tarea asignada',
-      message: `Se te asignó una nueva tarea para ${new Date(body.startTime).toLocaleDateString('es-AR')}`,
-      type: 'task_assigned',
-      assignmentId: assignment.id,
-    }));
-    await db.insert(notifications).values(notifValues);
+    const employeeIds: string[] = Array.isArray(body.employeeId) ? body.employeeId.filter(Boolean) : [];
+    if (employeeIds.length > 0) {
+      const notifValues = employeeIds.map((empId) => ({
+        userId: empId,
+        title: 'Nueva tarea asignada',
+        message: `Se te asignó una nueva tarea para ${new Date(body.startTime).toLocaleDateString('es-AR')}`,
+        type: 'task_assigned',
+        assignmentId: assignment.id,
+      }));
+      await db.insert(notifications).values(notifValues);
+    }
+
+    return NextResponse.json(assignment, { status: 201 });
+  } catch (err) {
+    console.error('[POST /api/assignments]', err);
+    const message = err instanceof Error ? err.message : 'Error interno del servidor';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  return NextResponse.json(assignment, { status: 201 });
 }
