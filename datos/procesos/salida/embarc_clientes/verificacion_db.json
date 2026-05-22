@@ -1,0 +1,106 @@
+{
+  "esperados_desde_excel": 232,
+  "total_en_db": 224,
+  "con_embarcacion": 224,
+  "sin_nombre_o_apellido": 2,
+  "faltantes_respecto_excel": [],
+  "clientes_con_varias_embarcaciones": [
+    {
+      "firstName": "Belén",
+      "lastName": "BARBOZA",
+      "boats": 2
+    },
+    {
+      "firstName": "Sacha",
+      "lastName": "BERCOVICH",
+      "boats": 3
+    },
+    {
+      "firstName": "Marcelo",
+      "lastName": "FISMAN",
+      "boats": 2
+    },
+    {
+      "firstName": "ULISES",
+      "lastName": "INTRA",
+      "boats": 2
+    },
+    {
+      "firstName": "Alberto Joaquin",
+      "lastName": "SANCHEZ",
+      "boats": 2
+    },
+    {
+      "firstName": "Luis",
+      "lastName": "VALLOUD",
+      "boats": 2
+    },
+    {
+      "firstName": "Julian",
+      "lastName": "ZALAZAR",
+      "boats": 2
+    }
+  ],
+  "ultimos_10": [
+    {
+      "firstName": "Alejandro",
+      "lastName": "ACEVEDO",
+      "boat": "GNOMO",
+      "registration": "Barr3774"
+    },
+    {
+      "firstName": "Silvio Ricardo",
+      "lastName": "ALBANO",
+      "boat": "TRINIDAD",
+      "registration": ""
+    },
+    {
+      "firstName": "Marcial",
+      "lastName": "ACOSTA",
+      "boat": "SIMON II",
+      "registration": "e/t"
+    },
+    {
+      "firstName": "Hector Amadeo",
+      "lastName": "AGUIRRE",
+      "boat": "NARO",
+      "registration": ""
+    },
+    {
+      "firstName": "Martin",
+      "lastName": "AGUIRRE",
+      "boat": "EL PRODUCTO",
+      "registration": "rey055743"
+    },
+    {
+      "firstName": "Marcos",
+      "lastName": "AMARILLA",
+      "boat": "NANOS",
+      "registration": ""
+    },
+    {
+      "firstName": "Santiago",
+      "lastName": "ANELLO",
+      "boat": "LA BEBU",
+      "registration": "Rey 09635"
+    },
+    {
+      "firstName": "Roberto",
+      "lastName": "ANTONELLI",
+      "boat": "BONA VITA",
+      "registration": "rey081697"
+    },
+    {
+      "firstName": "Jose Manuel",
+      "lastName": "ARAGUES SOTOMAYOR",
+      "boat": "SIMJA",
+      "registration": "rey065382"
+    },
+    {
+      "firstName": "Enrique Jorge",
+      "lastName": "ABELLAN",
+      "boat": "LA FLAQUI",
+      "registration": "rey067476"
+    }
+  ]
+}

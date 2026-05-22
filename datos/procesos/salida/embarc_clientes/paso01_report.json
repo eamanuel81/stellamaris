@@ -1,0 +1,11 @@
+{
+  "paso": "01_extraer",
+  "origen": "D:\\Cursor\\Stella\\stella ultima\\datos\\EMBARC.CLIENTES.xlsx",
+  "filas_leidas": 232,
+  "clientes_generados": 232,
+  "advertencias": 71,
+  "salidas": [
+    "D:\\Cursor\\Stella\\stella ultima\\datos\\procesos\\salida\\embarc_clientes\\paso01_extracto.json",
+    "D:\\Cursor\\Stella\\stella ultima\\datos\\procesos\\salida\\embarc_clientes\\paso01_normalizado.xlsx"
+  ]
+}

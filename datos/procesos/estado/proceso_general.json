@@ -1,0 +1,22 @@
+{
+  "procesos": {
+    "embarc_clientes": {
+      "01_extraer": {
+        "estado": "descartado",
+        "mensaje": "No se ejecuto: ya existe paso01_extracto.json. Usa --forzar para regenerar.",
+        "timestamp": "2026-05-22T20:34:41+00:00"
+      },
+      "02_validar": {
+        "estado": "completado",
+        "mensaje": "Validación OK (81 advertencia(s))",
+        "timestamp": "2026-05-22T20:33:18+00:00"
+      },
+      "03_cargar_db": {
+        "estado": "completado",
+        "mensaje": "Carga: +0 insertados, 0 actualizados, 232 omitidos",
+        "timestamp": "2026-05-22T22:00:28+00:00"
+      }
+    }
+  },
+  "ultima_ejecucion": "2026-05-22T22:00:28+00:00"
+}

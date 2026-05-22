@@ -1,0 +1,6487 @@
+{
+  "proceso": "embarc_clientes",
+  "origen": "D:\\Cursor\\Stella\\stella ultima\\datos\\EMBARC.CLIENTES.xlsx",
+  "total": 232,
+  "clientes": [
+    {
+      "sourceRow": 2,
+      "firstName": "Enrique Jorge",
+      "lastName": "ABELLAN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "4c820de3-3c49-4f01-b71e-cc52a6e9541f",
+          "name": "LA FLAQUI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey067476",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA FLAQUI",
+        "registration": "rey067476",
+        "client_raw": "ABELLAN, Enrique Jorge"
+      }
+    },
+    {
+      "sourceRow": 3,
+      "firstName": "Alejandro",
+      "lastName": "ACEVEDO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d769af01-8d41-4b13-88d4-7260c18e8a75",
+          "name": "GNOMO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Barr3774",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "GNOMO",
+        "registration": "Barr3774",
+        "client_raw": "ACEVEDO, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 4,
+      "firstName": "Silvio Ricardo",
+      "lastName": "ALBANO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "be14cc87-97cb-4652-a6f2-0a23fa92b602",
+          "name": "TRINIDAD",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TRINIDAD",
+        "registration": null,
+        "client_raw": "ALBANO, Silvio Ricardo"
+      }
+    },
+    {
+      "sourceRow": 5,
+      "firstName": "Marcial",
+      "lastName": "ACOSTA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "6ca96f7b-c86c-48af-9676-b5e2f7979ebe",
+          "name": "SIMON II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SIMON II",
+        "registration": "e/t",
+        "client_raw": "ACOSTA, Marcial"
+      }
+    },
+    {
+      "sourceRow": 6,
+      "firstName": "Hector Amadeo",
+      "lastName": "AGUIRRE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "206ff337-9926-4fa3-ac0b-f9feb91b51db",
+          "name": "NARO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ÑARÓ",
+        "registration": null,
+        "client_raw": "AGUIRRE, Hector Amadeo"
+      }
+    },
+    {
+      "sourceRow": 7,
+      "firstName": "Martin",
+      "lastName": "AGUIRRE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "a4a1ca40-6200-4e3c-bf42-ca669a1f5f7b",
+          "name": "EL PRODUCTO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey055743",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "EL PRODUCTO",
+        "registration": "rey055743",
+        "client_raw": "AGUIRRE, Martin"
+      }
+    },
+    {
+      "sourceRow": 8,
+      "firstName": "Marcos",
+      "lastName": "AMARILLA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "8f8511be-c8d7-46e9-84cc-7427010f4c1b",
+          "name": "NANOS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NANOS",
+        "registration": null,
+        "client_raw": "AMARILLA, Marcos"
+      }
+    },
+    {
+      "sourceRow": 9,
+      "firstName": "Santiago",
+      "lastName": "ANELLO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "URDANPILLETA, Santiago | ANELLO, Santiago ( URDANPILLETA, Santiago )",
+      "boats": [
+        {
+          "id": "3b71402e-ac66-4536-a862-c0a68cfd8be2",
+          "name": "LA BEBU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 09635",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "LA BEBU",
+        "registration": "Rey 09635",
+        "client_raw": "ANELLO, Santiago ( URDANPILLETA, Santiago )"
+      }
+    },
+    {
+      "sourceRow": 10,
+      "firstName": "Roberto",
+      "lastName": "ANTONELLI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "274f902e-6b50-4749-9371-ce82f3d0194c",
+          "name": "BONA VITA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey081697",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BONA VITA",
+        "registration": "rey081697",
+        "client_raw": "ANTONELLI, Roberto"
+      }
+    },
+    {
+      "sourceRow": 11,
+      "firstName": "José Manuel",
+      "lastName": "ARAGUES ALEGRE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9eaafd2d-85b5-4dbe-99d3-fdb621a20757",
+          "name": "F&F",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "corr 0728",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "F&F",
+        "registration": "corr 0728",
+        "client_raw": "ARAGUES ALEGRE, José Manuel"
+      }
+    },
+    {
+      "sourceRow": 12,
+      "firstName": "Jose Manuel",
+      "lastName": "ARAGUES SOTOMAYOR",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Papu | ARAGUES SOTOMAYOR, Jose Manuel (Papu)",
+      "boats": [
+        {
+          "id": "1e140a34-44f9-420f-967e-ffd064e9e627",
+          "name": "SIMJA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey065382",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "SIMJA",
+        "registration": "rey065382",
+        "client_raw": "ARAGUES SOTOMAYOR, Jose Manuel (Papu)"
+      }
+    },
+    {
+      "sourceRow": 13,
+      "firstName": "Martin",
+      "lastName": "ARENGO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c9ad924b-da3b-4cb5-bd9b-cd68f7844fa3",
+          "name": "FAREH",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "BQRAS3156",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "FAREH",
+        "registration": "BQRAS3156",
+        "client_raw": "ARENGO, Martin"
+      }
+    },
+    {
+      "sourceRow": 14,
+      "firstName": "Juan Carlos",
+      "lastName": "AREVALO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "83b7b539-de2b-419a-83d0-e0acf476104e",
+          "name": "LOS CHICOS MONOS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 027074",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LOS CHICOS MONOS",
+        "registration": "rey 027074",
+        "client_raw": "AREVALO, Juan Carlos"
+      }
+    },
+    {
+      "sourceRow": 15,
+      "firstName": "Gonzalo",
+      "lastName": "ARGAÑARAS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "bcf6594b-0e9c-4c02-837b-7e5729d369b3",
+          "name": "CUATRI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 058998",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CUATRI",
+        "registration": "rey 058998",
+        "client_raw": "ARGAÑARAS, Gonzalo"
+      }
+    },
+    {
+      "sourceRow": 16,
+      "firstName": "Cesar - ARCE, Oscar",
+      "lastName": "ARIGOSSI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "f83874bf-647b-40f4-a7af-703349938e7b",
+          "name": "LAS CHULAS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 0103160",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LAS CHULAS",
+        "registration": "REY 0103160",
+        "client_raw": "ARIGOSSI, Cesar - ARCE, Oscar"
+      }
+    },
+    {
+      "sourceRow": 17,
+      "firstName": "Jose Luis",
+      "lastName": "AZAR REPETTO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "6f5804ac-e02c-4155-9bae-d23d2e932988",
+          "name": "BLACK PEARL",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey0100674",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BLACK PEARL",
+        "registration": "rey0100674",
+        "client_raw": "AZAR REPETTO, Jose Luis"
+      }
+    },
+    {
+      "sourceRow": 18,
+      "firstName": "Mariano",
+      "lastName": "BARATTO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ff0625f9-c760-4325-a00c-d5f857d56965",
+          "name": "IARA II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 054845",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "IARA II",
+        "registration": "rey 054845",
+        "client_raw": "BARATTO, Mariano"
+      }
+    },
+    {
+      "sourceRow": 19,
+      "firstName": "Belén",
+      "lastName": "BARBOZA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ed512265-bc88-457f-a900-88a5b39b5d3e",
+          "name": "LA BELU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA BELU",
+        "registration": "rey e/t",
+        "client_raw": "BARBOZA, Belén"
+      }
+    },
+    {
+      "sourceRow": 20,
+      "firstName": "Belén",
+      "lastName": "BARBOZA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "moto de agua | BARBOZA, Belén (moto de agua)",
+      "boats": [
+        {
+          "id": "f5937d85-6c2e-41d8-9a24-e25a705bc933",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "BARBOZA, Belén (moto de agua)"
+      }
+    },
+    {
+      "sourceRow": 21,
+      "firstName": "Jose Maria",
+      "lastName": "BEIGBEDER",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Adriana Farah | BEIGBEDER, Jose Maria (Adriana Farah)",
+      "boats": [
+        {
+          "id": "395a30dd-82a3-47f1-80d9-629af069df49",
+          "name": "ROCKET QUEEN",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "ROCKET QUEEN",
+        "registration": "e/t",
+        "client_raw": "BEIGBEDER, Jose Maria (Adriana Farah)"
+      }
+    },
+    {
+      "sourceRow": 22,
+      "firstName": "Sacha",
+      "lastName": "BERCOVICH",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "AIDA | BERCOVICH, Sacha (AIDA)",
+      "boats": [
+        {
+          "id": "f7d24d66-ffd3-4620-9818-4001994c6168",
+          "name": "AIDA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 02205",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "AIDA",
+        "registration": "rey 02205",
+        "client_raw": "BERCOVICH, Sacha (AIDA)"
+      }
+    },
+    {
+      "sourceRow": 23,
+      "firstName": "Sacha",
+      "lastName": "BERCOVICH",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "BERCOI | BERCOVICH, Sacha (BERCOI)",
+      "boats": [
+        {
+          "id": "a2a4e4a7-2b96-4eae-be64-c67bf1bb63a8",
+          "name": "BERCO I",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey055784",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "BERCO I",
+        "registration": "rey055784",
+        "client_raw": "BERCOVICH, Sacha (BERCOI)"
+      }
+    },
+    {
+      "sourceRow": 24,
+      "firstName": "Sacha",
+      "lastName": "BERCOVICH",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "cuddy | BERCOVICH, Sacha (cuddy)",
+      "boats": [
+        {
+          "id": "1f6a3467-4ba3-4a06-a70b-ff84b4106822",
+          "name": "CLEMENTINA II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "CLEMENTINA II",
+        "registration": "e/t",
+        "client_raw": "BERCOVICH, Sacha (cuddy)"
+      }
+    },
+    {
+      "sourceRow": 25,
+      "firstName": "Alejandro",
+      "lastName": "BERGER",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ce3ba97c-bda0-46b3-afc7-a9a3dfc761f4",
+          "name": "KEY WEST",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey059782",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "KEY WEST",
+        "registration": "rey059782",
+        "client_raw": "BERGER, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 26,
+      "firstName": "Martin Joel",
+      "lastName": "BINAGHI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "HUROVICH, Diego | BINAGHI, Martin Joel (HUROVICH, Diego)",
+      "boats": [
+        {
+          "id": "d9a88a86-6201-4006-8f2b-e8317eddfffd",
+          "name": "DON TOMAS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY0103490",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "DON TOMAS",
+        "registration": "REY0103490",
+        "client_raw": "BINAGHI, Martin Joel (HUROVICH, Diego)"
+      }
+    },
+    {
+      "sourceRow": 27,
+      "firstName": "Oscar",
+      "lastName": "BIONE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "104788b3-13f3-4d83-8bf3-c2cd457808ed",
+          "name": "AVENTURERA II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 07986",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "AVENTURERA II",
+        "registration": "rey 07986",
+        "client_raw": "BIONE, Oscar"
+      }
+    },
+    {
+      "sourceRow": 28,
+      "firstName": "Ramón Alberto",
+      "lastName": "BLANCO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "61b9f0e0-e0a8-45c3-8138-aedd5724601e",
+          "name": "LOS CARDALES",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 064599",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LOS CARDALES",
+        "registration": "rey 064599",
+        "client_raw": "BLANCO, Ramón Alberto"
+      }
+    },
+    {
+      "sourceRow": 29,
+      "firstName": "Ariel",
+      "lastName": "BOJANICH",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Cuddy | BOJANICH, Ariel (Cuddy)",
+      "boats": [
+        {
+          "id": "081c545d-f12a-49ab-977a-7e6f919b3f5c",
+          "name": "VICENZO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey086147",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "VICENZO",
+        "registration": "rey086147",
+        "client_raw": "BOJANICH, Ariel (Cuddy)"
+      }
+    },
+    {
+      "sourceRow": 30,
+      "firstName": "Pedro Eugenio",
+      "lastName": "BRAILLARD POCARD",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "e528cbd0-2882-49e6-b4b4-ad7729092114",
+          "name": "LA BEBA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 056266",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA BEBA",
+        "registration": "rey 056266",
+        "client_raw": "BRAILLARD POCARD, Pedro Eugenio"
+      }
+    },
+    {
+      "sourceRow": 31,
+      "firstName": "Guillermo",
+      "lastName": "BRENN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7e231738-e863-4491-a282-e32dc9d9d6db",
+          "name": "LEMBRANZA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 059592",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LEMBRANZA",
+        "registration": "rey 059592",
+        "client_raw": "BRENN, Guillermo"
+      }
+    },
+    {
+      "sourceRow": 32,
+      "firstName": "Tobias",
+      "lastName": "BROGINI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "ATUCHA, Tomás Ariel | BROGINI, Tobias (ATUCHA, Tomás Ariel)",
+      "boats": [
+        {
+          "id": "24705d0e-bf87-4d49-afe7-11a2b0629bf7",
+          "name": "GENARO (el picaflor)",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 042444",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "GENARO (el picaflor)",
+        "registration": "rey 042444",
+        "client_raw": "BROGINI, Tobias (ATUCHA, Tomás Ariel)"
+      }
+    },
+    {
+      "sourceRow": 33,
+      "firstName": "Ceferino",
+      "lastName": "BROTTO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "a2dcbbe5-f862-4411-8c4c-767ff291c364",
+          "name": "NIRVANA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 079270",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NIRVANA",
+        "registration": "rey 079270",
+        "client_raw": "BROTTO, Ceferino"
+      }
+    },
+    {
+      "sourceRow": 34,
+      "firstName": "Guillermo Horacio",
+      "lastName": "BRUNEL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "5115621d-2d28-4930-90fe-ad58c5027466",
+          "name": "LA ELVITA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 046967",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA ELVITA",
+        "registration": "rey 046967",
+        "client_raw": "BRUNEL, Guillermo Horacio"
+      }
+    },
+    {
+      "sourceRow": 35,
+      "firstName": "Wawi",
+      "lastName": "BRUNEL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "fd6f2cb1-9b41-45d6-8158-8fd66745ac10",
+          "name": "LA GRETA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA GRETA",
+        "registration": "e/t",
+        "client_raw": "BRUNEL, Wawi"
+      }
+    },
+    {
+      "sourceRow": 36,
+      "firstName": "Horacio",
+      "lastName": "BUZAGLO FRATTINI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d2671242-311f-423c-ba2b-f395445ae205",
+          "name": "WAKALA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "bq 3302",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "WAKALA",
+        "registration": "bq 3302",
+        "client_raw": "BUZAGLO FRATTINI, Horacio"
+      }
+    },
+    {
+      "sourceRow": 37,
+      "firstName": "Jorge",
+      "lastName": "CABRAL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "3c9845e8-5531-4746-a753-7902bfafa981",
+          "name": "TOTON",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "bq 3260",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TOTON",
+        "registration": "bq 3260",
+        "client_raw": "CABRAL, Jorge"
+      }
+    },
+    {
+      "sourceRow": 38,
+      "firstName": "José Maria",
+      "lastName": "CABRERA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "1c7e1c2c-5a09-4307-8f9c-35e2569be687",
+          "name": "IVANCHO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "ppat 0486",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "IVANCHO",
+        "registration": "ppat 0486",
+        "client_raw": "CABRERA, José Maria"
+      }
+    },
+    {
+      "sourceRow": 39,
+      "firstName": "Bruno",
+      "lastName": "CACERES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "3ea24840-c64e-4576-aabf-51228af2479f",
+          "name": "LA SONADA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 054489",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA SOÑADA",
+        "registration": "rey 054489",
+        "client_raw": "CACERES, Bruno"
+      }
+    },
+    {
+      "sourceRow": 40,
+      "firstName": "Fernando",
+      "lastName": "CACERES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "df44f645-80f8-4c61-9465-089ee8c3cab5",
+          "name": "MAFER",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MAFER",
+        "registration": "e/t",
+        "client_raw": "CACERES, Fernando"
+      }
+    },
+    {
+      "sourceRow": 41,
+      "firstName": "RIOS, Sebastian LEO",
+      "lastName": "CACERES Raul",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "moto de agua | CACERES Raul, RIOS, Sebastian (moto de agua) LEO",
+      "boats": [
+        {
+          "id": "c8379ae5-61fc-4c71-b92c-21d306f68143",
+          "name": "moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "moto de agua",
+        "registration": null,
+        "client_raw": "CACERES Raul, RIOS, Sebastian (moto de agua) LEO"
+      }
+    },
+    {
+      "sourceRow": 42,
+      "firstName": "Raul",
+      "lastName": "CACERES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "RIOS, Sebastian | CACERES, Raul (RIOS, Sebastian)",
+      "boats": [
+        {
+          "id": "9dbd438a-8a40-4418-9347-c80095a6d06b",
+          "name": "CACHITO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey050866",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "CACHITO",
+        "registration": "rey050866",
+        "client_raw": "CACERES, Raul (RIOS, Sebastian)"
+      }
+    },
+    {
+      "sourceRow": 43,
+      "firstName": "Julio Horacio",
+      "lastName": "CACHEDA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7916b78a-adae-4104-b9a8-3bd3240af1fc",
+          "name": "TIO LUCAS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TIO LUCAS",
+        "registration": "rey e/t",
+        "client_raw": "CACHEDA, Julio Horacio"
+      }
+    },
+    {
+      "sourceRow": 44,
+      "firstName": "Elias",
+      "lastName": "RUIZ DIAZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "ex CAJA, Horacio | RUIZ DIAZ, Elias ( ex CAJA, Horacio)",
+      "boats": [
+        {
+          "id": "49a80bb5-abec-4e16-9129-a0ff3522df06",
+          "name": "LA DIVINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "LA DIVINA",
+        "registration": "e/t",
+        "client_raw": "RUIZ DIAZ, Elias ( ex CAJA, Horacio)"
+      }
+    },
+    {
+      "sourceRow": 45,
+      "firstName": "Facundo",
+      "lastName": "CAMACHO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "df84c43e-ab8c-43b5-9613-9416bd64aaba",
+          "name": "BIENESTAR",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey084010",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BIENESTAR",
+        "registration": "rey084010",
+        "client_raw": "CAMACHO, Facundo"
+      }
+    },
+    {
+      "sourceRow": 46,
+      "firstName": "Oscar",
+      "lastName": "CAMACHO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "6eb7aaa7-7a01-4c7b-8a57-c5875ba64365",
+          "name": "ANGELICA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ANGELICA",
+        "registration": "e/t",
+        "client_raw": "CAMACHO, Oscar"
+      }
+    },
+    {
+      "sourceRow": 47,
+      "firstName": "Oscar Andrés",
+      "lastName": "CANDIA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "a84fb965-8236-437f-92ce-f0bbe55d9b2e",
+          "name": "LUNA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 050435",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LUNA",
+        "registration": "rey 050435",
+        "client_raw": "CANDIA, Oscar Andrés"
+      }
+    },
+    {
+      "sourceRow": 48,
+      "firstName": "Diego",
+      "lastName": "CARDOZO LONGO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "65bc5f4b-4d60-407c-af6b-fbedea31b6fa",
+          "name": "ASTRULLI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ASTRULLI",
+        "registration": "REy e/t",
+        "client_raw": "CARDOZO LONGO, Diego"
+      }
+    },
+    {
+      "sourceRow": 49,
+      "firstName": "Gustavo y BOUE, Pablo",
+      "lastName": "CARDOZO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "e7bff6c5-a54c-4f0f-b07f-7cabc125c2f7",
+          "name": "LA PARTUZZA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 034098",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA PARTUZZA",
+        "registration": "rey 034098",
+        "client_raw": "CARDOZO, Gustavo y BOUE, Pablo"
+      }
+    },
+    {
+      "sourceRow": 50,
+      "firstName": "Alejandro",
+      "lastName": "CARDOSO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "91576a69-e31c-424d-aed5-7a2109d92719",
+          "name": "VIERNES",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey086089",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "VIERNES",
+        "registration": "rey086089",
+        "client_raw": "CARDOSO, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 51,
+      "firstName": "ROBERTO OSCAR",
+      "lastName": "CARNEVALE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "VIVIANA CENTURION | CARNEVALE, ROBERTO OSCAR (VIVIANA CENTURION)",
+      "boats": [
+        {
+          "id": "03ef7426-50e3-45ce-ad00-267436f21b99",
+          "name": "IRUPE TAU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey0101456",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "IRUPE TAU",
+        "registration": "Rey0101456",
+        "client_raw": "CARNEVALE, ROBERTO OSCAR (VIVIANA CENTURION)"
+      }
+    },
+    {
+      "sourceRow": 52,
+      "firstName": "Jorge",
+      "lastName": "CASCANT",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7673cafe-eba8-408c-9bd8-90f1e2104f57",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "CASCANT, Jorge"
+      }
+    },
+    {
+      "sourceRow": 53,
+      "firstName": "Daniel y Luis",
+      "lastName": "CASSIET",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "db9f00ef-447c-486d-8eca-2d4c4a74fdc4",
+          "name": "NEDALU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 059192",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NEDALU",
+        "registration": "rey 059192",
+        "client_raw": "CASSIET, Daniel y Luis"
+      }
+    },
+    {
+      "sourceRow": 54,
+      "firstName": "Alvaro",
+      "lastName": "CASTRO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "3666d4e4-d826-4d06-9916-9cd57c7f0dcc",
+          "name": "C826",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "C826",
+        "registration": "e/t",
+        "client_raw": "CASTRO, Alvaro"
+      }
+    },
+    {
+      "sourceRow": 55,
+      "firstName": "Santiago",
+      "lastName": "CERVETTI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "47a59d48-d519-4764-85fc-67a0609db9c2",
+          "name": "ARTIBANO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ARTIBANO",
+        "registration": "rey e/t",
+        "client_raw": "CERVETTI, Santiago"
+      }
+    },
+    {
+      "sourceRow": 56,
+      "firstName": "Alejandro",
+      "lastName": "CEROLENI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "122bf459-9749-448f-ae78-d9835cef0ce0",
+          "name": "LA NARO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey092522",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA ÑARO",
+        "registration": "rey092522",
+        "client_raw": "CEROLENI, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 57,
+      "firstName": "Lucio Ricardo",
+      "lastName": "CESPEDES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0ba039dd-0d38-4d75-9c09-519f8786a24b",
+          "name": "TIO RICO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 044988",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TIO RICO",
+        "registration": "rey 044988",
+        "client_raw": "CESPEDES, Lucio Ricardo"
+      }
+    },
+    {
+      "sourceRow": 58,
+      "firstName": "Carmen Teresita",
+      "lastName": "CIMA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "90a5e360-f451-4115-8d10-290d0d682e85",
+          "name": "MAMANGA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 031764",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MAMANGÁ",
+        "registration": "rey 031764",
+        "client_raw": "CIMA, Carmen Teresita"
+      }
+    },
+    {
+      "sourceRow": 59,
+      "firstName": "Carlos",
+      "lastName": "COIMBRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "3944eeda-52cb-41cf-80d0-5e8882ae1503",
+          "name": "ROSARITO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "goya 0137",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ROSARITO",
+        "registration": "goya 0137",
+        "client_raw": "COIMBRA, Carlos"
+      }
+    },
+    {
+      "sourceRow": 60,
+      "firstName": "Ernesto",
+      "lastName": "COLMAN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "RODRIGUEZ, Oscar | COLMAN, Ernesto (RODRIGUEZ, Oscar)",
+      "boats": [
+        {
+          "id": "f62e453e-269f-460f-86ba-97ec7927dd13",
+          "name": "TRINIDAD",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 033608",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "TRINIDAD",
+        "registration": "rey 033608",
+        "client_raw": "COLMAN, Ernesto (RODRIGUEZ, Oscar)"
+      }
+    },
+    {
+      "sourceRow": 61,
+      "firstName": "Diego Sebastian",
+      "lastName": "COLOMBI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "33593520-db56-4e74-b6c0-9d38c66f8271",
+          "name": "HUAYRA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Barr01876",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "HUAYRA",
+        "registration": "Barr01876",
+        "client_raw": "COLOMBI, Diego Sebastian"
+      }
+    },
+    {
+      "sourceRow": 62,
+      "firstName": "Juan Daniel",
+      "lastName": "CONDE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "abc96150-14a0-4862-8929-2fbb97c0863f",
+          "name": "ACA GUAZU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ACA GUAZU",
+        "registration": null,
+        "client_raw": "CONDE, Juan Daniel"
+      }
+    },
+    {
+      "sourceRow": 63,
+      "firstName": "Guillermo",
+      "lastName": "CORRALES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "moto agua | CORRALES, Guillermo (moto agua)",
+      "boats": [
+        {
+          "id": "5b32d2f0-e7fa-4c32-8496-33ee2b4c5e5c",
+          "name": "LAS ALOMETAS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "BARR E/T",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "LAS ALOMETAS",
+        "registration": "BARR E/T",
+        "client_raw": "CORRALES, Guillermo (moto agua)"
+      }
+    },
+    {
+      "sourceRow": 64,
+      "firstName": "Raul Alberto",
+      "lastName": "COZZARINI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "5f8cbeac-ff0f-454c-bb3c-b78474bb757b",
+          "name": "SOLAR DEL PASO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey037281",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SOLAR DEL PASO",
+        "registration": "rey037281",
+        "client_raw": "COZZARINI, Raul Alberto"
+      }
+    },
+    {
+      "sourceRow": 65,
+      "firstName": "Jose Oscar",
+      "lastName": "DEL CUETO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "CRUZ, Marcelino Timoteo | DEL CUETO, Jose Oscar (CRUZ, Marcelino Timoteo)",
+      "boats": [
+        {
+          "id": "24448192-04c4-4ecc-a960-534522db814a",
+          "name": "COEMBOTA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "corr 049",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "COEMBOTÁ",
+        "registration": "corr 049",
+        "client_raw": "DEL CUETO, Jose Oscar (CRUZ, Marcelino Timoteo)"
+      }
+    },
+    {
+      "sourceRow": 66,
+      "firstName": "Javier",
+      "lastName": "DANDREA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "a08212fb-e922-444e-8a18-885ef12017eb",
+          "name": "MARIA JOSE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 057691",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MARIA JOSE",
+        "registration": "rey 057691",
+        "client_raw": "DANDREA, Javier"
+      }
+    },
+    {
+      "sourceRow": 67,
+      "firstName": "Julio Fabian",
+      "lastName": "DE LA ROSA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9d00d756-8cbf-4603-879b-da18426ccdc5",
+          "name": "ILSE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ILSE",
+        "registration": "e/t",
+        "client_raw": "DE LA ROSA, Julio Fabian"
+      }
+    },
+    {
+      "sourceRow": 68,
+      "firstName": "Federico lancha",
+      "lastName": "DENK",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "DROGUERIA PHARMAD SRL | DENK, Federico (DROGUERIA PHARMAD SRL ) lancha",
+      "boats": [
+        {
+          "id": "84433080-ed80-4836-aa05-3474befdf51f",
+          "name": "CLEMENTINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 057052",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "CLEMENTINA",
+        "registration": "rey 057052",
+        "client_raw": "DENK, Federico (DROGUERIA PHARMAD SRL ) lancha"
+      }
+    },
+    {
+      "sourceRow": 69,
+      "firstName": "Silvio Raul",
+      "lastName": "DIP",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ef2ff7d3-4737-4fa1-9daf-b32c4fd00ad2",
+          "name": "MARIHECSIL",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 076716",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MARIHECSIL",
+        "registration": "rey 076716",
+        "client_raw": "DIP, Silvio Raul"
+      }
+    },
+    {
+      "sourceRow": 70,
+      "firstName": "Alberto",
+      "lastName": "DRI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Cuddy | DRI, Alberto (Cuddy)",
+      "boats": [
+        {
+          "id": "dcb70dcd-e017-446f-adba-f5b360e471c7",
+          "name": "ERNESTINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "ERNESTINA",
+        "registration": "e/t",
+        "client_raw": "DRI, Alberto (Cuddy)"
+      }
+    },
+    {
+      "sourceRow": 71,
+      "firstName": "Juan Manuel",
+      "lastName": "EMER",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "af76fc13-7479-4626-a5b3-e4c37f71f8b1",
+          "name": "POSEIDON",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 085036",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "POSEIDON",
+        "registration": "rey 085036",
+        "client_raw": "EMER, Juan Manuel"
+      }
+    },
+    {
+      "sourceRow": 72,
+      "firstName": "Franco Luis",
+      "lastName": "ESCOBAR",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "f472fd51-e832-4ac9-addc-e2f0a230c283",
+          "name": "JULIA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 034354",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "JULIA",
+        "registration": "rey 034354",
+        "client_raw": "ESCOBAR, Franco Luis"
+      }
+    },
+    {
+      "sourceRow": 73,
+      "firstName": "Jorge",
+      "lastName": "ESPINOLA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "3e345fc3-3ce1-4ea2-81a9-990cc506fdde",
+          "name": "MILENIO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 44627",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MILENIO",
+        "registration": "rey 44627",
+        "client_raw": "ESPINOLA, Jorge"
+      }
+    },
+    {
+      "sourceRow": 74,
+      "firstName": "Carlos",
+      "lastName": "ESQUIVEL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "4935a626-a315-4dca-8861-2e4bcee9ef08",
+          "name": "CAPITAN",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 066162",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CAPITAN",
+        "registration": "Rey 066162",
+        "client_raw": "ESQUIVEL, Carlos"
+      }
+    },
+    {
+      "sourceRow": 75,
+      "firstName": "Alfredo Jorge",
+      "lastName": "EVIN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "36fbed7f-a181-4f3d-b24e-1b38a0dfe0f1",
+          "name": "ORO BLANCO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 010390",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ORO BLANCO",
+        "registration": "Rey 010390",
+        "client_raw": "EVIN , Alfredo Jorge"
+      }
+    },
+    {
+      "sourceRow": 76,
+      "firstName": "Tomas Augusto",
+      "lastName": "FABREGA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "38c3fdf4-f277-4da9-9568-fa4545a9b00b",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "FABREGA, Tomas Augusto"
+      }
+    },
+    {
+      "sourceRow": 77,
+      "firstName": "Mariano",
+      "lastName": "FABRIZZI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "moto de agua | FABRIZZI, Mariano (moto de agua)",
+      "boats": [
+        {
+          "id": "80c06d83-a6f7-47b7-92f6-2d0de9f69245",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "FABRIZZI, Mariano (moto de agua)"
+      }
+    },
+    {
+      "sourceRow": 78,
+      "firstName": "Carlos",
+      "lastName": "FAGETTI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "4fd27974-f140-4d18-81c3-e07a0f1bb58f",
+          "name": "FRANCISCA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey060326",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "FRANCISCA",
+        "registration": "Rey060326",
+        "client_raw": "FAGETTI, Carlos"
+      }
+    },
+    {
+      "sourceRow": 79,
+      "firstName": "Federico",
+      "lastName": "FANKHAUSER",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Doble Clik | FANKHAUSER, Federico (Doble Clik)",
+      "boats": [
+        {
+          "id": "dab836e3-2c64-430a-878f-4f17f395f582",
+          "name": "MARPIPA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "MARPIPA",
+        "registration": "e/t",
+        "client_raw": "FANKHAUSER, Federico (Doble Clik)"
+      }
+    },
+    {
+      "sourceRow": 80,
+      "firstName": "Sergio",
+      "lastName": "FARINOLI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "535136c2-6213-450b-b67e-f83dbbeac69f",
+          "name": "NAVAL CENTER",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NAVAL CENTER",
+        "registration": "e/t",
+        "client_raw": "FARINOLI, Sergio"
+      }
+    },
+    {
+      "sourceRow": 81,
+      "firstName": "Juan José",
+      "lastName": "FARIZANO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7f7d8cde-f181-4a64-beea-660768e0f228",
+          "name": "EL PATRON",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "EL PATRON",
+        "registration": "e/t",
+        "client_raw": "FARIZANO, Juan José"
+      }
+    },
+    {
+      "sourceRow": 82,
+      "firstName": "Abel",
+      "lastName": "FERNANDEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "f7d4295c-e1ef-40c8-b5eb-2e743ebad074",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 061693",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "Rey 061693",
+        "client_raw": "FERNANDEZ, Abel"
+      }
+    },
+    {
+      "sourceRow": 83,
+      "firstName": "Daniel Enrique",
+      "lastName": "FERRACINI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7e5871b3-7c65-43c1-9eac-d5b328e88b1b",
+          "name": "VALELTRAGO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY078232",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "VALELTRAGO",
+        "registration": "REY078232",
+        "client_raw": "FERRACINI, Daniel Enrique"
+      }
+    },
+    {
+      "sourceRow": 84,
+      "firstName": "Justo José",
+      "lastName": "FERREYRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0e22a4c6-b76a-466c-83b6-49e2d53c8407",
+          "name": "PERLA NEGRA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 078723",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "PERLA NEGRA",
+        "registration": "rey 078723",
+        "client_raw": "FERREYRA, Justo José"
+      }
+    },
+    {
+      "sourceRow": 85,
+      "firstName": "Marcelo",
+      "lastName": "FISMAN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "lancha | FISMAN, Marcelo (lancha)",
+      "boats": [
+        {
+          "id": "f23199dc-0476-4914-a5f5-1e8e00e3086e",
+          "name": "CARPE DIEM",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 65107",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "CARPE DIEM",
+        "registration": "rey 65107",
+        "client_raw": "FISMAN, Marcelo (lancha)"
+      }
+    },
+    {
+      "sourceRow": 86,
+      "firstName": "Marcelo",
+      "lastName": "FISMAN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "moto | FISMAN, Marcelo (moto)",
+      "boats": [
+        {
+          "id": "fc1a1dd0-2dcc-4351-8a7f-f76713b55a04",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "e/t",
+        "client_raw": "FISMAN, Marcelo (moto)"
+      }
+    },
+    {
+      "sourceRow": 87,
+      "firstName": "Victor José",
+      "lastName": "FORMICHELLI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "bdb87784-9b76-44c5-bdce-12a4138e6c23",
+          "name": "EH y ELLA ?",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 038400",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "EH y ELLA ?",
+        "registration": "rey 038400",
+        "client_raw": "FORMICHELLI, Victor José"
+      }
+    },
+    {
+      "sourceRow": 88,
+      "firstName": "Leandro",
+      "lastName": "FUENTES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "4641ec19-0340-4d2f-94f1-f3774f3e9e99",
+          "name": "CHICANOS III",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CHICANOS III",
+        "registration": "rey e/t",
+        "client_raw": "FUENTES, Leandro"
+      }
+    },
+    {
+      "sourceRow": 89,
+      "firstName": "Daniel",
+      "lastName": "GALARZA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "72777bd0-cac2-454e-ad29-10942c4faa7a",
+          "name": "SUENITOS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 092377",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SUEÑITOS",
+        "registration": "rey 092377",
+        "client_raw": "GALARZA, Daniel"
+      }
+    },
+    {
+      "sourceRow": 90,
+      "firstName": "Sebastian",
+      "lastName": "GALLUCCI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9b687ece-5e73-4a08-a9da-686ade91c0e2",
+          "name": "LA SONADA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 055815",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA SOÑADA",
+        "registration": "rey 055815",
+        "client_raw": "GALLUCCI, Sebastian"
+      }
+    },
+    {
+      "sourceRow": 91,
+      "firstName": "Nicolas",
+      "lastName": "GALMARINI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d64599b8-fa83-4385-9d95-76db5f25d0ce",
+          "name": "TOTI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 038934",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TOTI",
+        "registration": "rey 038934",
+        "client_raw": "GALMARINI, Nicolas"
+      }
+    },
+    {
+      "sourceRow": 92,
+      "firstName": "Martin",
+      "lastName": "GARCIA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "MEDERO, Jorge Fabian | GARCIA, Martin (MEDERO, Jorge Fabian)",
+      "boats": [
+        {
+          "id": "5d557e27-e4a0-4299-8218-273d6c6b85ad",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "e/t",
+        "client_raw": "GARCIA, Martin (MEDERO, Jorge Fabian)"
+      }
+    },
+    {
+      "sourceRow": 93,
+      "firstName": "Tomas",
+      "lastName": "GARCIA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7be5293c-e5d9-4aae-ad0b-15ebf2f03e8a",
+          "name": "LA BRIGITTE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey078470",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA BRIGITTE",
+        "registration": "rey078470",
+        "client_raw": "GARCIA, Tomas"
+      }
+    },
+    {
+      "sourceRow": 94,
+      "firstName": "Walter Javier",
+      "lastName": "GARCIA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "8a9e01b4-6fba-4dc9-8ca5-0284b1c25984",
+          "name": "ABEL",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 061693",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ABEL",
+        "registration": "rey 061693",
+        "client_raw": "GARCIA, Walter Javier"
+      }
+    },
+    {
+      "sourceRow": 95,
+      "firstName": "Gustavo Jorge",
+      "lastName": "GAUNA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "3f3f0b34-7d95-4fb6-af07-da949e5abb1d",
+          "name": "GUGA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "GUGA",
+        "registration": "rey e/t",
+        "client_raw": "GAUNA, Gustavo Jorge"
+      }
+    },
+    {
+      "sourceRow": 96,
+      "firstName": "Pedro Alfredo",
+      "lastName": "GAUNA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d7341c1e-b097-49bd-8ed4-0b9048f2028c",
+          "name": "XENEIZE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "barr 0656",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "XENEIZE",
+        "registration": "barr 0656",
+        "client_raw": "GAUNA, Pedro Alfredo"
+      }
+    },
+    {
+      "sourceRow": 97,
+      "firstName": "Alejandro",
+      "lastName": "GEROMETA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "221bb612-669c-4a90-8fc6-4a184a5be549",
+          "name": "LA MAMBA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA MAMBA",
+        "registration": "rey e/t",
+        "client_raw": "GEROMETA, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 98,
+      "firstName": "Carlos Alberto",
+      "lastName": "GIULIANO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c1d44c38-4afa-4971-9a6f-48ccd993bc2e",
+          "name": "GIULIANO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "GIULIANO",
+        "registration": "e/t",
+        "client_raw": "GIULIANO, Carlos Alberto"
+      }
+    },
+    {
+      "sourceRow": 99,
+      "firstName": "Alejandro",
+      "lastName": "GODOY",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0cf06fa7-15de-4422-88f4-1ecc58f81adc",
+          "name": "DON PACHON II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DON PACHON II",
+        "registration": "e/t",
+        "client_raw": "GODOY, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 100,
+      "firstName": "Ruben Dario",
+      "lastName": "GOMEZ BALDISSERA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "GOMEZ BALDISSERA, Ruben Dario / ROMERO, Alejandro",
+      "boats": [
+        {
+          "id": "f46ad7bb-d8d1-4b6d-8571-fba3d066f042",
+          "name": "LOBO C",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "multiples_titulares"
+      ],
+      "raw": {
+        "boat_name": "LOBO C",
+        "registration": "rey e/t",
+        "client_raw": "GOMEZ BALDISSERA, Ruben Dario / ROMERO, Alejandro"
+      }
+    },
+    {
+      "sourceRow": 101,
+      "firstName": "Alberto",
+      "lastName": "GOMEZ PALERMO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "822fcc8e-19b9-4563-89a8-1d1480e75ade",
+          "name": "COMPA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 093968",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "COMPA",
+        "registration": "rey 093968",
+        "client_raw": "GOMEZ PALERMO, Alberto"
+      }
+    },
+    {
+      "sourceRow": 102,
+      "firstName": "Hugo Cesar",
+      "lastName": "GOMEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c147ce0a-fbe3-4568-8230-90b8cf6e70fc",
+          "name": "LOLITA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 068157",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LOLITA",
+        "registration": "rey 068157",
+        "client_raw": "GOMEZ, Hugo Cesar"
+      }
+    },
+    {
+      "sourceRow": 103,
+      "firstName": "Jorge Francisco",
+      "lastName": "GOMEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "14aa019e-69da-49bb-8519-7aa58523a4d8",
+          "name": "OHANA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "OHANA",
+        "registration": null,
+        "client_raw": "GOMEZ, Jorge Francisco"
+      }
+    },
+    {
+      "sourceRow": 104,
+      "firstName": "Knoll Guillermo",
+      "lastName": "GOMEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "6824c48d-4bd2-4d98-8c12-76e8f0602e92",
+          "name": "TORONGIL",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey068473",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TORONGIL",
+        "registration": "rey068473",
+        "client_raw": "GOMEZ, Knoll Guillermo"
+      }
+    },
+    {
+      "sourceRow": 105,
+      "firstName": "Walter",
+      "lastName": "GOMEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "1388ffb0-dae3-438a-b0d4-7d46a9c67704",
+          "name": "JAGUAPE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 072422",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "JAGUAPÉ",
+        "registration": "rey 072422",
+        "client_raw": "GOMEZ, Walter"
+      }
+    },
+    {
+      "sourceRow": 106,
+      "firstName": "GONZALEZ DOMINGUEZ JAVIER",
+      "lastName": "",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d3af1b1b-9559-4ef9-b2d2-24d6fd56f2be",
+          "name": "CACHO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CACHO",
+        "registration": null,
+        "client_raw": "GONZALEZ DOMINGUEZ JAVIER"
+      }
+    },
+    {
+      "sourceRow": 107,
+      "firstName": "Diego Juan Lautaro",
+      "lastName": "GONZALEZ CABAÑAS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "dbf2d71c-3006-418a-8935-6f32de1a9f4a",
+          "name": "TAKE OVER",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 065403",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TAKE OVER",
+        "registration": "rey 065403",
+        "client_raw": "GONZALEZ CABAÑAS, Diego Juan Lautaro"
+      }
+    },
+    {
+      "sourceRow": 108,
+      "firstName": "Dimas",
+      "lastName": "SAUCEDO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "GONZALEZ MIRANDA, Eduardo | SAUCEDO, Dimas (GONZALEZ MIRANDA, Eduardo)",
+      "boats": [
+        {
+          "id": "5c5bf663-a308-46a9-86eb-bee2c52c0fa0",
+          "name": "SANCHO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 048975",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "SANCHO",
+        "registration": "rey 048975",
+        "client_raw": "SAUCEDO, Dimas (GONZALEZ MIRANDA, Eduardo)"
+      }
+    },
+    {
+      "sourceRow": 109,
+      "firstName": "German",
+      "lastName": "GONZALEZ VEDOYA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9c87f660-456e-4f1b-958f-a7c1a035ec7c",
+          "name": "CHILLY",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 052965",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CHILLY",
+        "registration": "REY 052965",
+        "client_raw": "GONZALEZ VEDOYA,German"
+      }
+    },
+    {
+      "sourceRow": 110,
+      "firstName": "Guido Adriel",
+      "lastName": "GONZALEZ ZEQUEIRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "fdb0e7d6-2ade-4400-944e-c63ee34d1d8f",
+          "name": "LOMO PLATEADO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 094985",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LOMO PLATEADO",
+        "registration": "Rey 094985",
+        "client_raw": "GONZALEZ ZEQUEIRA, Guido Adriel"
+      }
+    },
+    {
+      "sourceRow": 111,
+      "firstName": "Adolfo Hernan",
+      "lastName": "GONZALEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "cuddy | GONZALEZ, Adolfo Hernan (cuddy)",
+      "boats": [
+        {
+          "id": "ef4056e0-ef9b-4b2a-bdd4-eb46db652a96",
+          "name": "JUANFRA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "JUANFRA",
+        "registration": "e/t",
+        "client_raw": "GONZALEZ, Adolfo Hernan (cuddy)"
+      }
+    },
+    {
+      "sourceRow": 112,
+      "firstName": "José Antonio",
+      "lastName": "GONZALEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "30ae0bb3-9c51-4ab0-8d0d-d004dd275c2e",
+          "name": "MIS NIETOS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MIS NIETOS",
+        "registration": "rey e/t",
+        "client_raw": "GONZALEZ, José Antonio"
+      }
+    },
+    {
+      "sourceRow": 113,
+      "firstName": "Sergio",
+      "lastName": "GONZALEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0e95616c-a4dc-4c7d-a91e-93d65e3364c2",
+          "name": "BLACK WATER( samber)",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY040636",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BLACK WATER( samber)",
+        "registration": "REY040636",
+        "client_raw": "GONZALEZ, Sergio"
+      }
+    },
+    {
+      "sourceRow": 114,
+      "firstName": "Javier",
+      "lastName": "GONZALEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "221ceb72-ca27-4e22-8b64-99acdd0b61ab",
+          "name": "CANESTRARI 195",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CANESTRARI 195",
+        "registration": null,
+        "client_raw": "GONZALEZ, Javier"
+      }
+    },
+    {
+      "sourceRow": 115,
+      "firstName": "Roby Cruz",
+      "lastName": "GUDEN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9bf65a5d-74f4-4863-9f0c-3b0364836601",
+          "name": "CAMBALACHE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 080544",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CAMBALACHE",
+        "registration": "REY 080544",
+        "client_raw": "GUDEN, Roby Cruz"
+      }
+    },
+    {
+      "sourceRow": 116,
+      "firstName": "Edgardo Luis",
+      "lastName": "GUITART",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "e8ac37d6-366b-42b0-9d88-b7d4a9b6d855",
+          "name": "FOG",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 067463",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "FOG",
+        "registration": "rey 067463",
+        "client_raw": "GUITART, Edgardo Luis"
+      }
+    },
+    {
+      "sourceRow": 117,
+      "firstName": "Tomas- ROMERO, Sergio",
+      "lastName": "GUTNISKY",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "304462e6-684e-4cba-9c43-fb9e9553ff0a",
+          "name": "NYMERIA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 071102",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NYMERIA",
+        "registration": "rey 071102",
+        "client_raw": "GUTNISKY, Tomas- ROMERO, Sergio"
+      }
+    },
+    {
+      "sourceRow": 118,
+      "firstName": "Hugo Daniel",
+      "lastName": "HERMIDA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "DESIMONI, Jorge | HERMIDA, Hugo Daniel ( DESIMONI, Jorge)",
+      "boats": [
+        {
+          "id": "5885f935-40d2-4d8e-ab90-60b2aa906594",
+          "name": "FANNY II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 074600",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "FANNY II",
+        "registration": "rey 074600",
+        "client_raw": "HERMIDA, Hugo Daniel ( DESIMONI, Jorge)"
+      }
+    },
+    {
+      "sourceRow": 119,
+      "firstName": "Gustavo Daniel",
+      "lastName": "HERNANDEZ SANCHEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "f2a6c646-1de6-4731-abe1-69a01a85a4a4",
+          "name": "LUMBRALES",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "barr 01477",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LUMBRALES",
+        "registration": "barr 01477",
+        "client_raw": "HERNANDEZ SANCHEZ, Gustavo Daniel"
+      }
+    },
+    {
+      "sourceRow": 120,
+      "firstName": "Gabriel",
+      "lastName": "HUESPED",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "44a6f6ef-545b-473f-a014-929669843fa3",
+          "name": "DANGA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 077694",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DANGA",
+        "registration": "Rey 077694",
+        "client_raw": "HUESPED, Gabriel"
+      }
+    },
+    {
+      "sourceRow": 121,
+      "firstName": "Carlos",
+      "lastName": "IBAÑEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ef43fbbf-9393-47b0-972c-90156885c20b",
+          "name": "LORELEY",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LORELEY",
+        "registration": "e/t",
+        "client_raw": "IBAÑEZ, Carlos"
+      }
+    },
+    {
+      "sourceRow": 122,
+      "firstName": "Roberto",
+      "lastName": "INSAURRALDE LACAVA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d431dbc2-3701-44d6-b33a-86b3b59c9adb",
+          "name": "TRIPLETE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "corr 01314",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TRIPLETE",
+        "registration": "corr 01314",
+        "client_raw": "INSAURRALDE LACAVA, Roberto"
+      }
+    },
+    {
+      "sourceRow": 123,
+      "firstName": "ULISES",
+      "lastName": "INTRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "LANCHA | INTRA, ULISES (LANCHA)",
+      "boats": [
+        {
+          "id": "05432ddd-108c-4a2b-bff7-ee0cd918a866",
+          "name": "XIMENA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 065093",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "XIMENA",
+        "registration": "rey 065093",
+        "client_raw": "INTRA, ULISES (LANCHA)"
+      }
+    },
+    {
+      "sourceRow": 124,
+      "firstName": "ULISES",
+      "lastName": "INTRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "MOTO | INTRA, ULISES (MOTO)",
+      "boats": [
+        {
+          "id": "facf67b9-6562-44c9-a1f9-1ab8efbf05a3",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "Barr 011279",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "Barr 011279",
+        "client_raw": "INTRA, ULISES (MOTO)"
+      }
+    },
+    {
+      "sourceRow": 125,
+      "firstName": "Franciso",
+      "lastName": "JACOBACCI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Andres autorizado | JACOBACCI, Franciso (Andres autorizado)",
+      "boats": [
+        {
+          "id": "f8698fea-72c8-41a9-bd68-1f661033500f",
+          "name": "NARO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 050661",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "ÑARO",
+        "registration": "REY 050661",
+        "client_raw": "JACOBACCI, Franciso (Andres autorizado)"
+      }
+    },
+    {
+      "sourceRow": 126,
+      "firstName": "Agusto",
+      "lastName": "JARA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Chino | JARA, Agusto (Chino)",
+      "boats": [
+        {
+          "id": "d07d5caa-322d-4f47-a125-e1218a94f713",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "JARA, Agusto (Chino)"
+      }
+    },
+    {
+      "sourceRow": 127,
+      "firstName": "Marcelo",
+      "lastName": "JAZMIN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c53c66a0-06f3-407a-8c0f-5a2d53403d56",
+          "name": "LA SONADA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 066196",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA SOÑADA",
+        "registration": "rey 066196",
+        "client_raw": "JAZMIN, Marcelo"
+      }
+    },
+    {
+      "sourceRow": 128,
+      "firstName": "Carlos Hernan",
+      "lastName": "KOPETKO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "2f179dd3-07a6-4305-b7c0-0444f48fa79d",
+          "name": "ORTEGUITA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ORTEGUITA",
+        "registration": "REY E/T",
+        "client_raw": "KOPETKO, Carlos Hernan"
+      }
+    },
+    {
+      "sourceRow": 129,
+      "firstName": "Alfredo",
+      "lastName": "LANGELLOTTI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "277db964-4dbd-4832-8de3-5ecdbe034ba4",
+          "name": "ESTRELLA MARINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey098466",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ESTRELLA MARINA",
+        "registration": "Rey098466",
+        "client_raw": "LANGELLOTTI, Alfredo"
+      }
+    },
+    {
+      "sourceRow": 130,
+      "firstName": "Daniel - SCHIAVI, Ariel",
+      "lastName": "LEIVA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "b805b4e7-a38c-4fc2-bc09-c910a0d41bea",
+          "name": "SOMOS NOSOTROS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SOMOS NOSOTROS",
+        "registration": "E/T",
+        "client_raw": "LEIVA, Daniel - SCHIAVI, Ariel"
+      }
+    },
+    {
+      "sourceRow": 131,
+      "firstName": "Juan Esteban",
+      "lastName": "LERTORA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0ef2c701-117b-4f70-947c-275fb4475aa7",
+          "name": "SATURNINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 074811",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SATURNINA",
+        "registration": "rey 074811",
+        "client_raw": "LERTORA, Juan Esteban"
+      }
+    },
+    {
+      "sourceRow": 132,
+      "firstName": "Maximiliano",
+      "lastName": "LOIZAGA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c52a8140-b7b6-4fe1-80d5-5989487df2e2",
+          "name": "BRIANA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 084934",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BRIANA",
+        "registration": "rey 084934",
+        "client_raw": "LOIZAGA, Maximiliano"
+      }
+    },
+    {
+      "sourceRow": 133,
+      "firstName": "Jose Evaristo",
+      "lastName": "LOPEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "86ec4520-c15c-42f4-a01f-83e1f0e67e2b",
+          "name": "ARACELI II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ARACELI II",
+        "registration": null,
+        "client_raw": "LOPEZ, Jose Evaristo"
+      }
+    },
+    {
+      "sourceRow": 134,
+      "firstName": "Esteban David",
+      "lastName": "LUGO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "dfff1263-001f-4bf0-b58c-4d91d221826e",
+          "name": "SUSAN V",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "bq0174",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SUSAN V",
+        "registration": "bq0174",
+        "client_raw": "LUGO, Esteban David"
+      }
+    },
+    {
+      "sourceRow": 135,
+      "firstName": "Guillermo",
+      "lastName": "MAC CORQUODALE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c9c2c04a-24be-496b-8125-e51c8b3adddc",
+          "name": "CARINO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 051745",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CARIÑO",
+        "registration": "rey 051745",
+        "client_raw": "MAC CORQUODALE, Guillermo"
+      }
+    },
+    {
+      "sourceRow": 136,
+      "firstName": "Yamil",
+      "lastName": "MACHADO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ea4e6e90-9a43-4b47-8c38-82b50d5497d1",
+          "name": "LECHU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 055953",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LECHU",
+        "registration": "rey 055953",
+        "client_raw": "MACHADO, Yamil"
+      }
+    },
+    {
+      "sourceRow": 137,
+      "firstName": "Juan y Santiago",
+      "lastName": "MANSOLILLO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "fefc6d68-6b68-449a-b965-eba71a751548",
+          "name": "3 G",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 057325",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "3 G",
+        "registration": "rey 057325",
+        "client_raw": "MANSOLILLO, Juan y Santiago"
+      }
+    },
+    {
+      "sourceRow": 138,
+      "firstName": "Roberto Luis",
+      "lastName": "MARTIN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "700e9173-eb92-44d7-8a21-e20528c09d6c",
+          "name": "LA MANGA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "corr 0293",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA MANGA",
+        "registration": "corr 0293",
+        "client_raw": "MARTIN, Roberto Luis"
+      }
+    },
+    {
+      "sourceRow": 139,
+      "firstName": "Raul",
+      "lastName": "MARTINEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "VILLONE JUAN MANUEL | MARTINEZ, Raul (VILLONE JUAN MANUEL)",
+      "boats": [
+        {
+          "id": "c67d5ad4-d309-4e0a-97bf-a27cc1cbe1eb",
+          "name": "LA ULTIMA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "LA ULTIMA",
+        "registration": "REY E/T",
+        "client_raw": "MARTINEZ, Raul (VILLONE JUAN MANUEL)"
+      }
+    },
+    {
+      "sourceRow": 140,
+      "firstName": "Andres - GONZALEZ VEDOYA, Juan",
+      "lastName": "MATIAUDA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0deaedb3-b166-434d-bcfb-0535e93abe3a",
+          "name": "LA FLOKI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "sfer 5795/16",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA FLOKI",
+        "registration": "sfer 5795/16",
+        "client_raw": "MATIAUDA, Andres - GONZALEZ VEDOYA, Juan"
+      }
+    },
+    {
+      "sourceRow": 141,
+      "firstName": "GERMAN ARIEL",
+      "lastName": "MENDEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "90c04664-8a9e-4dc1-8514-7dd1750f9734",
+          "name": "NAZARIA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 043671",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NAZARIA",
+        "registration": "REY 043671",
+        "client_raw": "MENDEZ, GERMAN ARIEL"
+      }
+    },
+    {
+      "sourceRow": 142,
+      "firstName": "Cristian",
+      "lastName": "MERLO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ee5572c8-9855-4c54-abb6-253b23a001b8",
+          "name": "YAMIL",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 083771",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "YAMIL",
+        "registration": "rey 083771",
+        "client_raw": "MERLO, Cristian"
+      }
+    },
+    {
+      "sourceRow": 143,
+      "firstName": "Rodrigo Juan",
+      "lastName": "MILADIN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "a1237afc-e5c4-4883-91a0-513197c7bd55",
+          "name": "MILADINOVICHI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MILADINOVICHI",
+        "registration": "e/t",
+        "client_raw": "MILADIN, Rodrigo Juan"
+      }
+    },
+    {
+      "sourceRow": 144,
+      "firstName": "Joaquin Matias",
+      "lastName": "MIÑO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "34d29817-06ee-4502-9347-6f06f47c3067",
+          "name": "ULISES",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ULISES",
+        "registration": "rey e/t",
+        "client_raw": "MIÑO, Joaquin Matias"
+      }
+    },
+    {
+      "sourceRow": 145,
+      "firstName": "Gustavo",
+      "lastName": "MIQUERI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "ex BRUNEL, Valentin | MIQUERI, Gustavo (ex BRUNEL, Valentin)",
+      "boats": [
+        {
+          "id": "8805623d-f0a9-4eeb-9368-765c30950f40",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "ppato 383",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "ppato 383",
+        "client_raw": "MIQUERI, Gustavo (ex BRUNEL, Valentin)"
+      }
+    },
+    {
+      "sourceRow": 146,
+      "firstName": "Martin",
+      "lastName": "MONJO AVELLANAL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "534408a4-7ff7-4e2a-a13a-2cd52892de0e",
+          "name": "SAUDADE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 094392",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SAUDADE",
+        "registration": "REY 094392",
+        "client_raw": "MONJO AVELLANAL, Martin"
+      }
+    },
+    {
+      "sourceRow": 147,
+      "firstName": "Martin Omar",
+      "lastName": "MONTIEL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "60a68c26-23ec-4d22-955e-bd5bf3bd3bf0",
+          "name": "MARTIN",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey062424",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MARTIN",
+        "registration": "rey062424",
+        "client_raw": "MONTIEL, Martin Omar"
+      }
+    },
+    {
+      "sourceRow": 148,
+      "firstName": "Raul",
+      "lastName": "MORANDO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ee045fdb-0588-4693-9e34-49d634ccc2a1",
+          "name": "DON JUAN 23",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 070582",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DON JUAN 23",
+        "registration": "rey 070582",
+        "client_raw": "MORANDO, Raul"
+      }
+    },
+    {
+      "sourceRow": 149,
+      "firstName": "Maximiliano",
+      "lastName": "MORENO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "41b8ca63-b587-4102-81fe-cab3f57d418d",
+          "name": "STRONG",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "STRONG",
+        "registration": "e/t",
+        "client_raw": "MORENO, Maximiliano"
+      }
+    },
+    {
+      "sourceRow": 150,
+      "firstName": "Mauro",
+      "lastName": "NARDELLI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "f1d5c634-8e7b-4327-bb36-20d113868498",
+          "name": "MARTINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MARTINA",
+        "registration": null,
+        "client_raw": "NARDELLI, Mauro"
+      }
+    },
+    {
+      "sourceRow": 151,
+      "firstName": "NAUTICAL I",
+      "lastName": "",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "aaffbbae-9e41-4412-97da-4bd25f8d723b",
+          "name": "NAUTICAL I",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Corr 01342",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "NAUTICAL I",
+        "registration": "Corr 01342",
+        "client_raw": "NAUTICAL I"
+      }
+    },
+    {
+      "sourceRow": 152,
+      "firstName": "Rosendo",
+      "lastName": "NOCENTI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "272f2dcc-08e7-4f08-99f8-c60a89d979f5",
+          "name": "ALDABRA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 072537",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ALDABRA",
+        "registration": "rey 072537",
+        "client_raw": "NOCENTI, Rosendo"
+      }
+    },
+    {
+      "sourceRow": 153,
+      "firstName": "Adrian Marcelo",
+      "lastName": "OJEDA GONZALEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "140b5d84-a730-42cb-bc90-2a0c8ba3bf8f",
+          "name": "207",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": 207,
+        "registration": null,
+        "client_raw": "OJEDA GONZALEZ, Adrian Marcelo"
+      }
+    },
+    {
+      "sourceRow": 154,
+      "firstName": "Facundo Nicolas",
+      "lastName": "OJEDA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9e8db5b4-1819-45a6-8a0b-106e2a5fae66",
+          "name": "PUCHERITO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Corr 01512",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "PUCHERITO",
+        "registration": "Corr 01512",
+        "client_raw": "OJEDA, Facundo Nicolas"
+      }
+    },
+    {
+      "sourceRow": 155,
+      "firstName": "Horacio",
+      "lastName": "OJEDA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "9f11f140-59e2-4bcd-be48-581c00ab6dfd",
+          "name": "ASH",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 065012",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ASH",
+        "registration": "rey 065012",
+        "client_raw": "OJEDA, Horacio"
+      }
+    },
+    {
+      "sourceRow": 156,
+      "firstName": "Gastón",
+      "lastName": "OLAONDO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "6de41226-7ba8-4a2c-b11f-50ef9db57236",
+          "name": "ISOLINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 065787",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ISOLINA",
+        "registration": "REY 065787",
+        "client_raw": "OLAONDO, Gastón"
+      }
+    },
+    {
+      "sourceRow": 157,
+      "firstName": "Jorge Lisandro",
+      "lastName": "OLIVEIRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "b679575d-6faa-4f64-947b-60ef4d8b09eb",
+          "name": "BOSS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BOSS",
+        "registration": null,
+        "client_raw": "OLIVEIRA, Jorge Lisandro"
+      }
+    },
+    {
+      "sourceRow": 158,
+      "firstName": "Daniel José",
+      "lastName": "OSUNA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "8baf42fa-22ca-4e93-b246-23d8356c09d0",
+          "name": "YEROKI YARA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "corr 01060",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "YEROKI YARA",
+        "registration": "corr 01060",
+        "client_raw": "OSUNA, Daniel José"
+      }
+    },
+    {
+      "sourceRow": 159,
+      "firstName": "Rodolfo Walter",
+      "lastName": "PASI WULFF",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "fdccf2d4-445a-47dd-9d04-11c4f37be192",
+          "name": "MAVI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MAVI",
+        "registration": "rey e/t",
+        "client_raw": "PASI WULFF, Rodolfo Walter"
+      }
+    },
+    {
+      "sourceRow": 160,
+      "firstName": "Juan",
+      "lastName": "PATERLINI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ed414b2e-4b4c-4cab-8c6d-5d13f439d04d",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "PATERLINI, Juan"
+      }
+    },
+    {
+      "sourceRow": 161,
+      "firstName": "Sergio",
+      "lastName": "PERESON",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "5277adf0-af62-4630-887a-6f6beab77f5c",
+          "name": "DON JUAN",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 061726",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DON JUAN",
+        "registration": "rey 061726",
+        "client_raw": "PERESON, Sergio"
+      }
+    },
+    {
+      "sourceRow": 162,
+      "firstName": "Francisco Manuel",
+      "lastName": "PEREZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ea594cbe-c65b-4abb-b9c9-932e219e17f2",
+          "name": "BEDACHI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey rhono 126",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BEDACHI",
+        "registration": "rey rhono 126",
+        "client_raw": "PEREZ, Francisco Manuel"
+      }
+    },
+    {
+      "sourceRow": 163,
+      "firstName": "Cristian y Alejandro",
+      "lastName": "PETERSON",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "359d7cb1-1b8d-4c88-84fa-7946ea72c830",
+          "name": "BELLA DEL NILO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BELLA DEL NILO",
+        "registration": "e/t",
+        "client_raw": "PETERSON, Cristian y Alejandro"
+      }
+    },
+    {
+      "sourceRow": 164,
+      "firstName": "Alejandro y Eduardo",
+      "lastName": "PORTILLO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "58908203-ebd3-416e-b564-9eeb8952df4a",
+          "name": "LOS TILOS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LOS TILOS",
+        "registration": "E/T",
+        "client_raw": "PORTILLO, Alejandro y Eduardo"
+      }
+    },
+    {
+      "sourceRow": 165,
+      "firstName": "Matias",
+      "lastName": "PRIETO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0fdf3a09-edcf-496e-b1b7-41a9bfecc7b0",
+          "name": "OGAYGUA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 09447",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "OGAYGUA",
+        "registration": "rey 09447",
+        "client_raw": "PRIETO, Matias"
+      }
+    },
+    {
+      "sourceRow": 166,
+      "firstName": "Erika",
+      "lastName": "QUIROZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "d007fbba-2545-4c86-8841-78ee22c7e062",
+          "name": "RONDAMON",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "RONDAMON",
+        "registration": "e/t",
+        "client_raw": "QUIROZ, Erika"
+      }
+    },
+    {
+      "sourceRow": 167,
+      "firstName": "ELVIO",
+      "lastName": "RAMIREZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "376663e3-b1f7-47be-9503-f744a5db6b2a",
+          "name": "LEONARD",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 072435",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LEONARD",
+        "registration": "rey 072435",
+        "client_raw": "RAMIREZ, ELVIO"
+      }
+    },
+    {
+      "sourceRow": 168,
+      "firstName": "Alan",
+      "lastName": "RASCLARD",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "moto agua | RASCLARD, Alan( moto agua)",
+      "boats": [
+        {
+          "id": "f17f0b65-e90d-4a45-bb8a-e52e1facb089",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "RASCLARD, Alan( moto agua)"
+      }
+    },
+    {
+      "sourceRow": 169,
+      "firstName": "Enzo",
+      "lastName": "RASCLARD",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "76feb4e8-053d-4af8-87d0-2feb48d4f3ae",
+          "name": "VINICIUS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 067240",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "VINICIUS",
+        "registration": "REY 067240",
+        "client_raw": "RASCLARD, Enzo"
+      }
+    },
+    {
+      "sourceRow": 170,
+      "firstName": "Emanuel",
+      "lastName": "REGIDOR",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "5725c885-b744-4ba2-9782-db879297c77b",
+          "name": "LA CAUTIVA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 072563",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA CAUTIVA",
+        "registration": "rey 072563",
+        "client_raw": "REGIDOR, Emanuel"
+      }
+    },
+    {
+      "sourceRow": 171,
+      "firstName": "Christian",
+      "lastName": "REY",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0c6c0653-875d-4f20-8c67-4a114c28a2d1",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "REY, Christian"
+      }
+    },
+    {
+      "sourceRow": 172,
+      "firstName": "Cesar",
+      "lastName": "RICATTI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ef7b448e-32b9-4773-a987-4272fa2beb3a",
+          "name": "ALMA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 085492",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ALMA",
+        "registration": "rey 085492",
+        "client_raw": "RICATTI, Cesar"
+      }
+    },
+    {
+      "sourceRow": 173,
+      "firstName": "Diego",
+      "lastName": "RODRIGUEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "678130fa-d132-409e-9714-bce50d54cddd",
+          "name": "DON TINO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 099756",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DON TINO",
+        "registration": "rey 099756",
+        "client_raw": "RODRIGUEZ, Diego"
+      }
+    },
+    {
+      "sourceRow": 174,
+      "firstName": "Hector Daniel",
+      "lastName": "ROJAS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "8172e010-8dc6-4f7a-8fab-941b914eac3b",
+          "name": "ISIDORITO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 029251",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ISIDORITO",
+        "registration": "REY 029251",
+        "client_raw": "ROJAS, Hector Daniel"
+      }
+    },
+    {
+      "sourceRow": 175,
+      "firstName": "Jorge Gustavo",
+      "lastName": "ROJAS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "05e7a618-8480-4cc4-8644-340ffc2ad171",
+          "name": "SAITE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey092901",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SAITÉ",
+        "registration": "rey092901",
+        "client_raw": "ROJAS, Jorge Gustavo"
+      }
+    },
+    {
+      "sourceRow": 176,
+      "firstName": "Ricardo Antonio",
+      "lastName": "ROLLA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "52880ca1-0fbe-4968-988e-3f037fdd8a20",
+          "name": "MACA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 027489",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "MACA",
+        "registration": "rey 027489",
+        "client_raw": "ROLLA, Ricardo Antonio"
+      }
+    },
+    {
+      "sourceRow": 177,
+      "firstName": "José",
+      "lastName": "ROLNIK",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "2784b9ad-507b-46df-9faf-e4fa8077f7eb",
+          "name": "CUNE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 081825",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CUNE",
+        "registration": "rey 081825",
+        "client_raw": "ROLNIK, José"
+      }
+    },
+    {
+      "sourceRow": 178,
+      "firstName": "José Miguel",
+      "lastName": "ROMERO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "801d7e41-1bb9-42f6-a3a5-15330c612617",
+          "name": "RESET",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "RESET",
+        "registration": "rey e/t",
+        "client_raw": "ROMERO, José Miguel"
+      }
+    },
+    {
+      "sourceRow": 179,
+      "firstName": "Leandro",
+      "lastName": "ROTHMAN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "83d88fa8-d376-4e0c-abba-01ab56412b7a",
+          "name": "QUICHUA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "DIAM0573",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "QUICHUA",
+        "registration": "DIAM0573",
+        "client_raw": "ROTHMAN, Leandro"
+      }
+    },
+    {
+      "sourceRow": 180,
+      "firstName": "Carlos y MACUGLIA, Roberto",
+      "lastName": "ROJO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "1d15b972-de54-4753-b527-2b0921b140f4",
+          "name": "SIRENA 2",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SIRENA 2",
+        "registration": null,
+        "client_raw": "ROJO, Carlos y MACUGLIA, Roberto"
+      }
+    },
+    {
+      "sourceRow": 181,
+      "firstName": "Juan Pablo",
+      "lastName": "ROUVIER",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "4d337ff9-490b-4f76-8cb3-0fc215c1bfe1",
+          "name": "LA LILA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "barr 1414",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA LILA",
+        "registration": "barr 1414",
+        "client_raw": "ROUVIER, Juan Pablo"
+      }
+    },
+    {
+      "sourceRow": 182,
+      "firstName": "Ricardo",
+      "lastName": "ZANON",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "33875be7-62b4-4db2-b1ef-b7c8b6ed5cbb",
+          "name": "RICAR 2",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 033274",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "RICAR 2",
+        "registration": "rey 033274",
+        "client_raw": "ZANON, Ricardo"
+      }
+    },
+    {
+      "sourceRow": 183,
+      "firstName": "Jorge",
+      "lastName": "RUIZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c0487a4f-2d6a-4519-b64d-fc2e32b523c0",
+          "name": "CORONADO SPRING",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CORONADO SPRING",
+        "registration": "e/t",
+        "client_raw": "RUIZ, Jorge"
+      }
+    },
+    {
+      "sourceRow": 184,
+      "firstName": "Jeronimo",
+      "lastName": "SADAS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "637d41f8-0173-4417-8fc3-232480cf63a8",
+          "name": "GUILLERMINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 072438",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "GUILLERMINA",
+        "registration": "rey 072438",
+        "client_raw": "SADAS, Jeronimo"
+      }
+    },
+    {
+      "sourceRow": 185,
+      "firstName": "Nelson",
+      "lastName": "SAMPAYO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "SAMPAYO, Natalia | SAMPAYO, Nelson (SAMPAYO, Natalia)",
+      "boats": [
+        {
+          "id": "2e9791f3-fd07-4c66-82ca-2fe9d3105829",
+          "name": "PICKY",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "barr01467",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "PICKY",
+        "registration": "barr01467",
+        "client_raw": "SAMPAYO, Nelson (SAMPAYO, Natalia)"
+      }
+    },
+    {
+      "sourceRow": 186,
+      "firstName": "Luis",
+      "lastName": "SANABRIA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "8e295f32-c407-4d14-835a-20665bb3219a",
+          "name": "SUNRICE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 067464",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SUNRICE",
+        "registration": "rey 067464",
+        "client_raw": "SANABRIA, Luis"
+      }
+    },
+    {
+      "sourceRow": 187,
+      "firstName": "Alberto Joaquin",
+      "lastName": "SANCHEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "efdb6ed7-947c-4bbf-8d94-3ee2d120580e",
+          "name": "DON ALBERTO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 080390",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DON ALBERTO",
+        "registration": "rey 080390",
+        "client_raw": "SANCHEZ, Alberto Joaquin"
+      }
+    },
+    {
+      "sourceRow": 188,
+      "firstName": "Alberto Joaquin",
+      "lastName": "SANCHEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Enzo Maria Moto de Agua amigo | SANCHEZ, Alberto Joaquin (Enzo Maria Moto de Agua amigo)",
+      "boats": [
+        {
+          "id": "89064f20-f236-41f3-a5ef-9d9bd1a4d07d",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "SANCHEZ, Alberto Joaquin (Enzo Maria Moto de Agua amigo)"
+      }
+    },
+    {
+      "sourceRow": 189,
+      "firstName": "Hugo",
+      "lastName": "SANCHEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "57756460-5c8c-41f2-a6cd-379a819becff",
+          "name": "CRIPTOBLUE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CRIPTOBLUE",
+        "registration": "e/t",
+        "client_raw": "SANCHEZ, Hugo"
+      }
+    },
+    {
+      "sourceRow": 190,
+      "firstName": "Manuel Federico",
+      "lastName": "SANCHEZ",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "bc30b05c-b40d-4c8f-b608-36981a3e99e7",
+          "name": "JUANCHO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 0103096",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "JUANCHO",
+        "registration": "REY 0103096",
+        "client_raw": "SANCHEZ, Manuel Federico"
+      }
+    },
+    {
+      "sourceRow": 191,
+      "firstName": "Isabel",
+      "lastName": "SAUCEDO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "SAUCEDO, Isabel / POZZER, Julio",
+      "boats": [
+        {
+          "id": "6363da17-1957-4079-bcc2-11690577830c",
+          "name": "LA MAMI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "multiples_titulares"
+      ],
+      "raw": {
+        "boat_name": "LA MAMI",
+        "registration": "rey e/t",
+        "client_raw": "SAUCEDO, Isabel / POZZER, Julio"
+      }
+    },
+    {
+      "sourceRow": 192,
+      "firstName": "Mario Antonio",
+      "lastName": "SEBASTIANI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "b0d61267-e972-43b2-ba34-b9a5da90669e",
+          "name": "HERCULES",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 030196",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "HERCULES",
+        "registration": "rey 030196",
+        "client_raw": "SEBASTIANI, Mario Antonio"
+      }
+    },
+    {
+      "sourceRow": 193,
+      "firstName": "Juan Marcelo",
+      "lastName": "SEGOVIA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "f1a0fa8c-a41b-44bd-9176-d7976deac256",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "e/t",
+        "client_raw": "SEGOVIA, Juan Marcelo"
+      }
+    },
+    {
+      "sourceRow": 194,
+      "firstName": "juan pablo",
+      "lastName": "SENA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c82feaa8-fc40-4f00-8b3d-5c13379fd909",
+          "name": "CALIPSO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 043828",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CALIPSO",
+        "registration": "rey 043828",
+        "client_raw": "SENA, juan pablo"
+      }
+    },
+    {
+      "sourceRow": 195,
+      "firstName": "Carlos Norberto",
+      "lastName": "SOSA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "kito | SOSA, Carlos Norberto (kito)",
+      "boats": [
+        {
+          "id": "728a6e40-01cc-4e75-9a76-2bd3baa3a05e",
+          "name": "LA CAUTIVA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey047125",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "LA CAUTIVA",
+        "registration": "rey047125",
+        "client_raw": "SOSA, Carlos Norberto (kito)"
+      }
+    },
+    {
+      "sourceRow": 196,
+      "firstName": "Christian A.",
+      "lastName": "SOTELO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "c53f4074-f418-46de-ab38-bdcd1f6b970b",
+          "name": "LUNA AZUL???",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LUNA AZUL???",
+        "registration": null,
+        "client_raw": "SOTELO, Christian A."
+      }
+    },
+    {
+      "sourceRow": 197,
+      "firstName": "Carlos",
+      "lastName": "SOTO DAVILA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "FERNANDEZ, Alicia Edita | SOTO DAVILA, Carlos (FERNANDEZ, Alicia Edita)",
+      "boats": [
+        {
+          "id": "ede5e184-27bd-465c-ba52-9ecf6f125d5e",
+          "name": "ALICIA II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 033868",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "ALICIA II",
+        "registration": "rey 033868",
+        "client_raw": "SOTO DAVILA, Carlos (FERNANDEZ, Alicia Edita)"
+      }
+    },
+    {
+      "sourceRow": 198,
+      "firstName": "Caco",
+      "lastName": "SZKOPE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "4f0c0d35-b598-4c76-9967-7705eb5b6e71",
+          "name": "LA BESTIA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 045046",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LA BESTIA",
+        "registration": "rey 045046",
+        "client_raw": "SZKOPE, Caco"
+      }
+    },
+    {
+      "sourceRow": 199,
+      "firstName": "Jorge Horacio",
+      "lastName": "TERRILE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "22d18be5-442e-4d92-b567-646502584025",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "TERRILE, Jorge Horacio"
+      }
+    },
+    {
+      "sourceRow": 200,
+      "firstName": "Agustin",
+      "lastName": "TOMASSONE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "999122be-ba06-44d5-8550-3530a981310e",
+          "name": "BERMUDA 180",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BERMUDA 180",
+        "registration": null,
+        "client_raw": "TOMASSONE, Agustin"
+      }
+    },
+    {
+      "sourceRow": 201,
+      "firstName": "Juan Francisco",
+      "lastName": "TORRENT",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "944e9746-89e6-4eb3-a286-72840e223c35",
+          "name": "E.M",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 029622",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "E.M",
+        "registration": "rey 029622",
+        "client_raw": "TORRENT, Juan Francisco"
+      }
+    },
+    {
+      "sourceRow": 202,
+      "firstName": "David Omar",
+      "lastName": "TORRES ALBARENGA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "741b654e-451b-4ff2-a409-2036dbf352ec",
+          "name": "YAPU GUAZU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "CORR 0700",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "YAPU GUAZU",
+        "registration": "CORR 0700",
+        "client_raw": "TORRES ALBARENGA, David Omar"
+      }
+    },
+    {
+      "sourceRow": 203,
+      "firstName": "Ricardo Alberto",
+      "lastName": "TORRES",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "baa663ea-6166-4999-acb9-16a9be3eaff5",
+          "name": "SEA HORSE",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "SEA HORSE",
+        "registration": "e/t",
+        "client_raw": "TORRES, Ricardo Alberto"
+      }
+    },
+    {
+      "sourceRow": 204,
+      "firstName": "Juan Martin",
+      "lastName": "TRESSENS HENDERSON",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "646145dc-d0d8-4e27-bd3b-0a60d8c1141f",
+          "name": "ADELIN",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 078429",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ADELIN",
+        "registration": "REY 078429",
+        "client_raw": "TRESSENS HENDERSON, Juan Martin"
+      }
+    },
+    {
+      "sourceRow": 205,
+      "firstName": "Francisco José",
+      "lastName": "TREVIÑO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "ef303d16-399f-41c7-8778-930b87eb4e1e",
+          "name": "ADRIANA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ADRIANA",
+        "registration": "rey e/t",
+        "client_raw": "TREVIÑO, Francisco José"
+      }
+    },
+    {
+      "sourceRow": 206,
+      "firstName": "Gustavo",
+      "lastName": "TRIPALDI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "b65c0f73-3d57-4312-8d0f-5b17a7fcd9ea",
+          "name": "AFORTUNADA II",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 075272",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "AFORTUNADA II",
+        "registration": "rey 075272",
+        "client_raw": "TRIPALDI, Gustavo"
+      }
+    },
+    {
+      "sourceRow": 207,
+      "firstName": "Jorge",
+      "lastName": "TRIPALDI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "8199b9c8-651f-4124-9858-0043f2579ecb",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 072537",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "rey 072537",
+        "client_raw": "TRIPALDI, Jorge"
+      }
+    },
+    {
+      "sourceRow": 208,
+      "firstName": "Enrique",
+      "lastName": "TROSSERO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "0d709b02-1de0-49e8-a153-dd86a0df8dc9",
+          "name": "EL REFUGIO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 0100607",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "EL REFUGIO",
+        "registration": "Rey 0100607",
+        "client_raw": "TROSSERO, Enrique"
+      }
+    },
+    {
+      "sourceRow": 209,
+      "firstName": "Nicolás",
+      "lastName": "TROSSERO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "2f809311-b57f-4fb4-b917-8b65f141e62a",
+          "name": "PERLA NEGRA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "PERLA NEGRA",
+        "registration": "e/t",
+        "client_raw": "TROSSERO, Nicolás"
+      }
+    },
+    {
+      "sourceRow": 210,
+      "firstName": "Mario",
+      "lastName": "URBANI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "864d8e5a-f8b7-419b-b73f-957173f1380b",
+          "name": "BAR VER",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey033389",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BAR VER",
+        "registration": "rey033389",
+        "client_raw": "URBANI, Mario"
+      }
+    },
+    {
+      "sourceRow": 211,
+      "firstName": "Marcelo",
+      "lastName": "UZIEL",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "eec129cb-03d5-4e6f-9a90-7a3cb4efbb59",
+          "name": "BELEZA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 074162",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "BELEZA",
+        "registration": "Rey 074162",
+        "client_raw": "UZIEL, Marcelo"
+      }
+    },
+    {
+      "sourceRow": 212,
+      "firstName": "Walter Emanuel",
+      "lastName": "VALLEJOS TACCONE",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "6624128d-8317-44ac-b05d-45b8c2b3ce47",
+          "name": "GIANLUCA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "GIANLUCA",
+        "registration": "e/t",
+        "client_raw": "VALLEJOS TACCONE, Walter Emanuel"
+      }
+    },
+    {
+      "sourceRow": 213,
+      "firstName": "Eduardo Y Mariano",
+      "lastName": "VALLEJOS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "76ea04a4-c653-404d-9c3f-620cb6268ade",
+          "name": "JULIA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey080209",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "JULIA",
+        "registration": "rey080209",
+        "client_raw": "VALLEJOS, Eduardo Y Mariano"
+      }
+    },
+    {
+      "sourceRow": 214,
+      "firstName": "Hector Luis",
+      "lastName": "VALLEJOS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "AQUINO, Marcelo Gustavo sobrino | VALLEJOS, Hector Luis (AQUINO, Marcelo Gustavo sobrino)",
+      "boats": [
+        {
+          "id": "ae47f865-1605-43d5-8357-03c839856590",
+          "name": "LA MARI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "ppat 0646",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "LA MARI",
+        "registration": "ppat 0646",
+        "client_raw": "VALLEJOS, Hector Luis (AQUINO, Marcelo Gustavo sobrino)"
+      }
+    },
+    {
+      "sourceRow": 215,
+      "firstName": "Mauricio",
+      "lastName": "VALLEJOS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "VALLEJOS, Mauricio / RIOS, Gerardo",
+      "boats": [
+        {
+          "id": "0ee4317c-88fd-45eb-a58b-6a13be837fc9",
+          "name": "Sin nombre",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota",
+        "multiples_titulares",
+        "embarcacion_sin_nombre"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": null,
+        "client_raw": "VALLEJOS, Mauricio / RIOS, Gerardo"
+      }
+    },
+    {
+      "sourceRow": 216,
+      "firstName": "Nahuel",
+      "lastName": "VALLEJOS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "20b446d5-ac81-421a-9607-3396f089c7d1",
+          "name": "FEDERICO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "REY 099447",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "FEDERICO",
+        "registration": "REY 099447",
+        "client_raw": "VALLEJOS, Nahuel"
+      }
+    },
+    {
+      "sourceRow": 217,
+      "firstName": "Yamil",
+      "lastName": "VALLEJOS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "dff51659-ba98-4a9c-b221-e6dd1a1bfb95",
+          "name": "CARIBEAN AZUL",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "CARIBEAN AZUL",
+        "registration": null,
+        "client_raw": "VALLEJOS, Yamil"
+      }
+    },
+    {
+      "sourceRow": 218,
+      "firstName": "Luis",
+      "lastName": "VALLOUD",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "ARTESANALES SRL | VALLOUD, Luis (ARTESANALES SRL)",
+      "boats": [
+        {
+          "id": "14983036-0add-40fb-a420-674ca51a8c06",
+          "name": "CUCU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 045936",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "CUCU",
+        "registration": "rey 045936",
+        "client_raw": "VALLOUD, Luis (ARTESANALES SRL)"
+      }
+    },
+    {
+      "sourceRow": 219,
+      "firstName": "Guillermo",
+      "lastName": "ROJAS USLLATO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "VALLTIER, Juan | ROJAS USLLATO, Guillermo (VALLTIER, Juan)",
+      "boats": [
+        {
+          "id": "5ec9295c-83d9-45af-98bb-9e0b53d8cfb5",
+          "name": "SIL -JOR VI",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 033179",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "SIL -JOR VI",
+        "registration": "rey 033179",
+        "client_raw": "ROJAS USLLATO, Guillermo (VALLTIER, Juan)"
+      }
+    },
+    {
+      "sourceRow": 220,
+      "firstName": "Luis",
+      "lastName": "VALLOUD",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "VEGA, Alejandro Damian | VALLOUD, Luis (VEGA, Alejandro Damian)",
+      "boats": [
+        {
+          "id": "1e1ecae1-c9c1-4e14-a506-56b7fedcbbbe",
+          "name": "REVANCHA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 084674",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "REVANCHA",
+        "registration": "rey 084674",
+        "client_raw": "VALLOUD, Luis (VEGA, Alejandro Damian)"
+      }
+    },
+    {
+      "sourceRow": 221,
+      "firstName": "Ernesto y Juan Ignacio",
+      "lastName": "VERA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "Padre | VERA, Ernesto (Padre) y Juan Ignacio (Hijo)",
+      "boats": [
+        {
+          "id": "94d0e891-0b4c-4004-80f7-a892faa5dd31",
+          "name": "PEGASO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 056809",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "PEGASO",
+        "registration": "rey 056809",
+        "client_raw": "VERA, Ernesto (Padre) y Juan Ignacio (Hijo)"
+      }
+    },
+    {
+      "sourceRow": 222,
+      "firstName": "Alfredo José",
+      "lastName": "VERARDINI MECHULAN",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "aa2195c9-16c0-4e41-be64-cc689547b987",
+          "name": "LIBERTAD",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 028926",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LIBERTAD",
+        "registration": "rey 028926",
+        "client_raw": "VERARDINI MECHULAN, Alfredo José"
+      }
+    },
+    {
+      "sourceRow": 223,
+      "firstName": "Maximiliano, SANCHEZ, Diego, AZCURRA, Fernando",
+      "lastName": "VILA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "MENDES, Francisco | VILA, Maximiliano, SANCHEZ, Diego, AZCURRA, Fernando (MENDES, Francisco)",
+      "boats": [
+        {
+          "id": "2fa7dd5f-38fd-47e6-91b1-bafd94d45685",
+          "name": "KUNUU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "KUNUÚ",
+        "registration": "e/t",
+        "client_raw": "VILA, Maximiliano, SANCHEZ, Diego, AZCURRA, Fernando (MENDES, Francisco)"
+      }
+    },
+    {
+      "sourceRow": 224,
+      "firstName": "Mario",
+      "lastName": "VINIELIS",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "71b0439f-7bc4-4ba4-a979-f895a34f6eb4",
+          "name": "Moto de agua",
+          "hullType": "Moto de agua",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "embarcacion_inferida"
+      ],
+      "raw": {
+        "boat_name": null,
+        "registration": "e/t",
+        "client_raw": "VINIELIS, Mario"
+      }
+    },
+    {
+      "sourceRow": 225,
+      "firstName": "Javier",
+      "lastName": "VINOGRAD",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "ROMERO, Sebastian | VINOGRAD, Javier (ROMERO, Sebastian)",
+      "boats": [
+        {
+          "id": "4a87aadd-3680-47b3-aad4-a865a1990d8a",
+          "name": "BACCO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey060060",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "BACCO",
+        "registration": "rey060060",
+        "client_raw": "VINOGRAD, Javier (ROMERO, Sebastian)"
+      }
+    },
+    {
+      "sourceRow": 226,
+      "firstName": "Juan",
+      "lastName": "VOGT",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7b73eeb8-c22f-4fa3-8df5-74de6d3db5e4",
+          "name": "IGUELA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 068161",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "IGUELA",
+        "registration": "rey 068161",
+        "client_raw": "VOGT, Juan"
+      }
+    },
+    {
+      "sourceRow": 227,
+      "firstName": "Ricardo",
+      "lastName": "YAMPEI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "45ada515-540e-40b6-88af-9374aefd92c5",
+          "name": "TIO RICARDO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "barr 059",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "TIO RICARDO",
+        "registration": "barr 059",
+        "client_raw": "YAMPEI, Ricardo"
+      }
+    },
+    {
+      "sourceRow": 228,
+      "firstName": "Leonardo",
+      "lastName": "YAYA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "7ffaf00c-9ccc-48c8-a0ed-6dd460299353",
+          "name": "LOS YAYITAS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 038469",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "LOS YAYITAS",
+        "registration": "rey 038469",
+        "client_raw": "YAYA, Leonardo"
+      }
+    },
+    {
+      "sourceRow": 229,
+      "firstName": "Gaston",
+      "lastName": "YBARRA",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "294ec412-ab4e-4243-aeee-087a1ee5d8a9",
+          "name": "ANGIRU",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "Rey 098690",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "ANGIRÜ",
+        "registration": "Rey 098690",
+        "client_raw": "YBARRA, Gaston"
+      }
+    },
+    {
+      "sourceRow": 230,
+      "firstName": "Julian",
+      "lastName": "ZALAZAR",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "614ec5b0-82c5-4add-b42d-29967ff34f97",
+          "name": "VALENTINA",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey 081748",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "VALENTINA",
+        "registration": "rey 081748",
+        "client_raw": "ZALAZAR, Julian"
+      }
+    },
+    {
+      "sourceRow": 231,
+      "firstName": "Julian",
+      "lastName": "ZALAZAR",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "ASAME, Cristian | ZALAZAR, Julian (ASAME, Cristian)",
+      "boats": [
+        {
+          "id": "13eac6f0-9374-4d54-b855-d426ab70fc29",
+          "name": "ELIAS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "e/t",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [
+        "nombre_compuesto_o_con_nota"
+      ],
+      "raw": {
+        "boat_name": "ELIAS",
+        "registration": "e/t",
+        "client_raw": "ZALAZAR, Julian (ASAME, Cristian)"
+      }
+    },
+    {
+      "sourceRow": 232,
+      "firstName": "Mirna Mabel",
+      "lastName": "ZERNETTI",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "afdd0069-1518-486c-9673-e5900a446e44",
+          "name": "STELLA MARIS",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "barr 3397",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "STELLA MARIS",
+        "registration": "barr 3397",
+        "client_raw": "ZERNETTI, Mirna Mabel"
+      }
+    },
+    {
+      "sourceRow": 233,
+      "firstName": "Gonzalo Estanislao",
+      "lastName": "ZERVINO",
+      "dni": "",
+      "email": "",
+      "phone": "",
+      "internalNote": "",
+      "boats": [
+        {
+          "id": "87dfd2fb-8bd8-4eb9-be60-6b2afd90481e",
+          "name": "DON SERGIO",
+          "hullType": "",
+          "engine": "",
+          "registrationNumber": "rey082037",
+          "photos": []
+        }
+      ],
+      "responsibles": [],
+      "avatarUrl": "",
+      "advertencias": [],
+      "raw": {
+        "boat_name": "DON SERGIO",
+        "registration": "rey082037",
+        "client_raw": "ZERVINO, Gonzalo Estanislao"
+      }
+    }
+  ],
+  "validacion": {
+    "errores": [],
+    "advertencias": [
+      "Fila 9: nombre_compuesto_o_con_nota",
+      "Fila 12: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 20 y 19",
+      "Fila 20: nombre_compuesto_o_con_nota",
+      "Fila 20: embarcacion_inferida",
+      "Fila 21: nombre_compuesto_o_con_nota",
+      "Fila 22: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 23 y 22",
+      "Fila 23: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 24 y 22",
+      "Fila 24: nombre_compuesto_o_con_nota",
+      "Fila 26: nombre_compuesto_o_con_nota",
+      "Fila 29: nombre_compuesto_o_con_nota",
+      "Fila 32: nombre_compuesto_o_con_nota",
+      "Fila 41: nombre_compuesto_o_con_nota",
+      "Fila 42: nombre_compuesto_o_con_nota",
+      "Fila 44: nombre_compuesto_o_con_nota",
+      "Fila 51: nombre_compuesto_o_con_nota",
+      "Fila 52: embarcacion_sin_nombre",
+      "Fila 60: nombre_compuesto_o_con_nota",
+      "Fila 63: nombre_compuesto_o_con_nota",
+      "Fila 65: nombre_compuesto_o_con_nota",
+      "Fila 68: nombre_compuesto_o_con_nota",
+      "Fila 70: nombre_compuesto_o_con_nota",
+      "Fila 76: embarcacion_sin_nombre",
+      "Fila 77: nombre_compuesto_o_con_nota",
+      "Fila 77: embarcacion_inferida",
+      "Fila 79: nombre_compuesto_o_con_nota",
+      "Fila 82: embarcacion_sin_nombre",
+      "Fila 85: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 86 y 85",
+      "Fila 86: nombre_compuesto_o_con_nota",
+      "Fila 86: embarcacion_inferida",
+      "Fila 92: nombre_compuesto_o_con_nota",
+      "Fila 92: embarcacion_inferida",
+      "Fila 100: nombre_compuesto_o_con_nota",
+      "Fila 100: multiples_titulares",
+      "Fila 106: apellido vacío tras parseo",
+      "Fila 108: nombre_compuesto_o_con_nota",
+      "Fila 111: nombre_compuesto_o_con_nota",
+      "Fila 118: nombre_compuesto_o_con_nota",
+      "Fila 123: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 124 y 123",
+      "Fila 124: nombre_compuesto_o_con_nota",
+      "Fila 124: embarcacion_inferida",
+      "Fila 125: nombre_compuesto_o_con_nota",
+      "Fila 126: nombre_compuesto_o_con_nota",
+      "Fila 126: embarcacion_sin_nombre",
+      "Fila 139: nombre_compuesto_o_con_nota",
+      "Fila 145: nombre_compuesto_o_con_nota",
+      "Fila 145: embarcacion_sin_nombre",
+      "Fila 151: apellido vacío tras parseo",
+      "Fila 160: embarcacion_sin_nombre",
+      "Fila 168: nombre_compuesto_o_con_nota",
+      "Fila 168: embarcacion_inferida",
+      "Fila 171: embarcacion_sin_nombre",
+      "Fila 185: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 188 y 187",
+      "Fila 188: nombre_compuesto_o_con_nota",
+      "Fila 188: embarcacion_inferida",
+      "Fila 191: nombre_compuesto_o_con_nota",
+      "Fila 191: multiples_titulares",
+      "Fila 193: embarcacion_inferida",
+      "Fila 195: nombre_compuesto_o_con_nota",
+      "Fila 197: nombre_compuesto_o_con_nota",
+      "Fila 199: embarcacion_sin_nombre",
+      "Fila 207: embarcacion_sin_nombre",
+      "Fila 214: nombre_compuesto_o_con_nota",
+      "Fila 215: nombre_compuesto_o_con_nota",
+      "Fila 215: multiples_titulares",
+      "Fila 215: embarcacion_sin_nombre",
+      "Fila 218: nombre_compuesto_o_con_nota",
+      "Fila 219: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 220 y 218",
+      "Fila 220: nombre_compuesto_o_con_nota",
+      "Fila 221: nombre_compuesto_o_con_nota",
+      "Fila 223: nombre_compuesto_o_con_nota",
+      "Fila 224: embarcacion_inferida",
+      "Fila 225: nombre_compuesto_o_con_nota",
+      "Posible duplicado fila 231 y 230",
+      "Fila 231: nombre_compuesto_o_con_nota"
+    ],
+    "valido": true
+  }
+}

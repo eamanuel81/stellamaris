@@ -18,6 +18,7 @@ import {
   AvatarImage,
   Button,
   Card,
+  Dialog,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -35,6 +36,7 @@ import { useClients } from '@/hooks/use-clients';
 import { Client } from '@/lib/data';
 import { PlusCircle, MoreHorizontal, Search, Ship as ShipIcon } from 'lucide-react';
 import { ClientDialog } from '@/components/client-dialog';
+import { ClientDetailDialog } from '@/components/client-detail-dialog';
 import { Badge } from '@/components/ui';
 import { useAuth } from '@/components/auth-provider';
 
@@ -42,6 +44,8 @@ export default function ClientsPage() {
     const { clients, isLoading, error, addClient, updateClient, deleteClient } = useClients();
     const { subrole } = useAuth();
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+    const [isDetailOpen, setIsDetailOpen] = React.useState(false);
+    const [clientToView, setClientToView] = React.useState<Client | null>(null);
     const [clientToEdit, setClientToEdit] = React.useState<Client | null>(null);
     const [searchTerm, setSearchTerm] = React.useState("");
     const [actionLoading, setActionLoading] = React.useState(false);
@@ -55,6 +59,8 @@ export default function ClientsPage() {
     };
 
     const handleEditClick = (client: Client) => {
+        setIsDetailOpen(false);
+        setClientToView(null);
         // Si el diálogo ya está abierto, ciérralo primero
         if (isDialogOpen) {
             setIsDialogOpen(false);
@@ -67,6 +73,23 @@ export default function ClientsPage() {
             setClientToEdit(client);
             setIsDialogOpen(true);
         }
+    };
+
+    const handleViewClick = (client: Client) => {
+        setClientToView(client);
+        setIsDetailOpen(true);
+    };
+
+    const handleCloseDetail = (open: boolean) => {
+        setIsDetailOpen(open);
+        if (!open) {
+            setTimeout(() => setClientToView(null), 300);
+        }
+    };
+
+    const handleEditFromDetail = () => {
+        if (!clientToView) return;
+        handleEditClick(clientToView);
     };
 
     const handleCloseDialog = (open: boolean) => {
@@ -126,7 +149,7 @@ export default function ClientsPage() {
         return (
             client.firstName.toLowerCase().includes(searchTermLower) ||
             client.lastName.toLowerCase().includes(searchTermLower) ||
-            client.email.toLowerCase().includes(searchTermLower) ||
+            (client.email ?? '').toLowerCase().includes(searchTermLower) ||
             client.boats.some(b => b.name.toLowerCase().includes(searchTermLower))
         );
     });
@@ -160,6 +183,17 @@ export default function ClientsPage() {
                 clientToEdit={clientToEdit}
             />
         )}
+
+        <Dialog open={isDetailOpen && !!clientToView} onOpenChange={handleCloseDetail}>
+            {clientToView && (
+                <ClientDetailDialog
+                    client={clientToView}
+                    canEdit={subrole !== 'encargado'}
+                    onEdit={handleEditFromDetail}
+                    setOpen={setIsDetailOpen}
+                />
+            )}
+        </Dialog>
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent>
@@ -209,12 +243,18 @@ export default function ClientsPage() {
             </TableHeader>
             <TableBody>
               {filteredClients.map((client) => (
-                <TableRow key={client.id}>
+                <TableRow
+                  key={client.id}
+                  className="cursor-pointer"
+                  onClick={() => handleViewClick(client)}
+                >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
                        <Avatar className="h-8 w-8">
                          <AvatarImage src={client.avatarUrl} alt={`${client.firstName} ${client.lastName}`} />
-                         <AvatarFallback>{client.firstName[0]}{client.lastName[0]}</AvatarFallback>
+                         <AvatarFallback>
+                           {(client.firstName?.[0] ?? '')}{(client.lastName?.[0] ?? '') || '?'}
+                         </AvatarFallback>
                        </Avatar>
                        <div>
                          {client.firstName} {client.lastName}
@@ -222,8 +262,8 @@ export default function ClientsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                     <div className="text-sm">{client.email}</div>
-                     <div className="text-xs text-muted-foreground">{client.phone}</div>
+                     <div className="text-sm">{client.email || '—'}</div>
+                     <div className="text-xs text-muted-foreground">{client.phone || '—'}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -235,7 +275,7 @@ export default function ClientsPage() {
                         ))}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu modal={false}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0" disabled={subrole === 'encargado'}>
@@ -245,6 +285,15 @@ export default function ClientsPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" onCloseAutoFocus={(e) => e.preventDefault()}>
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            setTimeout(() => handleViewClick(client), 0);
+                          }}
+                        >
+                          Ver detalle
+                        </DropdownMenuItem>
                         {subrole !== 'encargado' && (
                           <DropdownMenuItem 
                             className="cursor-pointer" 
