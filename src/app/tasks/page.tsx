@@ -59,21 +59,29 @@ export default function TasksPage() {
         setIsDialogOpen(true);
     };
 
-    const handleSaveTask = async (taskData: Task) => {
+    const handleSaveTask = async (taskData: Task): Promise<boolean> => {
         setActionLoading(true);
         setActionError(null);
         const isEditing = !!taskToEdit;
         if (isEditing) {
             const { error } = await updateTask(taskData);
-            if (error) setActionError(error.message);
+            if (error) {
+                setActionError(error.message);
+                setActionLoading(false);
+                throw error;
+            }
         } else {
-            // Eliminar id para que lo genere la base de datos
             const { id, ...taskDataWithoutId } = taskData;
             const { error } = await addTask(taskDataWithoutId as Omit<Task, 'id'>);
-            if (error) setActionError(error.message);
+            if (error) {
+                setActionError(error.message);
+                setActionLoading(false);
+                throw error;
+            }
         }
         setActionLoading(false);
         setTaskToEdit(null);
+        return true;
     };
 
     const handleDeleteClick = (task: Task) => {

@@ -39,7 +39,7 @@ export const TaskDialog = ({
 }: { 
     open: boolean;
     setOpen: (open: boolean) => void; 
-    onTaskSave: (task: Task) => void;
+    onTaskSave: (task: Task) => void | boolean | Promise<void | boolean>;
     taskToEdit: Task | null;
 }) => {
     const isEditMode = !!taskToEdit;
@@ -50,6 +50,8 @@ export const TaskDialog = ({
     const [requiresDriving, setRequiresDriving] = React.useState(false);
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
     const [extras, setExtras] = React.useState<TaskExtra[]>([]);
+    const [isSaving, setIsSaving] = React.useState(false);
+    const [submitError, setSubmitError] = React.useState<string | null>(null);
 
     const { employees, isLoading } = useEmployees();
     const qualifiedEmployees = React.useMemo(() => 
@@ -73,6 +75,7 @@ export const TaskDialog = ({
             setDuration("");
             setType("");
             setRequiresDriving(false);
+            setSubmitError(null);
             // Preseleccionar todos los empleados por defecto cuando se crea una nueva tarea
             setSelectedEmployees(qualifiedEmployees.map(emp => emp.id));
             setExtras([]);
@@ -114,13 +117,15 @@ export const TaskDialog = ({
         setExtras(prev => prev.filter((_, i) => i !== index));
     }
 
-    const handleSubmit = () => {
-        if (!title || !duration) {
-            alert("Por favor complete Título y Duración.");
+    const handleSubmit = async () => {
+        if (!title.trim() || !duration) {
+            setSubmitError("Complete el titulo y la duracion.");
             return;
         }
+
+        setSubmitError(null);
         const baseTaskData = {
-            title,
+            title: title.trim(),
             description,
             duration: Number(duration),
             type,
@@ -132,11 +137,23 @@ export const TaskDialog = ({
         if (isEditMode) {
             taskData = { ...baseTaskData, id: taskToEdit!.id } as Task;
         } else {
-            // No enviar id, lo genera Supabase
             taskData = baseTaskData as Task;
         }
-        onTaskSave(taskData);
-        setOpen(false);
+
+        setIsSaving(true);
+        try {
+            const result = await onTaskSave(taskData);
+            if (result === false) return;
+            setOpen(false);
+        } catch (error) {
+            setSubmitError(
+                error instanceof Error
+                    ? error.message
+                    : "No se pudo guardar la tarea. Intente nuevamente."
+            );
+        } finally {
+            setIsSaving(false);
+        }
     }
 
     return (
@@ -268,9 +285,14 @@ export const TaskDialog = ({
                         </div>
                     </TabsContent>
                 </Tabs>
+                {submitError && (
+                    <p className="text-sm text-destructive px-1">{submitError}</p>
+                )}
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => { setOpen(false); }}>Cancelar</Button>
-                    <Button type="submit" onClick={handleSubmit}>{isEditMode ? 'Guardar Cambios' : 'Crear Tarea'}</Button>
+                    <Button type="button" variant="outline" onClick={() => { setOpen(false); }} disabled={isSaving}>Cancelar</Button>
+                    <Button type="submit" onClick={handleSubmit} disabled={isSaving}>
+                        {isSaving ? 'Guardando...' : isEditMode ? 'Guardar Cambios' : 'Crear Tarea'}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

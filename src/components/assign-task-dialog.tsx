@@ -135,7 +135,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     const isEditMode = !!assignmentToEdit;
     const { assignments, addAssignment, updateAssignment, deleteAssignment } = useAssignments();
     const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
-    const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
+    const { tasks, isLoading: tasksLoading, error: tasksError, addTask } = useTasks();
     const { clients, refetch: refetchClients } = useClients();
 
     // Memoizar funciones de búsqueda
@@ -619,10 +619,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         }
     }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, observations, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel, isSubmitting]);
 
-    const handleTaskCreated = useCallback((newTask: Task) => {
-        setSelectedTaskId(newTask.id); 
-        setIsCreateTaskOpen(false); 
-    }, []);
+    const handleTaskCreated = useCallback(async (newTask: Task) => {
+        const { id: _id, ...taskDataWithoutId } = newTask;
+        const { data, error } = await addTask(taskDataWithoutId as Omit<Task, 'id'>);
+        if (error) {
+            throw error;
+        }
+        if (data) {
+            setSelectedTaskId(data.id);
+            setIsCreateTaskOpen(false);
+        }
+    }, [addTask]);
 
     const handleClientCreated = useCallback(async (newClient: Client) => {
         await refetchClients();
@@ -720,26 +727,27 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
-                                     <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="icon">
-                                                        <PlusCircle className="h-4 w-4" />
-                                                    </Button>
-                                                </DialogTrigger>
-                                            </TooltipTrigger>
-                                            <TooltipContent>Crear nueva tarea</TooltipContent>
-                                        </Tooltip>
-                                     </TooltipProvider>
-                                    <TaskDialog
-                                        open={isCreateTaskOpen}
-                                        setOpen={setIsCreateTaskOpen}
-                                        onTaskSave={handleTaskCreated}
-                                        taskToEdit={null}
-                                    />
-                                </Dialog>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => setIsCreateTaskOpen(true)}
+                                            >
+                                                <PlusCircle className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Crear nueva tarea</TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <TaskDialog
+                                    open={isCreateTaskOpen}
+                                    setOpen={setIsCreateTaskOpen}
+                                    onTaskSave={handleTaskCreated}
+                                    taskToEdit={null}
+                                />
                             </div>
                         </div>
 
