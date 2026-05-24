@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { TaskDialog } from "@/components/task-dialog"
 import { useTasks } from '@/hooks/use-tasks';
+import { matchesSearch } from '@/lib/utils';
 
 export default function TasksPage() {
     const { tasks, isLoading, error, addTask, updateTask, deleteTask } = useTasks();
@@ -104,10 +105,11 @@ export default function TasksPage() {
     };
 
     const filteredTasks = tasks.filter(task => {
-        const searchTermLower = searchTerm.toLowerCase();
-        const titleMatch = task.title.toLowerCase().includes(searchTermLower);
-        // No filtrar por empleados aquí, ya que employees puede venir de otro lado
-        return titleMatch;
+        return (
+            matchesSearch(task.title, searchTerm) ||
+            matchesSearch(task.type, searchTerm) ||
+            matchesSearch(task.description, searchTerm)
+        );
     });
 
   return (

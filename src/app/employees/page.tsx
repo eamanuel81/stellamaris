@@ -38,6 +38,7 @@ import { EmployeeDialog } from "@/components/employee-dialog"
 import { EmployeeTasksDialog } from "@/components/employee-tasks-dialog"
 import { useEmployees } from '@/hooks/use-employees';
 import { useAuth } from '@/components/auth-provider';
+import { matchesAnySearch } from '@/lib/utils';
 
 export default function EmployeesPage() {
   const { employees, isLoading, error, addEmployee, updateEmployee, deleteEmployee } = useEmployees();
@@ -118,12 +119,9 @@ export default function EmployeesPage() {
   };
 
   const filteredEmployees = employees.filter(employee => {
-    const searchTermLower = searchTerm.toLowerCase();
-    return (
-      employee.name.toLowerCase().includes(searchTermLower) ||
-      employee.lastName.toLowerCase().includes(searchTermLower) ||
-      (employee.dni || '').toLowerCase().includes(searchTermLower) ||
-      (employee.nickname || '').toLowerCase().includes(searchTermLower)
+    return matchesAnySearch(
+      [employee.name, employee.lastName, employee.dni, employee.nickname, employee.email, employee.phone],
+      searchTerm
     );
   });
 

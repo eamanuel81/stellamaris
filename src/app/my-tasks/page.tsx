@@ -8,6 +8,7 @@ import { useTasks } from "@/hooks/use-tasks"
 import { useClients } from "@/hooks/use-clients"
 import { useEmployees } from "@/hooks/use-employees"
 import { useSession } from "next-auth/react"
+import { matchesAnySearch, matchesSearch } from "@/lib/utils"
 import {
   Badge,
   Button,
@@ -215,8 +216,8 @@ export default function MyTasksPage() {
         if (currentEmployees.length === 0) {
             // Intentar buscar por email parcial o similar
             const similarEmployee = employees.find(emp => 
-                emp.email.toLowerCase().includes(currentUserEmail?.toLowerCase() || '') ||
-                currentUserEmail?.toLowerCase().includes(emp.email.toLowerCase())
+                matchesSearch(emp.email, currentUserEmail ?? '') ||
+                matchesSearch(currentUserEmail, emp.email)
             );
             
             if (similarEmployee) {
@@ -306,13 +307,14 @@ export default function MyTasksPage() {
       const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
       if (!task) return false;
 
-      const searchTermLower = searchTerm.toLowerCase();
-      
       return (
-          task.title.toLowerCase().includes(searchTermLower) ||
-          (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
-          (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
-          (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
+          matchesSearch(task.title, searchTerm) ||
+          matchesSearch(task.type, searchTerm) ||
+          (client && matchesSearch(`${client.firstName ?? ''} ${client.lastName ?? ''}`, searchTerm)) ||
+          (client && (client.boats ?? []).some(boat =>
+              assignment.boatIds?.includes(boat.id) &&
+              matchesAnySearch([boat.name, boat.registrationNumber, boat.hullType], searchTerm)
+          ))
       );
   };
   

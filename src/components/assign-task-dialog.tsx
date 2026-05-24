@@ -47,7 +47,7 @@ import {
 } from "@/components/ui"
 import { PlusCircle, Car, ChevronDown, Trash2, Check, ChevronsUpDown } from "lucide-react"
 import { Task, Assignment, Client, TaskExtra, AssignmentStatus } from "@/lib/data"
-import { cn } from "@/lib/utils"
+import { cn, matchesAnySearch, matchesSearch } from "@/lib/utils"
 import { TaskDialog } from "@/components/task-dialog"
 import { ClientDialog } from "@/components/client-dialog"
 import { useAssignments } from '@/hooks/use-assignments';
@@ -212,13 +212,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
 
     // Filtrar clientes basado en la búsqueda
     const filteredClients = useMemo(() => {
-        if (!clientSearchQuery.trim()) return clients;
-        const query = clientSearchQuery.toLowerCase();
-        return clients.filter(client => 
-            client.firstName.toLowerCase().includes(query) ||
-            client.lastName.toLowerCase().includes(query) ||
-            client.dni.includes(query) ||
-            (client.email && client.email.toLowerCase().includes(query))
+        const query = clientSearchQuery.trim();
+        if (!query) return clients;
+        return clients.filter(client =>
+            matchesAnySearch(
+                [client.firstName, client.lastName, client.dni, client.email, client.phone],
+                query
+            )
         );
     }, [clients, clientSearchQuery]);
 
@@ -231,13 +231,13 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         }
         
         // Aplicar filtro de búsqueda si existe
-        if (!boatSearchQuery.trim()) return boatsToFilter;
-        const query = boatSearchQuery.toLowerCase();
-        return boatsToFilter.filter(boat => 
-            boat.name.toLowerCase().includes(query) ||
-            boat.registrationNumber.toLowerCase().includes(query) ||
-            boat.clientName.toLowerCase().includes(query) ||
-            (boat.hullType && boat.hullType.toLowerCase().includes(query))
+        const query = boatSearchQuery.trim();
+        if (!query) return boatsToFilter;
+        return boatsToFilter.filter(boat =>
+            matchesAnySearch(
+                [boat.name, boat.registrationNumber, boat.clientName, boat.hullType],
+                query
+            )
         );
     }, [allBoats, boatSearchQuery, selectedClientId]);
 

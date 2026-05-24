@@ -39,6 +39,7 @@ import { ClientDialog } from '@/components/client-dialog';
 import { ClientDetailDialog } from '@/components/client-detail-dialog';
 import { Badge } from '@/components/ui';
 import { useAuth } from '@/components/auth-provider';
+import { matchesAnySearch, matchesSearch } from '@/lib/utils';
 
 export default function ClientsPage() {
     const { clients, isLoading, error, addClient, updateClient, deleteClient } = useClients();
@@ -141,16 +142,21 @@ export default function ClientsPage() {
 
     // Filtrar clientes: no mostrar el email del admin (ni clientes con email igual al del usuario actual)
     const filteredClients = clients.filter(client => {
-        const searchTermLower = searchTerm.toLowerCase();
         // No mostrar clientes cuyo email coincide con el del usuario logueado (admin)
         if (client.email && subrole === 'admin') {
             // El filtrado por email del admin se realiza en el servidor; aquí no aplica
         }
         return (
-            client.firstName.toLowerCase().includes(searchTermLower) ||
-            client.lastName.toLowerCase().includes(searchTermLower) ||
-            (client.email ?? '').toLowerCase().includes(searchTermLower) ||
-            client.boats.some(b => b.name.toLowerCase().includes(searchTermLower))
+            matchesAnySearch(
+                [client.firstName, client.lastName, client.email, client.phone, client.dni],
+                searchTerm
+            ) ||
+            (client.boats ?? []).some((boat) =>
+                matchesAnySearch(
+                    [boat.name, boat.registrationNumber, boat.hullType],
+                    searchTerm
+                )
+            )
         );
     });
 

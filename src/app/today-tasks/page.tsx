@@ -37,7 +37,7 @@ import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
 import { AssignTaskDialog } from "@/components/assign-task-dialog";
 import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar, Plus, Edit2, FileText } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, matchesAnySearch, matchesSearch } from "@/lib/utils"
 import type { Assignment, Task, Client, Employee, AssignmentStatus } from '@/lib/data';
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -103,13 +103,14 @@ export default function TodayTasksPage() {
         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
         if (!task) return false;
 
-        const searchTermLower = searchTerm.toLowerCase();
-        
         return (
-            task.title.toLowerCase().includes(searchTermLower) ||
-            (task.type && task.type.toLowerCase().includes(searchTermLower)) ||
-            (client && `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchTermLower)) ||
-            (client && client.boats.some(boat => assignment.boatIds?.includes(boat.id) && boat.name.toLowerCase().includes(searchTermLower)))
+            matchesSearch(task.title, searchTerm) ||
+            matchesSearch(task.type, searchTerm) ||
+            (client && matchesSearch(`${client.firstName ?? ''} ${client.lastName ?? ''}`, searchTerm)) ||
+            (client && (client.boats ?? []).some(boat =>
+                assignment.boatIds?.includes(boat.id) &&
+                matchesAnySearch([boat.name, boat.registrationNumber, boat.hullType], searchTerm)
+            ))
         );
     };
     
