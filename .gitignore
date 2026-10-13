@@ -58,3 +58,16 @@ Santi.txt
 
 # Credenciales reales (solo local; la plantilla versionada es credenciales.ejemplo.html)
 documentacion/credenciales.html
+# Archivos locales / generados
+.vs/
+test-results/
+playwright-report/
+debug.log
+*.log
+package-lock copy.json
+XXX.XXX
+TEXTMANU.TXT
+*.zip
+
+# Credenciales reales (cualquier ubicación; solo la plantilla *.ejemplo.html se versiona)
+**/credenciales.html
