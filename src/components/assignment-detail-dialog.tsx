@@ -55,12 +55,12 @@ export const AssignmentDetailDialog = ({
     onStatusChange
 }: AssignmentDetailDialogProps) => {
     const { updateAssignment, refetch } = useAssignments();
+    const [localStatus, setLocalStatus] = React.useState(assignmentGroup?.[0]?.status);
+    React.useEffect(() => {
+        setLocalStatus(assignmentGroup?.[0]?.status);
+    }, [assignmentGroup]);
     if (!assignmentGroup || assignmentGroup.length === 0) return null;
     const firstAssignment = assignmentGroup[0];
-    const [localStatus, setLocalStatus] = React.useState(firstAssignment.status);
-    React.useEffect(() => {
-        setLocalStatus(firstAssignment.status);
-    }, [firstAssignment.status]);
 
     const task = getTaskById(firstAssignment.taskId, tasks);
     const client = firstAssignment.clientId ? getClientById(firstAssignment.clientId, clients) : null;

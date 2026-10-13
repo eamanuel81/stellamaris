@@ -123,13 +123,13 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
     ) as Employee[];
     const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
 
-    const calculateExtrasTotal = React.useMemo(() => {
+    const calculateExtrasTotal = (() => {
         if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
         return firstAssignment.selectedExtras.reduce((total, selected) => {
             const extraDetails = task.extras!.find(e => e.id === selected.extraId);
             return total + (extraDetails?.price || 0) * selected.quantity;
         }, 0);
-    }, [task, firstAssignment.selectedExtras]);
+    })();
 
     return (
         <div className="space-y-2 p-2 text-sm">

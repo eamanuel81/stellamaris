@@ -2,25 +2,16 @@
 
 ## Auth y sesión
 
-### Patrón de rol doble
-El sistema usa DOS fuentes para determinar el rol:
-1. `employees.subrole` (por email) → puede ser `admin`, `encargado`, `empleado`
-2. `profiles.role` (por user.id) → puede ser `Administrador` o `employee`
-Si `subrole === 'admin'` prevalece sobre `profiles.role`.
+### Rol
+Un solo origen: `users.subrole` (`admin` | `encargado` | `empleado`), incluido en el JWT por los callbacks de `src/auth.ts`. En APIs de admin usar `requireAdmin()`.
 
-### Sesión corrupta
-Si el token de refresh es inválido (`Invalid Refresh Token`), el `AuthProvider` llama a `clearCorruptedSession()` que limpia localStorage + sessionStorage + signOut de Supabase. La clave de storage es `stellamaris-auth`.
+### Variables de entorno
+`NEXTAUTH_SECRET`/`AUTH_SECRET` y `NEXTAUTH_URL`/`AUTH_URL` deben coincidir en producción. Sin `DATABASE_URL` el build pasa pero la app no puede autenticar.
 
-### Listener único de auth
-No crear suscripciones directas a `supabase.auth.onAuthStateChange` en componentes. Usar el hook `use-auth-state.ts` que centraliza el listener y expone `addAuthListener()`.
+## Base de datos
 
-## Supabase
-
-### Singleton
-Usar siempre `import { supabase } from '@/lib/supabaseClient'`. No crear instancias nuevas. Si se necesita admin, usar `getSupabaseAdmin()` del mismo archivo.
-
-### Reinicio en dev
-`resetSupabaseClients()` existe para limpiar instancias cacheadas en desarrollo con HMR.
+### Acceso
+Usar `db` de `@/lib/db` con las tablas de `@/lib/schema`. El `search_path` se fija con `DATABASE_SCHEMA` (default `guarderia`).
 
 ## UI / Componentes
 
@@ -33,7 +24,7 @@ Usar siempre `import { supabase } from '@/lib/supabaseClient'`. No crear instanc
 Definido en `app-layout.tsx` con `adminNavItems` y `employeeNavItems`.
 
 ### Avatar
-El avatar usa dicebear con seed. La seed viene del `avatarKey` en `AvatarContext`. Por defecto es el `user.id` de Supabase o el `avatar_url` de `profiles`.
+El avatar usa dicebear con seed. La seed viene del `avatarKey` en `AvatarContext`. Por defecto es el `user.id`.
 
 ## Datos
 
@@ -41,7 +32,7 @@ El avatar usa dicebear con seed. La seed viene del `avatarKey` en `AvatarContext
 A diferencia del tipo original, `employeeId` es `string[]` — una tarea puede tener múltiples empleados. Al hacer queries filtrar con `.contains()` o similar.
 
 ### Datos mock en data.ts
-`src/lib/data.ts` tiene arrays de ejemplo (`employees`, `tasks`, `assignments`, `clients`). Son datos de prueba/fallback — la app real usa Supabase.
+`src/lib/data.ts` tiene arrays de ejemplo (`employees`, `tasks`, `assignments`, `clients`). Son datos de prueba/fallback — la app real usa PostgreSQL vía Drizzle.
 
 ## Patrones de formularios
 - Todos usan `react-hook-form` + `zod` para validación

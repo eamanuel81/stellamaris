@@ -5,7 +5,8 @@ App de gestión para una **guardería de lanchas**. Permite asignar tareas a emp
 
 ## Stack
 - **Framework**: Next.js 15 (App Router, Turbopack) en puerto 9002
-- **Auth + DB**: Supabase (Auth + Postgres)
+- **Auth**: NextAuth v5 (credentials + JWT)
+- **DB**: PostgreSQL + Drizzle ORM (esquema `guarderia`)
 - **UI**: shadcn/ui + Radix UI + Tailwind CSS
 - **AI**: Genkit (Google AI) — en `src/ai/`
 - **Forms**: react-hook-form + zod
@@ -18,11 +19,7 @@ App de gestión para una **guardería de lanchas**. Permite asignar tareas a emp
 | `employee` | `encargado` | Mis Tareas + Calendario |
 | `employee` | `empleado` | Mis Tareas + Calendario |
 
-El rol se determina en `auth-provider.tsx`:
-1. Consulta `employees` por email → obtiene `subrole`
-2. Consulta `profiles` por `user.id` → obtiene `role` y `avatar_url`
-3. Si `subrole === 'admin'` → `role = 'admin'`
-4. Si email es `admin@stellamaris.com` o contiene 'admin' → `role = 'admin'`
+El rol sale de `users.subrole` (tabla `users`, vinculada a `employees` por `employeeId`) y se guarda en el JWT de NextAuth. `requireAdmin()` (`src/lib/auth-helpers.ts`) protege los endpoints de admin.
 
 ## Estructura de carpetas clave
 ```
@@ -45,28 +42,33 @@ src/
     assign-task-dialog.tsx → asignar tarea a empleado
     client-dialog.tsx → CRUD de clientes
     employee-dialog.tsx → CRUD de empleados
-  hooks/            → lógica con Supabase
+  hooks/            → consumen las APIs REST (`/api/*`)
     use-assignments.ts → CRUD de asignaciones
     use-tasks.ts    → CRUD de tipos de tareas
     use-clients.ts  → CRUD de clientes
     use-employees.ts → CRUD de empleados
     use-notifications.ts → notificaciones
-    use-auth-state.ts → listener único de Supabase auth
+    use-notification-preferences.ts → preferencias de notificación
   lib/
     data.ts         → tipos TypeScript (Employee, Task, Assignment, Client, Boat...)
-    supabaseClient.ts → instancia de Supabase (singleton)
-    init-supabase.ts → inicialización con reset para dev
+    db.ts           → conexión Postgres + Drizzle
+    schema.ts       → tablas Drizzle
+    auth-helpers.ts → requireAdmin()
+  auth.ts           → config NextAuth
+  middleware.ts     → protección de rutas
+  app/api/          → API REST (assignments, clients, employees, tasks, notifications, profile)
   ai/               → flows de Genkit (Google AI)
   contexts/
     avatar-context.tsx → contexto global del avatar
 ```
 
-## Tablas Supabase principales
-- `profiles` — rol (`Administrador`/`employee`) y `avatar_url`
-- `employees` — datos del empleado + `subrole` + `auth_id`
-- `clients` — clientes con `boats[]` y `responsibles[]`
+## Tablas principales (schema `guarderia`, ver `src/lib/schema.ts`)
+- `users` — login: email, passwordHash, `subrole`, `employeeId`
+- `employees` — datos del empleado
+- `clients` — clientes con embarcaciones y responsables
 - `tasks` — tipos de tareas (title, duration, requiresDriving, extras)
 - `assignments` — asignaciones (taskId, employeeId[], startTime, endTime, status, clientId, boatIds)
+- `notifications` y `user_preferences`
 
 ## Tipos clave (src/lib/data.ts)
 - `Assignment.status`: `'pending' | 'accepted' | 'completed' | 'rejected' | 'cancelled'`
