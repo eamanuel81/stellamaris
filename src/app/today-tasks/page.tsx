@@ -36,6 +36,8 @@ import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
 import { AssignedTo } from '@/components/assigned-to';
+import { LevelBadge, LevelPicker } from '@/components/traffic-light'
+import { effectiveDifficulty, normalizeLevel } from '@/lib/traffic-light'
 import { AssignTaskDialog } from "@/components/assign-task-dialog";
 import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar, Plus, Edit2, FileText } from "lucide-react"
 import { cn, matchesAnySearch, matchesSearch } from "@/lib/utils"
@@ -236,6 +238,10 @@ export default function TodayTasksPage() {
                                 )}
                             </div>
                             <CardDescription>{task.description}</CardDescription>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                <LevelBadge kind="difficulty" level={effectiveDifficulty(assignment, task)} />
+                                <LevelBadge kind="dirt" level={assignment.dirtLevel} />
+                            </div>
                             </CardHeader>
                             <CardContent className="flex-grow">
                             <div className="text-sm text-muted-foreground space-y-4">
@@ -443,6 +449,10 @@ export default function TodayTasksPage() {
                                 )}
                             </div>
                             <CardDescription>{task.description}</CardDescription>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                <LevelBadge kind="difficulty" level={effectiveDifficulty(assignment, task)} />
+                                <LevelBadge kind="dirt" level={assignment.dirtLevel} />
+                            </div>
                             </CardHeader>
                             <CardContent className="flex-grow">
                             <div className="text-sm text-muted-foreground space-y-4">

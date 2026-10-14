@@ -48,6 +48,7 @@ export const tasks = dbSchema.table('tasks', {
   requiresDriving: boolean('requires_driving').default(false),
   type: varchar('type', { length: 100 }),
   qualifiedEmployeeIds: jsonb('qualified_employee_ids').$type<string[]>(),
+  difficulty: integer('difficulty').notNull().default(1), // semáforo 1=verde, 2=amarillo, 3=rojo
   extras: jsonb('extras').$type<TaskExtra[]>(),
   createdAt: timestamp('created_at').defaultNow(),
 });
@@ -64,6 +65,8 @@ export const assignments = dbSchema.table('assignments', {
   boatIds: jsonb('boat_ids').$type<string[]>(),
   selectedExtras: jsonb('selected_extras').$type<{ extraId: string; quantity: number }[]>(),
   observations: text('observations'),
+  difficulty: integer('difficulty'), // pisa la dificultad del tipo de tarea (1-3)
+  dirtLevel: integer('dirt_level'), // suciedad de la lancha (1-3)
   createdAt: timestamp('created_at').defaultNow(),
 });
 

@@ -66,6 +66,12 @@ src/
 ## Clasificadores de tareas
 El campo **Tipo** del tipo de tarea clasifica la actividad: `LAVADO` y `BAJADA` alimentan la pantalla Embarcaciones. Un empleado puede dejar asentada una tarea hecha por su cuenta con *Registrar tarea realizada* (`POST /api/assignments/register`): queda a su nombre, completada y con fecha de hoy.
 
+## Semáforos (verde/amarillo/rojo = 1/2/3)
+- `tasks.difficulty`: dificultad por defecto del tipo de tarea. `assignments.difficulty` la pisa en una asignación concreta (`effectiveDifficulty()` en `src/lib/traffic-light.ts`).
+- `assignments.dirt_level`: suciedad de la lancha, la cargan el admin al asignar o el empleado desde Mis Tareas / Registrar tarea realizada.
+- La pantalla Embarcaciones muestra la última suciedad informada, y la descarta si la lancha se lavó después.
+- Migración SQL: `docs/migraciones/001-semaforos.sql` (correr ANTES de desplegar; hacer respaldo con `pg_dump`).
+
 ## Tablas principales (schema `guarderia`, ver `src/lib/schema.ts`)
 - `users` — login: email, passwordHash, `subrole`, `employeeId`
 - `employees` — datos del empleado

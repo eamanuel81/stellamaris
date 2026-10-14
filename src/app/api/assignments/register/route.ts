@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { requireSession } from '@/lib/auth-helpers';
+import { normalizeLevel } from '@/lib/traffic-light';
 import { db } from '@/lib/db';
 import { assignments, clients, employees, tasks } from '@/lib/schema';
 
@@ -19,6 +20,11 @@ export async function POST(req: Request) {
     const note = typeof body.observations === 'string' ? body.observations.trim().slice(0, 1000) : '';
     if (typeof body.taskId !== 'string' || typeof body.clientId !== 'string' || boatIds.length === 0) {
       return NextResponse.json({ error: 'Faltan datos: tarea, cliente y embarcación' }, { status: 400 });
+    }
+
+    const dirtLevel = body.dirtLevel == null ? null : normalizeLevel(body.dirtLevel);
+    if (body.dirtLevel != null && dirtLevel === null) {
+      return NextResponse.json({ error: 'Nivel de suciedad inválido' }, { status: 400 });
     }
 
     const [task] = await db.select().from(tasks).where(eq(tasks.id, body.taskId)).limit(1);
@@ -48,6 +54,7 @@ export async function POST(req: Request) {
       status: 'completed',
       clientId: client.id,
       boatIds,
+      dirtLevel,
       observations: note ? `Registrada por el empleado. ${note}` : 'Registrada por el empleado.',
     }).returning();
 

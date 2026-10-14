@@ -13,6 +13,8 @@ function mapAssignment(row: any): Assignment {
     boatIds: row.boatIds ?? undefined,
     selectedExtras: row.selectedExtras ?? undefined,
     observations: row.observations ?? undefined,
+    difficulty: row.difficulty ?? null,
+    dirtLevel: row.dirtLevel ?? null,
   };
 }
 
@@ -122,7 +124,7 @@ export function useAssignments() {
     }
   }, [fetchAssignments]);
 
-  const registerDoneAssignment = useCallback(async (data: { taskId: string; clientId: string; boatIds: string[]; observations?: string }) => {
+  const registerDoneAssignment = useCallback(async (data: { taskId: string; clientId: string; boatIds: string[]; observations?: string; dirtLevel?: number | null }) => {
     try {
       const res = await fetch('/api/assignments/register', {
         method: 'POST',

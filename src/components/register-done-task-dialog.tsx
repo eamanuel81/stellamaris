@@ -3,6 +3,8 @@
 import React from "react"
 import { Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea } from "@/components/ui"
 import type { Client, Task } from "@/lib/data"
+import { LevelPicker } from "@/components/traffic-light"
+import type { Level } from "@/lib/traffic-light"
 
 type Props = {
   open: boolean
@@ -10,7 +12,7 @@ type Props = {
   tasks: Task[]
   clients: Client[]
   canDrive: boolean
-  onSubmit: (data: { taskId: string; clientId: string; boatIds: string[]; observations: string }) => Promise<string | null>
+  onSubmit: (data: { taskId: string; clientId: string; boatIds: string[]; observations: string; dirtLevel: number | null }) => Promise<string | null>
 }
 
 // El empleado deja asentada una tarea que ya hizo por su cuenta (p. ej. bajó la lancha y además la limpió).
@@ -19,12 +21,13 @@ export function RegisterDoneTaskDialog({ open, onOpenChange, tasks, clients, can
   const [clientId, setClientId] = React.useState("")
   const [boatIds, setBoatIds] = React.useState<string[]>([])
   const [observations, setObservations] = React.useState("")
+  const [dirtLevel, setDirtLevel] = React.useState<Level | null>(null)
   const [saving, setSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (!open) {
-      setTaskId(""); setClientId(""); setBoatIds([]); setObservations(""); setError(null)
+      setTaskId(""); setClientId(""); setBoatIds([]); setObservations(""); setDirtLevel(null); setError(null)
     }
   }, [open])
 
@@ -38,7 +41,7 @@ export function RegisterDoneTaskDialog({ open, onOpenChange, tasks, clients, can
   const handleSave = async () => {
     setSaving(true)
     setError(null)
-    const message = await onSubmit({ taskId, clientId, boatIds, observations })
+    const message = await onSubmit({ taskId, clientId, boatIds, observations, dirtLevel })
     setSaving(false)
     if (message) setError(message)
     else onOpenChange(false)
@@ -83,6 +86,10 @@ export function RegisterDoneTaskDialog({ open, onOpenChange, tasks, clients, can
               ))}
             </div>
           )}
+          <div className="space-y-2">
+            <Label>¿Qué tan sucia estaba la lancha? (opcional)</Label>
+            <LevelPicker kind="dirt" allowEmpty value={dirtLevel} onChange={setDirtLevel} />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="done-notes">Observaciones (opcional)</Label>
             <Textarea id="done-notes" value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ej: estaba muy sucia, la lavé después de bajarla" />

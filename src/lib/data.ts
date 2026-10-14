@@ -29,6 +29,7 @@ export type Task = {
   type?: string;
   qualifiedEmployeeIds?: string[]; // Array of employee IDs
   extras?: TaskExtra[];
+  difficulty?: number; // semáforo 1=verde, 2=amarillo, 3=rojo
 };
 
 export type AssignmentStatus = 'pending' | 'accepted' | 'completed' | 'rejected' | 'cancelled';
@@ -44,6 +45,8 @@ export type Assignment = {
     boatIds?: string[];
     selectedExtras?: { extraId: string; quantity: number }[];
     observations?: string; // Observaciones opcionales de la tarea
+    difficulty?: number | null; // pisa la dificultad del tipo de tarea (1-3)
+    dirtLevel?: number | null; // suciedad de la lancha (1-3)
 };
 
 export type Boat = {

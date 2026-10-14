@@ -1,5 +1,6 @@
 import { differenceInCalendarDays } from 'date-fns';
 import type { Assignment, Client, Task } from '@/lib/data';
+import { normalizeLevel, type Level } from '@/lib/traffic-light';
 
 // Cada actividad se identifica por el clasificador (campo Tipo) del tipo de tarea.
 export type ActivityKind = 'lavado' | 'bajada';
@@ -19,6 +20,8 @@ export type BoatActivityRow = {
   clientName: string;
   last: Record<ActivityKind, Date | null>;
   daysSince: Record<ActivityKind, number | null>; // null = nunca se hizo
+  // Última suciedad informada; se descarta si la lancha se lavó después de ese aviso
+  dirt: { level: Level; reportedAt: Date } | null;
 };
 
 // Para cada embarcación, la fecha de la última tarea completada de cada actividad.
@@ -32,8 +35,17 @@ export function computeBoatActivityRows(
     ACTIVITY_KINDS.map(kind => [kind, new Set(tasks.filter(t => isTaskOfKind(t, kind)).map(t => t.id))])
   ) as Record<ActivityKind, Set<string>>;
   const lastByKind: Record<ActivityKind, Map<string, Date>> = { lavado: new Map(), bajada: new Map() };
+  const dirtByBoat = new Map<string, { level: Level; reportedAt: Date }>();
 
   for (const a of assignments) {
+    const dirtLevel = normalizeLevel(a.dirtLevel);
+    if (dirtLevel) {
+      const reportedAt = new Date(a.endTime);
+      for (const boatId of a.boatIds ?? []) {
+        const prev = dirtByBoat.get(boatId);
+        if (!prev || reportedAt > prev.reportedAt) dirtByBoat.set(boatId, { level: dirtLevel, reportedAt });
+      }
+    }
     if (a.status !== 'completed') continue;
     const when = new Date(a.endTime);
     for (const kind of ACTIVITY_KINDS) {
@@ -56,6 +68,8 @@ export function computeBoatActivityRows(
         lavado: last.lavado ? Math.max(0, differenceInCalendarDays(now, last.lavado)) : null,
         bajada: last.bajada ? Math.max(0, differenceInCalendarDays(now, last.bajada)) : null,
       };
+      const reported = dirtByBoat.get(boat.id) ?? null;
+      const washedSince = reported && last.lavado && last.lavado >= reported.reportedAt;
       rows.push({
         boatId: boat.id,
         boatName: boat.name,
@@ -64,6 +78,7 @@ export function computeBoatActivityRows(
         clientName: `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim(),
         last,
         daysSince,
+        dirt: washedSince ? null : reported,
       });
     }
   }
