@@ -32,6 +32,7 @@ src/
     tasks/          → admin: tipos de tareas
     employees/      → admin: gestión empleados
     clients/        → admin: gestión clientes
+    boats/          → admin y encargado: estado de lavado por embarcación (tareas con Tipo = LAVADO)
     my-tasks/       → empleado: sus tareas
     my-calendar/    → empleado: calendario
     settings/       → todos: configuración

@@ -41,6 +41,7 @@ import {
   CalendarDays,
   Calendar,
   CircleHelp,
+  Ship,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
@@ -55,6 +56,7 @@ const adminNavItems = [
   { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
   { href: "/employees", icon: <Users />, label: "Empleados" },
   { href: "/clients", icon: <Contact />, label: "Clientes" },
+  { href: "/boats", icon: <Ship />, label: "Embarcaciones" },
   { href: "/help", icon: <CircleHelp />, label: "Ayuda" },
 ];
 
@@ -65,7 +67,7 @@ const employeeNavItems = [
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { role, logout, isLoading } = useAuth()
+  const { role, subrole, logout, isLoading } = useAuth()
   const { avatarKey } = useAvatar()
   const router = useRouter()
   const pathname = usePathname()
@@ -84,7 +86,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const navItems = role === "admin" ? adminNavItems : employeeNavItems
+  const boatsNavItem = { href: "/boats", icon: <Ship />, label: "Embarcaciones" }
+  const navItems =
+    role === "admin"
+      ? adminNavItems
+      : subrole === "encargado"
+        ? [...employeeNavItems.slice(0, 2), boatsNavItem, ...employeeNavItems.slice(2)]
+        : employeeNavItems
 
   const handleLogout = () => {
     void logout()
