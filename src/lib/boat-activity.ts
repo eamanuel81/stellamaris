@@ -2,7 +2,7 @@ import { differenceInCalendarDays } from 'date-fns';
 import type { Assignment, Client, Task } from '@/lib/data';
 import { normalizeLevel, type Level } from '@/lib/traffic-light';
 
-// Cada actividad se identifica por el clasificador (campo Tipo) del tipo de tarea.
+// Cada actividad se identifica por el clasificador (campo Tipo) del tipo de tarea: alcanza con que el Tipo contenga la palabra (LAVADO, Lavado de casco...).
 export type ActivityKind = 'lavado' | 'bajada';
 export const ACTIVITY_KINDS: ActivityKind[] = ['lavado', 'bajada'];
 
@@ -10,7 +10,7 @@ const normalize = (text: string | undefined) =>
   (text ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
 
 export const isTaskOfKind = (task: Pick<Task, 'type'> | undefined | null, kind: ActivityKind) =>
-  !!task && normalize(task.type) === kind;
+  !!task && normalize(task.type).includes(kind);
 
 export type BoatActivityRow = {
   boatId: string;
@@ -20,8 +20,8 @@ export type BoatActivityRow = {
   clientName: string;
   last: Record<ActivityKind, Date | null>;
   daysSince: Record<ActivityKind, number | null>; // null = nunca se hizo
-  // Última suciedad informada; se descarta si la lancha se lavó después de ese aviso
-  dirt: { level: Level; reportedAt: Date } | null;
+  // Última suciedad informada. washedSince = la lancha se lavó en ese momento o después (ya no está así)
+  dirt: { level: Level; reportedAt: Date; washedSince: boolean } | null;
 };
 
 // Para cada embarcación, la fecha de la última tarea completada de cada actividad.
@@ -69,7 +69,7 @@ export function computeBoatActivityRows(
         bajada: last.bajada ? Math.max(0, differenceInCalendarDays(now, last.bajada)) : null,
       };
       const reported = dirtByBoat.get(boat.id) ?? null;
-      const washedSince = reported && last.lavado && last.lavado >= reported.reportedAt;
+      const washedSince = Boolean(reported && last.lavado && last.lavado >= reported.reportedAt);
       rows.push({
         boatId: boat.id,
         boatName: boat.name,
@@ -78,7 +78,7 @@ export function computeBoatActivityRows(
         clientName: `${client.firstName ?? ''} ${client.lastName ?? ''}`.trim(),
         last,
         daysSince,
-        dirt: washedSince ? null : reported,
+        dirt: reported ? { ...reported, washedSince } : null,
       });
     }
   }
@@ -91,3 +91,14 @@ export const isStale = (row: BoatActivityRow, kind: ActivityKind, days: number) 
 
 export const isRecent = (row: BoatActivityRow, kind: ActivityKind, days: number) =>
   row.daysSince[kind] !== null && (row.daysSince[kind] as number) <= days;
+
+// Chequeos para avisar cuando las tareas completadas no se pueden contar
+export function diagnoseActivity(assignments: Assignment[], tasks: Task[], kind: ActivityKind) {
+  const kindTaskIds = new Set(tasks.filter(t => isTaskOfKind(t, kind)).map(t => t.id));
+  const completed = assignments.filter(a => a.status === 'completed' && kindTaskIds.has(a.taskId));
+  return {
+    taskTypes: kindTaskIds.size,
+    completed: completed.length,
+    completedWithoutBoat: completed.filter(a => !(a.boatIds ?? []).length).length,
+  };
+}
