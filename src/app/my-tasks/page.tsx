@@ -36,6 +36,9 @@ import {
 import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
 import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search, UserPlus, UserX } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { LevelBadge, LevelPicker } from "@/components/traffic-light"
+import { effectiveDifficulty, normalizeLevel } from "@/lib/traffic-light"
+import { RegisterDoneTaskDialog } from "@/components/register-done-task-dialog"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -57,7 +60,7 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 
 type ClaimConfig = { onClaim: (id: string) => void; claimingId: string | null; canDrive: boolean }
 
-const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: { assignment: Assignment, task: Task, client: Client | null, updateAssignmentStatus: (id: string, status: AssignmentStatus) => void, claim?: ClaimConfig }) => {
+const TaskCard = ({ assignment, task, client, updateAssignmentStatus, setDirtLevel, claim }: { assignment: Assignment, task: Task, client: Client | null, updateAssignmentStatus: (id: string, status: AssignmentStatus) => void, setDirtLevel?: (id: string, level: number | null) => void, claim?: ClaimConfig }) => {
     const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
     const currentStatus = statusMap[assignment.status] || statusMap.pending;
 
@@ -74,6 +77,10 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: {
                 )}
                 </div>
                 <CardDescription>{task.description}</CardDescription>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                <LevelBadge kind="difficulty" level={effectiveDifficulty(assignment, task)} />
+                                <LevelBadge kind="dirt" level={assignment.dirtLevel} />
+                            </div>
             </CardHeader>
             <CardContent className="flex-grow">
                 <div className="text-sm text-muted-foreground space-y-4">
@@ -128,6 +135,13 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {!claim && setDirtLevel && boats.length > 0 && (
+                        <div className="space-y-2 pt-4 border-t">
+                            <span className="font-medium text-foreground">¿Qué tan sucia está la lancha?</span>
+                            <LevelPicker kind="dirt" allowEmpty value={assignment.dirtLevel} onChange={l => setDirtLevel(assignment.id, l)} />
                         </div>
                     )}
 
@@ -201,7 +215,8 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: {
 export default function MyTasksPage() {
     const { role, subrole } = useAuth();
     const { data: session } = useSession();
-    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment, claimAssignment } = useAssignments();
+    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment, claimAssignment, registerDoneAssignment } = useAssignments();
+    const [registerOpen, setRegisterOpen] = React.useState(false);
     const { toast } = useToast();
     const [claimingId, setClaimingId] = React.useState<string | null>(null);
     const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
@@ -312,6 +327,20 @@ export default function MyTasksPage() {
         } else {
             toast({ title: "Tarea asignada", description: "Ahora la tenés en Activas." });
         }
+    };
+
+    const handleRegisterDone = async (data: { taskId: string; clientId: string; boatIds: string[]; observations: string; dirtLevel: number | null }) => {
+        const { error } = await registerDoneAssignment(data);
+        if (error) return error.message;
+        toast({ title: "Tarea registrada", description: "Quedó asentada en Completadas." });
+        return null;
+    };
+
+    const setDirtLevel = async (assignmentId: string, level: number | null) => {
+        const current = assignments.find(a => a.id === assignmentId);
+        if (!current) return;
+        const { error } = await updateAssignment({ ...current, dirtLevel: level });
+        if (error) toast({ variant: "destructive", title: "No se pudo guardar", description: error.message });
     };
 
     const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
@@ -428,14 +457,30 @@ export default function MyTasksPage() {
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
-        <header>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">
-            Mis Tareas
-          </h1>
-          <p className="text-muted-foreground">
-            Tus tareas asignadas y las que están sin asignar para que puedas tomarlas.
-          </p>
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">
+              Mis Tareas
+            </h1>
+            <p className="text-muted-foreground">
+              Tus tareas asignadas y las que están sin asignar para que puedas tomarlas.
+            </p>
+          </div>
+          {!isAdminUser && (
+            <Button onClick={() => setRegisterOpen(true)}>
+              <Check className="mr-1 h-4 w-4" />
+              Registrar tarea realizada
+            </Button>
+          )}
         </header>
+        <RegisterDoneTaskDialog
+          open={registerOpen}
+          onOpenChange={setRegisterOpen}
+          tasks={tasks}
+          clients={clients}
+          canDrive={Boolean(currentEmployee?.canDrive)}
+          onSubmit={handleRegisterDone}
+        />
 
 
 
@@ -511,6 +556,7 @@ export default function MyTasksPage() {
                                                 task={task}
                                                 client={client || null}
                                                 updateAssignmentStatus={updateAssignmentStatus}
+                                                setDirtLevel={setDirtLevel}
                                             />
                                         );
                     })}
@@ -564,6 +610,7 @@ export default function MyTasksPage() {
                                                 task={task}
                                                 client={client || null}
                                                 updateAssignmentStatus={updateAssignmentStatus}
+                                                setDirtLevel={setDirtLevel}
                                             />
                                         );
                     })}

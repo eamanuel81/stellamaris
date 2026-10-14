@@ -13,6 +13,8 @@ function mapAssignment(row: any): Assignment {
     boatIds: row.boatIds ?? undefined,
     selectedExtras: row.selectedExtras ?? undefined,
     observations: row.observations ?? undefined,
+    difficulty: row.difficulty ?? null,
+    dirtLevel: row.dirtLevel ?? null,
   };
 }
 
@@ -122,6 +124,23 @@ export function useAssignments() {
     }
   }, [fetchAssignments]);
 
+  const registerDoneAssignment = useCallback(async (data: { taskId: string; clientId: string; boatIds: string[]; observations?: string; dirtLevel?: number | null }) => {
+    try {
+      const res = await fetch('/api/assignments/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return { data: null, error: new Error(body.error ?? 'No se pudo registrar la tarea') };
+      const mapped = mapAssignment(body);
+      setAssignments(prev => [mapped, ...prev]);
+      return { data: mapped, error: null };
+    } catch {
+      return { data: null, error: new Error('Error inesperado al registrar la tarea') };
+    }
+  }, []);
+
   const deleteAssignment = useCallback(async (id: string) => {
     try {
       const res = await fetch(`/api/assignments/${id}`, { method: 'DELETE' });
@@ -140,8 +159,8 @@ export function useAssignments() {
   }, []);
 
   const returnValue = useMemo(() => ({
-    assignments, isLoading, error, addAssignment, updateAssignment, claimAssignment, deleteAssignment, refetch: fetchAssignments,
-  }), [assignments, isLoading, error, addAssignment, updateAssignment, claimAssignment, deleteAssignment, fetchAssignments]);
+    assignments, isLoading, error, addAssignment, updateAssignment, claimAssignment, registerDoneAssignment, deleteAssignment, refetch: fetchAssignments,
+  }), [assignments, isLoading, error, addAssignment, updateAssignment, claimAssignment, registerDoneAssignment, deleteAssignment, fetchAssignments]);
 
   return returnValue;
 }

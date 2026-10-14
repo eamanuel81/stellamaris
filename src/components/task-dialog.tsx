@@ -28,6 +28,8 @@ import {
 } from "@/components/ui"
 import { Car, ChevronDown, PlusCircle, Trash2 } from "lucide-react"
 import { employees, Task, TaskExtra } from "@/lib/data"
+import { LevelPicker } from "@/components/traffic-light"
+import { normalizeLevel, type Level } from "@/lib/traffic-light"
 import { Badge } from "@/components/ui/badge"
 import { useEmployees } from '@/hooks/use-employees';
 
@@ -48,6 +50,7 @@ export const TaskDialog = ({
     const [duration, setDuration] = React.useState<number | "">("");
     const [type, setType] = React.useState("");
     const [requiresDriving, setRequiresDriving] = React.useState(false);
+    const [difficulty, setDifficulty] = React.useState<Level>(1);
     const [selectedEmployees, setSelectedEmployees] = React.useState<string[]>([]);
     const [extras, setExtras] = React.useState<TaskExtra[]>([]);
     const [isSaving, setIsSaving] = React.useState(false);
@@ -66,6 +69,7 @@ export const TaskDialog = ({
             setDuration(taskToEdit.duration);
             setType(taskToEdit.type || "");
             setRequiresDriving(taskToEdit.requiresDriving);
+            setDifficulty(normalizeLevel(taskToEdit.difficulty) ?? 1);
             setSelectedEmployees(taskToEdit.qualifiedEmployeeIds || []);
             setExtras(taskToEdit.extras || []);
         } else if (open && !isEditMode) {
@@ -130,6 +134,7 @@ export const TaskDialog = ({
             duration: Number(duration),
             type,
             requiresDriving,
+            difficulty,
             qualifiedEmployeeIds: selectedEmployees,
             extras: extras.filter(e => e.name.trim() !== "")
         };
@@ -187,8 +192,13 @@ export const TaskDialog = ({
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="type">Tipo (Opcional)</Label>
-                                    <Input id="type" placeholder="Ej: Mantenimiento" value={type} onChange={e => setType(e.target.value)} />
+                                    <Input id="type" placeholder="Ej: LAVADO, BAJADA, Mantenimiento" value={type} onChange={e => setType(e.target.value)} />
                                 </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Dificultad (semáforo)</Label>
+                                <LevelPicker kind="difficulty" value={difficulty} onChange={l => setDifficulty(l ?? 1)} />
+                                <p className="text-xs text-muted-foreground">Qué tan trabajosa es esta tarea. Se puede ajustar en cada asignación.</p>
                             </div>
                             <div className="flex items-center space-x-2 pt-2">
                                 <Checkbox id="requiresDriving" checked={requiresDriving} onCheckedChange={(checked) => setRequiresDriving(Boolean(checked))} />
