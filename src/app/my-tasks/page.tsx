@@ -397,7 +397,7 @@ export default function MyTasksPage() {
         
     // Tareas que nadie tomó todavía (solo para empleados; el admin las gestiona desde Asignar Tareas)
     const unassignedAssignments = isAdminUser ? [] : assignments
-        .filter(a => Array.isArray(a.employeeId) && a.employeeId.length === 0)
+        .filter(a => !(Array.isArray(a.employeeId) && a.employeeId.some(id => employees.some(e => e.id === id))))
         .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
         .filter(searchFilter)
         .sort((a, b) => {
