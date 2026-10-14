@@ -94,13 +94,13 @@ const TooltipDetail = React.memo(({ assignmentGroup, taskMap, clientMap, employe
     ) as Employee[];
     const statusInfo = statusStyles[firstAssignment.status] || statusStyles.pending;
 
-    const calculateExtrasTotal = React.useMemo(() => {
+    const calculateExtrasTotal = (() => {
         if (!task || !task.extras || !firstAssignment.selectedExtras) return 0;
         return firstAssignment.selectedExtras.reduce((total, selected) => {
             const extraDetails = task.extras!.find(e => e.id === selected.extraId);
             return total + (extraDetails?.price || 0) * selected.quantity;
         }, 0);
-    }, [task, firstAssignment.selectedExtras]);
+    })();
 
     return (
         <div className="space-y-2 p-2 text-sm">
@@ -222,23 +222,15 @@ export const WeekView = React.memo(({
                         {/* Days columns */}
                         <div className="grid grid-cols-7 relative">
                             {weekDays.map((day) => {
-                                const dayAssignments = React.useMemo(() => 
-                                    assignments.filter(a => {
-                                        const assignmentDate = new Date(a.startTime);
-                                        assignmentDate.setHours(0,0,0,0);
-                                        const compareDate = new Date(day);
-                                        compareDate.setHours(0,0,0,0);
-                                        return assignmentDate.getTime() === compareDate.getTime();
-                                    }), [assignments, day]
-                                );
-                                
-                                const groupedForDay = React.useMemo(() => 
-                                    groupAssignmentsByTimeAndTask(dayAssignments), [dayAssignments]
-                                );
-                                
-                                const processedForDay = React.useMemo(() => 
-                                    processOverlaps(groupedForDay), [groupedForDay]
-                                );
+                                const dayAssignments = assignments.filter(a => {
+                                    const assignmentDate = new Date(a.startTime);
+                                    assignmentDate.setHours(0,0,0,0);
+                                    const compareDate = new Date(day);
+                                    compareDate.setHours(0,0,0,0);
+                                    return assignmentDate.getTime() === compareDate.getTime();
+                                });
+                                const groupedForDay = groupAssignmentsByTimeAndTask(dayAssignments);
+                                const processedForDay = processOverlaps(groupedForDay);
 
                                 return (
                                     <div key={day.toISOString()} className="relative border-r last:border-r-0">

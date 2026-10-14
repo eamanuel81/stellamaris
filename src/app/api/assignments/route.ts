@@ -1,20 +1,22 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requireSession } from '@/lib/auth-helpers';
 import { db } from '@/lib/db';
 import { assignments, notifications } from '@/lib/schema';
 import { desc } from 'drizzle-orm';
 
 export async function GET() {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { error } = await requireSession();
+  if (error) return error;
 
   const rows = await db.select().from(assignments).orderBy(desc(assignments.startTime));
   return NextResponse.json(rows);
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Solo el admin crea asignaciones; los empleados se auto-asignan por /[id]/claim
+  const { isAdmin, error } = await requireSession();
+  if (error) return error;
+  if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   try {
     const body = await req.json();

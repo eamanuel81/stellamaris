@@ -35,6 +35,7 @@ import { useAssignments } from '@/hooks/use-assignments';
 import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
 import { useEmployees } from '@/hooks/use-employees';
+import { AssignedTo } from '@/components/assigned-to';
 import { AssignTaskDialog } from "@/components/assign-task-dialog";
 import { Car, Clock, Hourglass, Check, CheckCheck, Ban, X, User, Users, Ship, Package, CalendarDays, ChevronDown, Search, Calendar, Plus, Edit2, FileText } from "lucide-react"
 import { cn, matchesAnySearch, matchesSearch } from "@/lib/utils"
@@ -219,8 +220,7 @@ export default function TodayTasksPage() {
 
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                         const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
-                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
-                        const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
+                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter((e): e is Employee => Boolean(e));
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
                         
                         return (
@@ -255,18 +255,7 @@ export default function TodayTasksPage() {
                                             <span>Duración estimada: {task.duration} min</span>
                                         </div>
                                     </div>
-
-                                    {employee && (
-                                        <div className="space-y-2 border-t pt-4">
-                                            <div className="flex items-center gap-2 font-medium text-foreground">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={employee.avatarUrl} alt={employee.name} />
-                                                    <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
-                                                </Avatar>
-                                                <span>Empleado: {employee.name} {employee.lastName}</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                    <AssignedTo employees={assignedEmployees} />
                                 
                                     {client && (
                                         <div className="space-y-2 border-t pt-4">
@@ -438,8 +427,7 @@ export default function TodayTasksPage() {
 
                         const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
                         const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
-                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter(Boolean);
-                        const employee = assignedEmployees.length > 0 ? assignedEmployees[0] : null; // Tomar el primer empleado para mostrar
+                        const assignedEmployees = assignment.employeeId.map(empId => getEmployeeById(empId, employees)).filter((e): e is Employee => Boolean(e));
                         const currentStatus = statusMap[assignment.status] || statusMap.pending;
                         
                         return (
@@ -474,18 +462,7 @@ export default function TodayTasksPage() {
                                             <span>Duración estimada: {task.duration} min</span>
                                         </div>
                                     </div>
-
-                                    {employee && (
-                                        <div className="space-y-2 border-t pt-4">
-                                            <div className="flex items-center gap-2 font-medium text-foreground">
-                                                <Avatar className="h-6 w-6">
-                                                    <AvatarImage src={employee.avatarUrl} alt={employee.name} />
-                                                    <AvatarFallback>{employee.name[0]}{employee.lastName[0]}</AvatarFallback>
-                                                </Avatar>
-                                                <span>Empleado: {employee.name} {employee.lastName}</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                    <AssignedTo employees={assignedEmployees} />
                                 
                                     {client && (
                                         <div className="space-y-2 border-t pt-4">
