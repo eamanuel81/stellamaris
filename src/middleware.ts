@@ -6,6 +6,7 @@ const protectedRoutes = [
   '/employees',
   '/tasks',
   '/clients',
+  '/boats',
   '/schedule',
   '/today-tasks',
   '/my-tasks',

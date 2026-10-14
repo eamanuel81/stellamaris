@@ -41,6 +41,7 @@ import {
   CalendarDays,
   Calendar,
   CircleHelp,
+  Ship,
 } from "lucide-react"
 
 import { useAuth } from "./auth-provider"
@@ -55,12 +56,14 @@ const adminNavItems = [
   { href: "/tasks", icon: <ClipboardList />, label: "Tipos de Tareas" },
   { href: "/employees", icon: <Users />, label: "Empleados" },
   { href: "/clients", icon: <Contact />, label: "Clientes" },
+  { href: "/boats", icon: <Ship />, label: "Embarcaciones" },
   { href: "/help", icon: <CircleHelp />, label: "Ayuda" },
 ];
 
 const employeeNavItems = [
   { href: "/my-tasks", icon: <ClipboardCheck />, label: "Mis Tareas" },
   { href: "/my-calendar", icon: <Calendar />, label: "Calendario" },
+  { href: "/boats", icon: <Ship />, label: "Embarcaciones" },
   { href: "/help", icon: <CircleHelp />, label: "Ayuda" },
 ];
 

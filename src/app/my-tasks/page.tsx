@@ -36,6 +36,7 @@ import {
 import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
 import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search, UserPlus, UserX } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { RegisterDoneTaskDialog } from "@/components/register-done-task-dialog"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -201,7 +202,8 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: {
 export default function MyTasksPage() {
     const { role, subrole } = useAuth();
     const { data: session } = useSession();
-    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment, claimAssignment } = useAssignments();
+    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment, claimAssignment, registerDoneAssignment } = useAssignments();
+    const [registerOpen, setRegisterOpen] = React.useState(false);
     const { toast } = useToast();
     const [claimingId, setClaimingId] = React.useState<string | null>(null);
     const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
@@ -312,6 +314,13 @@ export default function MyTasksPage() {
         } else {
             toast({ title: "Tarea asignada", description: "Ahora la tenés en Activas." });
         }
+    };
+
+    const handleRegisterDone = async (data: { taskId: string; clientId: string; boatIds: string[]; observations: string }) => {
+        const { error } = await registerDoneAssignment(data);
+        if (error) return error.message;
+        toast({ title: "Tarea registrada", description: "Quedó asentada en Completadas." });
+        return null;
     };
 
     const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
@@ -428,14 +437,30 @@ export default function MyTasksPage() {
   return (
     <AppLayout>
       <div className="flex flex-col gap-8">
-        <header>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">
-            Mis Tareas
-          </h1>
-          <p className="text-muted-foreground">
-            Tus tareas asignadas y las que están sin asignar para que puedas tomarlas.
-          </p>
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">
+              Mis Tareas
+            </h1>
+            <p className="text-muted-foreground">
+              Tus tareas asignadas y las que están sin asignar para que puedas tomarlas.
+            </p>
+          </div>
+          {!isAdminUser && (
+            <Button onClick={() => setRegisterOpen(true)}>
+              <Check className="mr-1 h-4 w-4" />
+              Registrar tarea realizada
+            </Button>
+          )}
         </header>
+        <RegisterDoneTaskDialog
+          open={registerOpen}
+          onOpenChange={setRegisterOpen}
+          tasks={tasks}
+          clients={clients}
+          canDrive={Boolean(currentEmployee?.canDrive)}
+          onSubmit={handleRegisterDone}
+        />
 
 
 
