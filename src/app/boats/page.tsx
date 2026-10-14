@@ -7,7 +7,7 @@ import { Badge, Card, CardContent, Input, Select, SelectContent, SelectItem, Sel
 import { useAssignments } from "@/hooks/use-assignments"
 import { useClients } from "@/hooks/use-clients"
 import { useTasks } from "@/hooks/use-tasks"
-import { ActivityKind, computeBoatActivityRows, isRecent, isStale } from "@/lib/boat-activity"
+import { ActivityKind, computeBoatActivityRows, diagnoseActivity, isRecent, isStale } from "@/lib/boat-activity"
 import { matchesAnySearch } from "@/lib/utils"
 import { LevelBadge } from "@/components/traffic-light"
 
@@ -33,6 +33,7 @@ export default function BoatsPage() {
 
   const rows = React.useMemo(() => computeBoatActivityRows(clients, assignments, tasks), [clients, assignments, tasks])
   const L = LABELS[kind]
+  const diag = React.useMemo(() => diagnoseActivity(assignments, tasks, kind), [assignments, tasks, kind])
 
   const visible = rows
     .filter(r => mode === "all" || (mode === "stale" ? isStale(r, kind, days.stale) : isRecent(r, kind, days.recent)))
@@ -80,6 +81,19 @@ export default function BoatsPage() {
             <TabsTrigger value="bajada">Bajada</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        {diag.taskTypes === 0 && (
+          <div className="rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900">
+            Ningún tipo de tarea tiene el clasificador <b>{kind.toUpperCase()}</b>, por eso todas las lanchas figuran sin registro.
+            Entrá a <b>Tipos de Tareas</b>, editá la tarea de {kind} y escribí <b>{kind.toUpperCase()}</b> en el campo <b>Tipo</b>.
+          </div>
+        )}
+        {diag.taskTypes > 0 && diag.completedWithoutBoat > 0 && (
+          <div className="rounded-md border border-amber-400 bg-amber-50 p-3 text-sm text-amber-900">
+            Hay {diag.completedWithoutBoat} tarea(s) de {kind} completadas <b>sin embarcación asignada</b>: no se pueden contar.
+            Asignales la embarcación desde Asignar Tareas.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total de embarcaciones</p><p className="text-3xl font-bold">{rows.length}</p></CardContent></Card>
@@ -140,7 +154,14 @@ export default function BoatsPage() {
                   <TableCell className="hidden md:table-cell">{r.registrationNumber}</TableCell>
                   <TableCell>{dateOf(r.last[kind])}</TableCell>
                   <TableCell>{badgeFor(r)}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{r.dirt ? <LevelBadge kind="dirt" level={r.dirt.level} /> : <span className="text-muted-foreground">—</span>}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{r.dirt ? (
+                      <span className="flex flex-col items-start gap-0.5">
+                        <span className={r.dirt.washedSince ? "opacity-60" : undefined}><LevelBadge kind="dirt" level={r.dirt.level} /></span>
+                        <span className="text-xs text-muted-foreground">
+                          {r.dirt.reportedAt.toLocaleDateString("es-AR")}{r.dirt.washedSince ? " · luego se lavó" : ""}
+                        </span>
+                      </span>
+                    ) : <span className="text-muted-foreground">—</span>}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
