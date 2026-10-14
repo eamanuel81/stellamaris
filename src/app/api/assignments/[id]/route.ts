@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireSession } from '@/lib/auth-helpers';
+import { normalizeLevel } from '@/lib/traffic-light';
 import { db } from '@/lib/db';
 import { assignments, notifications } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
@@ -23,7 +24,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       if (!VALID_STATUSES.includes(body.status)) {
         return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
       }
-      const [updated] = await db.update(assignments).set({ status: body.status }).where(eq(assignments.id, id)).returning();
+      // Además del estado, puede informar la suciedad de la lancha (1-3, o null para borrarla)
+      const changes: { status: string; dirtLevel?: number | null } = { status: body.status };
+      if ('dirtLevel' in body) {
+        const dirt = body.dirtLevel === null ? null : normalizeLevel(body.dirtLevel);
+        if (body.dirtLevel !== null && dirt === null) return NextResponse.json({ error: 'Nivel de suciedad inválido' }, { status: 400 });
+        changes.dirtLevel = dirt;
+      }
+      const [updated] = await db.update(assignments).set(changes).where(eq(assignments.id, id)).returning();
       return NextResponse.json(updated);
     }
 

@@ -54,6 +54,8 @@ import { useAssignments } from '@/hooks/use-assignments';
 import { useEmployees } from '@/hooks/use-employees';
 import { useTasks } from '@/hooks/use-tasks';
 import { useClients } from '@/hooks/use-clients';
+import { LevelPicker } from "@/components/traffic-light"
+import { normalizeLevel, type Level } from "@/lib/traffic-light"
 
 // Hook personalizado para debounce
 function useDebounce<T>(value: T, delay: number): T {
@@ -149,6 +151,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
     const [selectedExtras, setSelectedExtras] = React.useState<{ extraId: string, quantity: number }[]>([]);
     const [status, setStatus] = React.useState<AssignmentStatus>('pending');
     const [observations, setObservations] = React.useState<string>("");
+    const [difficulty, setDifficulty] = React.useState<Level | null>(null);
+    const [dirtLevel, setDirtLevel] = React.useState<Level | null>(null);
     const [clientComboOpen, setClientComboOpen] = React.useState(false);
     const [boatComboOpen, setBoatComboOpen] = React.useState(false);
     const [clientSearchQuery, setClientSearchQuery] = React.useState("");
@@ -268,6 +272,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setDate(formatDateForInput(new Date(assignmentToEdit.startTime)));
             setStatus(assignmentToEdit.status);
             setObservations(assignmentToEdit.observations || "");
+            setDifficulty(normalizeLevel(assignmentToEdit.difficulty));
+            setDirtLevel(normalizeLevel(assignmentToEdit.dirtLevel));
             setIsEndTimeManual(false);
         } else {
             // Limpiar completamente todos los campos cuando NO hay tarea a editar
@@ -284,6 +290,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
             setDate(initialDate ? initialDate : formatDateForInput(new Date()));
             setStatus('pending');
             setObservations(""); // Limpiar observaciones
+            setDifficulty(null);
+            setDirtLevel(null);
             setIsEndTimeManual(false);
             setTimeConflictWarning('');
             setConflictDialogOpen(false);
@@ -493,6 +501,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         setDate(formatDateForInput(new Date()));
         setStatus('pending');
         setObservations(""); // Limpiar observaciones
+        setDifficulty(null);
+        setDirtLevel(null);
         setIsEndTimeManual(false);
         setTimeConflictWarning('');
         setConflictDialogOpen(false);
@@ -534,6 +544,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
+                difficulty,
+                dirtLevel,
                 observations: observations?.trim() || undefined
             };
 
@@ -565,6 +577,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
+                difficulty,
+                dirtLevel,
                 observations: observations?.trim() || null
             };
 
@@ -586,6 +600,8 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                 boatIds: selectedBoatIds,
                 selectedExtras: selectedExtras.filter(e => e.quantity > 0),
                 status: status,
+                difficulty,
+                dirtLevel,
                 observations: observations?.trim() || undefined
             };
 
@@ -617,7 +633,7 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
         } finally {
             setIsSubmitting(false);
         }
-    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, observations, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel, isSubmitting]);
+    }, [selectedTaskId, startTime, endTime, date, isEditMode, assignmentToEdit, selectedEmployees, selectedClientId, selectedBoatIds, selectedExtras, status, observations, difficulty, dirtLevel, checkTimeConflicts, getEmployeeById, tasks, onSave, updateAssignment, addAssignment, handleCancel, isSubmitting]);
 
     const handleTaskCreated = useCallback(async (newTask: Task) => {
         const { id: _id, ...taskDataWithoutId } = newTask;
@@ -1107,6 +1123,17 @@ export const AssignTaskDialog = ({ setOpen, assignmentToEdit, onDelete, onSave, 
                                     ))}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Dificultad de esta tarea (Opcional)</Label>
+                            <LevelPicker kind="difficulty" allowEmpty value={difficulty} onChange={setDifficulty} />
+                            <p className="text-xs text-muted-foreground">Si no elige, se usa la dificultad del tipo de tarea.</p>
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>Suciedad de la lancha (Opcional)</Label>
+                            <LevelPicker kind="dirt" allowEmpty value={dirtLevel} onChange={setDirtLevel} />
                         </div>
 
                         <div className="grid gap-2">

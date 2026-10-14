@@ -36,6 +36,8 @@ import {
 import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
 import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search, UserPlus, UserX } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { LevelBadge, LevelPicker } from "@/components/traffic-light"
+import { effectiveDifficulty, normalizeLevel } from "@/lib/traffic-light"
 import { RegisterDoneTaskDialog } from "@/components/register-done-task-dialog"
 import { cn } from "@/lib/utils"
 
@@ -58,7 +60,7 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
 
 type ClaimConfig = { onClaim: (id: string) => void; claimingId: string | null; canDrive: boolean }
 
-const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: { assignment: Assignment, task: Task, client: Client | null, updateAssignmentStatus: (id: string, status: AssignmentStatus) => void, claim?: ClaimConfig }) => {
+const TaskCard = ({ assignment, task, client, updateAssignmentStatus, setDirtLevel, claim }: { assignment: Assignment, task: Task, client: Client | null, updateAssignmentStatus: (id: string, status: AssignmentStatus) => void, setDirtLevel?: (id: string, level: number | null) => void, claim?: ClaimConfig }) => {
     const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
     const currentStatus = statusMap[assignment.status] || statusMap.pending;
 
@@ -75,6 +77,10 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: {
                 )}
                 </div>
                 <CardDescription>{task.description}</CardDescription>
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                <LevelBadge kind="difficulty" level={effectiveDifficulty(assignment, task)} />
+                                <LevelBadge kind="dirt" level={assignment.dirtLevel} />
+                            </div>
             </CardHeader>
             <CardContent className="flex-grow">
                 <div className="text-sm text-muted-foreground space-y-4">
@@ -129,6 +135,13 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {!claim && setDirtLevel && boats.length > 0 && (
+                        <div className="space-y-2 pt-4 border-t">
+                            <span className="font-medium text-foreground">¿Qué tan sucia está la lancha?</span>
+                            <LevelPicker kind="dirt" allowEmpty value={assignment.dirtLevel} onChange={l => setDirtLevel(assignment.id, l)} />
                         </div>
                     )}
 
@@ -316,11 +329,18 @@ export default function MyTasksPage() {
         }
     };
 
-    const handleRegisterDone = async (data: { taskId: string; clientId: string; boatIds: string[]; observations: string }) => {
+    const handleRegisterDone = async (data: { taskId: string; clientId: string; boatIds: string[]; observations: string; dirtLevel: number | null }) => {
         const { error } = await registerDoneAssignment(data);
         if (error) return error.message;
         toast({ title: "Tarea registrada", description: "Quedó asentada en Completadas." });
         return null;
+    };
+
+    const setDirtLevel = async (assignmentId: string, level: number | null) => {
+        const current = assignments.find(a => a.id === assignmentId);
+        if (!current) return;
+        const { error } = await updateAssignment({ ...current, dirtLevel: level });
+        if (error) toast({ variant: "destructive", title: "No se pudo guardar", description: error.message });
     };
 
     const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
@@ -536,6 +556,7 @@ export default function MyTasksPage() {
                                                 task={task}
                                                 client={client || null}
                                                 updateAssignmentStatus={updateAssignmentStatus}
+                                                setDirtLevel={setDirtLevel}
                                             />
                                         );
                     })}
@@ -589,6 +610,7 @@ export default function MyTasksPage() {
                                                 task={task}
                                                 client={client || null}
                                                 updateAssignmentStatus={updateAssignmentStatus}
+                                                setDirtLevel={setDirtLevel}
                                             />
                                         );
                     })}

@@ -9,6 +9,7 @@ import { useClients } from "@/hooks/use-clients"
 import { useTasks } from "@/hooks/use-tasks"
 import { ActivityKind, computeBoatActivityRows, isRecent, isStale } from "@/lib/boat-activity"
 import { matchesAnySearch } from "@/lib/utils"
+import { LevelBadge } from "@/components/traffic-light"
 
 type Mode = "all" | "stale" | "recent"
 
@@ -126,11 +127,12 @@ export default function BoatsPage() {
                 <TableHead className="hidden md:table-cell">Matrícula</TableHead>
                 <TableHead>{L.lastCol}</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead className="hidden sm:table-cell">Suciedad informada</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {visible.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No hay embarcaciones para este filtro.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">No hay embarcaciones para este filtro.</TableCell></TableRow>
               ) : visible.map(r => (
                 <TableRow key={`${r.clientId}-${r.boatId}`}>
                   <TableCell className="font-medium"><span className="flex items-center gap-2"><Ship className="h-4 w-4 text-muted-foreground" />{r.boatName}</span></TableCell>
@@ -138,6 +140,7 @@ export default function BoatsPage() {
                   <TableCell className="hidden md:table-cell">{r.registrationNumber}</TableCell>
                   <TableCell>{dateOf(r.last[kind])}</TableCell>
                   <TableCell>{badgeFor(r)}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{r.dirt ? <LevelBadge kind="dirt" level={r.dirt.level} /> : <span className="text-muted-foreground">—</span>}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
