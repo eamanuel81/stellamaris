@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth-helpers';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { employees, users } from '@/lib/schema';
@@ -6,8 +7,9 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Solo el admin puede crear, modificar o borrar
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   const { id } = await params;
   const body = await req.json();
@@ -30,8 +32,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Solo el admin puede crear, modificar o borrar
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   const { id } = await params;
   await db.delete(users).where(eq(users.employeeId, id));
