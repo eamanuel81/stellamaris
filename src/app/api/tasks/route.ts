@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/auth-helpers';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { tasks } from '@/lib/schema';
@@ -13,8 +14,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Solo el admin puede crear, modificar o borrar
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   const body = await req.json();
   const [task] = await db.insert(tasks).values(body).returning();
