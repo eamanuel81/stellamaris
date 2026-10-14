@@ -33,7 +33,11 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     const [updated] = await db
       .update(assignments)
       .set({ employeeId: [employeeId] })
-      .where(and(eq(assignments.id, id), sql`${assignments.employeeId} = '[]'::jsonb`))
+      .where(and(
+        eq(assignments.id, id),
+        // Sin asignar = lista vacía o sin ningún empleado existente (p. ej. empleado borrado)
+        sql`NOT EXISTS (SELECT 1 FROM ${employees} WHERE jsonb_exists(${assignments.employeeId}, ${employees.id}::text))`
+      ))
       .returning();
 
     if (!updated) {
