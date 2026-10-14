@@ -1,16 +1,31 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { requireSession } from '@/lib/auth-helpers';
 import { db } from '@/lib/db';
 import { assignments, notifications } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 
+const VALID_STATUSES = ['pending', 'accepted', 'completed', 'rejected', 'cancelled'];
+
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { isAdmin, employeeId, error } = await requireSession();
+  if (error) return error;
 
   try {
     const { id } = await params;
     const body = await req.json();
+
+    // Un empleado solo puede cambiar el estado de las tareas que tiene asignadas
+    if (!isAdmin) {
+      const [current] = await db.select().from(assignments).where(eq(assignments.id, id)).limit(1);
+      if (!current) return NextResponse.json({ error: 'No encontrada' }, { status: 404 });
+      const mine = employeeId && Array.isArray(current.employeeId) && current.employeeId.includes(employeeId);
+      if (!mine) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      if (!VALID_STATUSES.includes(body.status)) {
+        return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+      }
+      const [updated] = await db.update(assignments).set({ status: body.status }).where(eq(assignments.id, id)).returning();
+      return NextResponse.json(updated);
+    }
 
     // Extraer campos que no son columnas de la tabla antes de actualizar
     const { _notifyEmployees, id: _id, createdAt: _createdAt, ...updateData } = body;
@@ -42,8 +57,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { isAdmin, error } = await requireSession();
+  if (error) return error;
+  if (!isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
   try {
     const { id } = await params;

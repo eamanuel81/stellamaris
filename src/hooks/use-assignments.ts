@@ -105,6 +105,23 @@ export function useAssignments() {
     }
   }, []);
 
+  const claimAssignment = useCallback(async (id: string) => {
+    try {
+      const res = await fetch(`/api/assignments/${id}/claim`, { method: 'POST' });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // 409: otro empleado la tomó antes; se recarga para reflejarlo
+        if (res.status === 409) await fetchAssignments(true);
+        return { data: null, error: new Error(body.error ?? 'No se pudo tomar la tarea') };
+      }
+      const mapped = mapAssignment(body);
+      setAssignments(prev => prev.map(a => a.id === id ? mapped : a));
+      return { data: mapped, error: null };
+    } catch {
+      return { data: null, error: new Error('Error inesperado al tomar la tarea') };
+    }
+  }, [fetchAssignments]);
+
   const deleteAssignment = useCallback(async (id: string) => {
     try {
       const res = await fetch(`/api/assignments/${id}`, { method: 'DELETE' });
@@ -123,8 +140,8 @@ export function useAssignments() {
   }, []);
 
   const returnValue = useMemo(() => ({
-    assignments, isLoading, error, addAssignment, updateAssignment, deleteAssignment, refetch: fetchAssignments,
-  }), [assignments, isLoading, error, addAssignment, updateAssignment, deleteAssignment, fetchAssignments]);
+    assignments, isLoading, error, addAssignment, updateAssignment, claimAssignment, deleteAssignment, refetch: fetchAssignments,
+  }), [assignments, isLoading, error, addAssignment, updateAssignment, claimAssignment, deleteAssignment, fetchAssignments]);
 
   return returnValue;
 }

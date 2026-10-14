@@ -34,7 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui"
 import { Assignment, AssignmentStatus, Task, Client } from "@/lib/data"
-import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search } from "lucide-react"
+import { Car, Check, ChevronDown, Clock, X, Ban, Hourglass, CheckCheck, User, Users, Ship, Package, Search, UserPlus, UserX } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
 
 const getTaskById = (id: string, tasks: Task[]) => tasks.find((t) => t.id === id)
@@ -54,7 +55,9 @@ const statusMap: Record<AssignmentStatus, StatusConfig> = {
   cancelled: { text: "Cancelada", icon: <X className="h-3 w-3" />, classes: "bg-red-100 border-red-400 text-red-800" },
 };
 
-const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assignment: Assignment, task: Task, client: Client | null, updateAssignmentStatus: (id: string, status: AssignmentStatus) => void }) => {
+type ClaimConfig = { onClaim: (id: string) => void; claimingId: string | null; canDrive: boolean }
+
+const TaskCard = ({ assignment, task, client, updateAssignmentStatus, claim }: { assignment: Assignment, task: Task, client: Client | null, updateAssignmentStatus: (id: string, status: AssignmentStatus) => void, claim?: ClaimConfig }) => {
     const boats = client && assignment.boatIds ? client.boats.filter(b => assignment.boatIds?.includes(b.id)) : [];
     const currentStatus = statusMap[assignment.status] || statusMap.pending;
 
@@ -143,6 +146,24 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                     )}
                 </div>
             </CardContent>
+            {claim ? (
+            <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
+                <Badge variant="outline" className="whitespace-nowrap border-orange-400 bg-orange-100 text-orange-800">
+                    <UserX className="mr-1 h-3 w-3" />
+                    SIN ASIGNACIÓN
+                </Badge>
+                <Button
+                    size="sm"
+                    className="w-full sm:w-auto"
+                    disabled={claim.claimingId === assignment.id || (task.requiresDriving && !claim.canDrive)}
+                    title={task.requiresDriving && !claim.canDrive ? "Requiere permiso para manejar" : undefined}
+                    onClick={() => claim.onClaim(assignment.id)}
+                >
+                    <UserPlus className="mr-1 h-4 w-4" />
+                    {claim.claimingId === assignment.id ? "Tomando..." : "Tomármela"}
+                </Button>
+            </CardFooter>
+            ) : (
             <CardFooter className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-6">
                 <Badge className={cn("flex items-center gap-1", currentStatus.classes)}>
                     {currentStatus.icon}
@@ -172,6 +193,7 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
                 </DropdownMenuContent>
                 </DropdownMenu>
             </CardFooter>
+            )}
         </Card>
     )
 }
@@ -179,7 +201,9 @@ const TaskCard = ({ assignment, task, client, updateAssignmentStatus }: { assign
 export default function MyTasksPage() {
     const { role, subrole } = useAuth();
     const { data: session } = useSession();
-    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment } = useAssignments();
+    const { assignments, isLoading: assignmentsLoading, error: assignmentsError, updateAssignment, claimAssignment } = useAssignments();
+    const { toast } = useToast();
+    const [claimingId, setClaimingId] = React.useState<string | null>(null);
     const { tasks, isLoading: tasksLoading, error: tasksError } = useTasks();
     const { clients, isLoading: clientsLoading, error: clientsError } = useClients();
     const { employees, isLoading: employeesLoading, error: employeesError } = useEmployees();
@@ -276,6 +300,20 @@ export default function MyTasksPage() {
         return filteredAssignments;
     }, [assignments, role, subrole, currentUserEmail, currentEmployeeId, employees]);
 
+    const isAdminUser = role === 'admin' || subrole === 'admin';
+    const currentEmployee = employees.find(e => e.id === currentEmployeeId) ?? null;
+
+    const handleClaim = async (assignmentId: string) => {
+        setClaimingId(assignmentId);
+        const { error } = await claimAssignment(assignmentId);
+        setClaimingId(null);
+        if (error) {
+            toast({ variant: "destructive", title: "No se pudo tomar la tarea", description: error.message });
+        } else {
+            toast({ title: "Tarea asignada", description: "Ahora la tenés en Activas." });
+        }
+    };
+
     const updateAssignmentStatus = async (assignmentId: string, newStatus: AssignmentStatus) => {
         
         try {
@@ -328,6 +366,17 @@ export default function MyTasksPage() {
             return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
         });
         
+    // Tareas que nadie tomó todavía (solo para empleados; el admin las gestiona desde Asignar Tareas)
+    const unassignedAssignments = isAdminUser ? [] : assignments
+        .filter(a => Array.isArray(a.employeeId) && a.employeeId.length === 0)
+        .filter(a => a.status !== 'completed' && a.status !== 'cancelled')
+        .filter(searchFilter)
+        .sort((a, b) => {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+        });
+
     const completedAssignments = myAssignments
         .filter(a => a.status === 'completed')
         .filter(searchFilter)
@@ -384,7 +433,7 @@ export default function MyTasksPage() {
             Mis Tareas
           </h1>
           <p className="text-muted-foreground">
-            Aquí están las tareas que te han sido asignadas.
+            Tus tareas asignadas y las que están sin asignar para que puedas tomarlas.
           </p>
         </header>
 
@@ -429,10 +478,15 @@ export default function MyTasksPage() {
         </div>
 
                     <Tabs defaultValue="active" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className={cn("grid w-full", isAdminUser ? "grid-cols-2" : "grid-cols-3")}>
                             <TabsTrigger value="active">
                                 Activas ({activeAssignments.length})
                             </TabsTrigger>
+                            {!isAdminUser && (
+                                <TabsTrigger value="unassigned">
+                                    Sin asignar ({unassignedAssignments.length})
+                                </TabsTrigger>
+                            )}
                             <TabsTrigger value="completed">
                                 Completadas ({completedAssignments.length})
                             </TabsTrigger>
@@ -463,6 +517,33 @@ export default function MyTasksPage() {
                 </div>
                 )}
             </TabsContent>
+                        {!isAdminUser && (
+                        <TabsContent value="unassigned" className="space-y-4">
+                            {unassignedAssignments.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    No hay tareas sin asignar.
+                                </div>
+                            ) : (
+                                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                                    {unassignedAssignments.map((assignment) => {
+                                        const task = getTaskById(assignment.taskId, tasks);
+                                        const client = assignment.clientId ? getClientById(assignment.clientId, clients) : null;
+                                        if (!task) return null;
+                                        return (
+                                            <TaskCard
+                                                key={assignment.id}
+                                                assignment={assignment}
+                                                task={task}
+                                                client={client || null}
+                                                updateAssignmentStatus={updateAssignmentStatus}
+                                                claim={{ onClaim: handleClaim, claimingId, canDrive: Boolean(currentEmployee?.canDrive) }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </TabsContent>
+                        )}
                         <TabsContent value="completed" className="space-y-4">
                             {completedAssignments.length === 0 ? (
                                 <div className="text-center py-8 text-muted-foreground">
