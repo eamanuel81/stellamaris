@@ -71,3 +71,6 @@ TEXTMANU.TXT
 
 # Credenciales reales (cualquier ubicación; solo la plantilla *.ejemplo.html se versiona)
 **/credenciales.html
+
+# Excepción: las migraciones SQL del proyecto sí se versionan
+!docs/migraciones/*.sql
