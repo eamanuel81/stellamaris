@@ -3,40 +3,45 @@
 import React from "react"
 import { Search, Ship } from "lucide-react"
 import { AppLayout } from "@/components/app-layout"
-import { useAuth } from "@/components/auth-provider"
-import { Badge, Card, CardContent, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui"
+import { Badge, Card, CardContent, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger } from "@/components/ui"
 import { useAssignments } from "@/hooks/use-assignments"
 import { useClients } from "@/hooks/use-clients"
 import { useTasks } from "@/hooks/use-tasks"
-import { computeBoatWashRows, isRecentlyWashed, isUnwashed } from "@/lib/boat-wash"
+import { ActivityKind, computeBoatActivityRows, isRecent, isStale } from "@/lib/boat-activity"
 import { matchesAnySearch } from "@/lib/utils"
 
-type Mode = "all" | "unwashed" | "washed"
+type Mode = "all" | "stale" | "recent"
 
-const DEFAULT_DAYS: Record<Exclude<Mode, "all">, number> = { unwashed: 15, washed: 7 }
+// Textos por actividad: "lavado" = clasificador LAVADO, "bajada" = clasificador BAJADA
+const LABELS: Record<ActivityKind, { title: string; lastCol: string; stale: string; recent: string; staleShort: string; never: string }> = {
+  lavado: { title: "Lavado", lastCol: "Último lavado", stale: "Sin lavar", recent: "Lavadas", staleShort: "Sin lavar", never: "Sin registro de lavado" },
+  bajada: { title: "Bajada", lastCol: "Última bajada", stale: "Sin bajar", recent: "Bajadas", staleShort: "Sin bajar", never: "Sin registro de bajada" },
+}
+
+const DEFAULT_DAYS = { stale: 15, recent: 7 }
 
 export default function BoatsPage() {
-  const { role, subrole } = useAuth()
-  const canView = role === "admin" || subrole === "admin" || subrole === "encargado"
   const { clients, isLoading: clientsLoading } = useClients()
   const { assignments, isLoading: assignmentsLoading } = useAssignments()
   const { tasks, isLoading: tasksLoading } = useTasks()
 
+  const [kind, setKind] = React.useState<ActivityKind>("lavado")
   const [mode, setMode] = React.useState<Mode>("all")
-  const [days, setDays] = React.useState<Record<Exclude<Mode, "all">, number>>(DEFAULT_DAYS)
+  const [days, setDays] = React.useState(DEFAULT_DAYS)
   const [search, setSearch] = React.useState("")
 
-  const rows = React.useMemo(() => computeBoatWashRows(clients, assignments, tasks), [clients, assignments, tasks])
+  const rows = React.useMemo(() => computeBoatActivityRows(clients, assignments, tasks), [clients, assignments, tasks])
+  const L = LABELS[kind]
 
-  const activeDays = mode === "all" ? null : days[mode]
   const visible = rows
-    .filter(r => mode === "all" || (mode === "unwashed" ? isUnwashed(r, days.unwashed) : isRecentlyWashed(r, days.washed)))
+    .filter(r => mode === "all" || (mode === "stale" ? isStale(r, kind, days.stale) : isRecent(r, kind, days.recent)))
     .filter(r => !search || matchesAnySearch([r.boatName, r.clientName, r.registrationNumber], search))
-    // Primero las que más tiempo llevan sin lavar (nunca lavadas arriba de todo)
-    .sort((a, b) => (b.daysSinceWash ?? Infinity) - (a.daysSinceWash ?? Infinity))
+    // Primero las que más tiempo llevan sin hacerse (nunca hechas arriba de todo)
+    .sort((a, b) => (b.daysSince[kind] ?? Infinity) - (a.daysSince[kind] ?? Infinity))
 
-  const unwashedCount = rows.filter(r => isUnwashed(r, days.unwashed)).length
-  const washedCount = rows.filter(r => isRecentlyWashed(r, days.washed)).length
+  const staleCount = rows.filter(r => isStale(r, kind, days.stale)).length
+  const recentCount = rows.filter(r => isRecent(r, kind, days.recent)).length
+  const activeKey = mode === "all" ? null : mode
 
   if (clientsLoading || assignmentsLoading || tasksLoading) {
     return (
@@ -48,13 +53,15 @@ export default function BoatsPage() {
     )
   }
 
-  if (!canView) {
-    return (
-      <AppLayout>
-        <p className="py-8 text-center text-muted-foreground">No tenés acceso a esta sección.</p>
-      </AppLayout>
-    )
+  const badgeFor = (row: (typeof rows)[number]) => {
+    const d = row.daysSince[kind]
+    if (d === null) return <Badge variant="outline" className="border-red-400 bg-red-100 text-red-800">{L.never}</Badge>
+    const text = d === 0 ? "Hoy" : `Hace ${d} días`
+    if (isStale(row, kind, days.stale)) return <Badge variant="outline" className="border-red-400 bg-red-100 text-red-800">{text}</Badge>
+    if (isRecent(row, kind, days.recent)) return <Badge variant="outline" className="border-green-400 bg-green-100 text-green-800">{text}</Badge>
+    return <Badge variant="outline" className="border-amber-400 bg-amber-100 text-amber-800">{text}</Badge>
   }
+  const dateOf = (d: Date | null) => (d ? d.toLocaleDateString("es-AR") : "Nunca")
 
   return (
     <AppLayout>
@@ -62,14 +69,21 @@ export default function BoatsPage() {
         <header>
           <h1 className="font-headline text-3xl font-bold tracking-tight">Embarcaciones</h1>
           <p className="text-muted-foreground">
-            Estado de lavado de cada lancha según las tareas con clasificador LAVADO completadas.
+            Cuándo se lavó y se bajó cada lancha, según las tareas completadas con clasificador LAVADO o BAJADA.
           </p>
         </header>
 
+        <Tabs value={kind} onValueChange={v => setKind(v as ActivityKind)}>
+          <TabsList>
+            <TabsTrigger value="lavado">Lavado</TabsTrigger>
+            <TabsTrigger value="bajada">Bajada</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total de embarcaciones</p><p className="text-3xl font-bold">{rows.length}</p></CardContent></Card>
-          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Sin lavar hace más de {days.unwashed} días</p><p className="text-3xl font-bold text-red-600">{unwashedCount}</p></CardContent></Card>
-          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Lavadas en los últimos {days.washed} días</p><p className="text-3xl font-bold text-green-600">{washedCount}</p></CardContent></Card>
+          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{L.stale} hace más de {days.stale} días</p><p className="text-3xl font-bold text-red-600">{staleCount}</p></CardContent></Card>
+          <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{L.recent} en los últimos {days.recent} días</p><p className="text-3xl font-bold text-green-600">{recentCount}</p></CardContent></Card>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -81,21 +95,21 @@ export default function BoatsPage() {
             <SelectTrigger className="w-full sm:w-[260px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las embarcaciones</SelectItem>
-              <SelectItem value="unwashed">Sin lavar hace más de X días</SelectItem>
-              <SelectItem value="washed">Lavadas en los últimos X días</SelectItem>
+              <SelectItem value="stale">{L.stale} hace más de X días</SelectItem>
+              <SelectItem value="recent">{L.recent} en los últimos X días</SelectItem>
             </SelectContent>
           </Select>
-          {activeDays !== null && (
+          {activeKey && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">X =</span>
               <Input
                 type="number"
                 min={1}
                 className="w-24"
-                value={activeDays}
+                value={days[activeKey]}
                 onChange={e => {
                   const n = Math.max(1, Number(e.target.value) || 1)
-                  setDays(prev => ({ ...prev, [mode as "unwashed" | "washed"]: n }))
+                  setDays(prev => ({ ...prev, [activeKey]: n }))
                 }}
               />
               <span className="text-sm text-muted-foreground">días</span>
@@ -110,7 +124,7 @@ export default function BoatsPage() {
                 <TableHead>Embarcación</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead className="hidden md:table-cell">Matrícula</TableHead>
-                <TableHead>Último lavado</TableHead>
+                <TableHead>{L.lastCol}</TableHead>
                 <TableHead>Estado</TableHead>
               </TableRow>
             </TableHeader>
@@ -122,18 +136,8 @@ export default function BoatsPage() {
                   <TableCell className="font-medium"><span className="flex items-center gap-2"><Ship className="h-4 w-4 text-muted-foreground" />{r.boatName}</span></TableCell>
                   <TableCell>{r.clientName}</TableCell>
                   <TableCell className="hidden md:table-cell">{r.registrationNumber}</TableCell>
-                  <TableCell>{r.lastWashAt ? r.lastWashAt.toLocaleDateString("es-AR") : "Nunca"}</TableCell>
-                  <TableCell>
-                    {r.daysSinceWash === null ? (
-                      <Badge variant="outline" className="border-red-400 bg-red-100 text-red-800">Sin registro de lavado</Badge>
-                    ) : isUnwashed(r, days.unwashed) ? (
-                      <Badge variant="outline" className="border-red-400 bg-red-100 text-red-800">Hace {r.daysSinceWash} días</Badge>
-                    ) : isRecentlyWashed(r, days.washed) ? (
-                      <Badge variant="outline" className="border-green-400 bg-green-100 text-green-800">{r.daysSinceWash === 0 ? "Hoy" : `Hace ${r.daysSinceWash} días`}</Badge>
-                    ) : (
-                      <Badge variant="outline" className="border-amber-400 bg-amber-100 text-amber-800">Hace {r.daysSinceWash} días</Badge>
-                    )}
-                  </TableCell>
+                  <TableCell>{dateOf(r.last[kind])}</TableCell>
+                  <TableCell>{badgeFor(r)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

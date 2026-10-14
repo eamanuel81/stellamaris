@@ -63,11 +63,12 @@ const adminNavItems = [
 const employeeNavItems = [
   { href: "/my-tasks", icon: <ClipboardCheck />, label: "Mis Tareas" },
   { href: "/my-calendar", icon: <Calendar />, label: "Calendario" },
+  { href: "/boats", icon: <Ship />, label: "Embarcaciones" },
   { href: "/help", icon: <CircleHelp />, label: "Ayuda" },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { role, subrole, logout, isLoading } = useAuth()
+  const { role, logout, isLoading } = useAuth()
   const { avatarKey } = useAvatar()
   const router = useRouter()
   const pathname = usePathname()
@@ -86,13 +87,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  const boatsNavItem = { href: "/boats", icon: <Ship />, label: "Embarcaciones" }
-  const navItems =
-    role === "admin"
-      ? adminNavItems
-      : subrole === "encargado"
-        ? [...employeeNavItems.slice(0, 2), boatsNavItem, ...employeeNavItems.slice(2)]
-        : employeeNavItems
+  const navItems = role === "admin" ? adminNavItems : employeeNavItems
 
   const handleLogout = () => {
     void logout()

@@ -32,7 +32,7 @@ src/
     tasks/          → admin: tipos de tareas
     employees/      → admin: gestión empleados
     clients/        → admin: gestión clientes
-    boats/          → admin y encargado: estado de lavado por embarcación (tareas con Tipo = LAVADO)
+    boats/          → todos: último lavado y última bajada por embarcación (tareas con Tipo = LAVADO / BAJADA)
     my-tasks/       → empleado: sus tareas
     my-calendar/    → empleado: calendario
     settings/       → todos: configuración
@@ -62,6 +62,9 @@ src/
   contexts/
     avatar-context.tsx → contexto global del avatar
 ```
+
+## Clasificadores de tareas
+El campo **Tipo** del tipo de tarea clasifica la actividad: `LAVADO` y `BAJADA` alimentan la pantalla Embarcaciones. Un empleado puede dejar asentada una tarea hecha por su cuenta con *Registrar tarea realizada* (`POST /api/assignments/register`): queda a su nombre, completada y con fecha de hoy.
 
 ## Tablas principales (schema `guarderia`, ver `src/lib/schema.ts`)
 - `users` — login: email, passwordHash, `subrole`, `employeeId`
