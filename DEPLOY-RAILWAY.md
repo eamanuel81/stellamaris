@@ -90,3 +90,12 @@ NEXTAUTH_URL=https://tu-dominio.up.railway.app
 ```
 
 No hace falta definir `PORT`; Railway la inyecta automáticamente.
+
+## Si el dominio está detrás de Cloudflare
+
+Cloudflare puede pedir una verificación ("Just a moment...") a los pedidos que la app hace por detrás (`/api/...`). Esos pedidos no pueden resolverla y parece que "no guarda". La app ahora lo detecta y avisa con un mensaje (`src/components/cloudflare-challenge-guard.tsx`), pero la causa se corrige en Cloudflare:
+
+- **Security → Events:** muestra qué regla disparó el desafío.
+- **Security Level** en *Medium* o *Low*, **Under Attack Mode** apagado y **Challenge Passage** en 8 horas o más.
+- **WAF:** regla que omita desafíos y *Bot Fight Mode* para las rutas que empiezan con `/api/` (ya exigen sesión).
+- **No** incluir `/api/auth/` en esa excepción; ahí conviene una regla de *Rate limiting* contra fuerza bruta.

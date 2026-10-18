@@ -3,6 +3,7 @@ import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '@/components/auth-provider';
 import { AvatarProvider } from '@/contexts/avatar-context';
 import { Toaster } from "@/components/ui/toaster";
+import { CloudflareChallengeGuard } from "@/components/cloudflare-challenge-guard";
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default function RootLayout({
             <AvatarProvider>
               {children}
               <Toaster />
+              <CloudflareChallengeGuard />
             </AvatarProvider>
           </AuthProvider>
         </SessionProvider>
