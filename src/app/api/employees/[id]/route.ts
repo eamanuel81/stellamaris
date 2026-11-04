@@ -15,17 +15,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const body = await req.json();
   const { name, lastName, nickname, dni, phone, address, canDrive, avatarUrl, subrole, email } = body;
 
+  const [previous] = await db.select().from(employees).where(eq(employees.id, id)).limit(1);
+  if (!previous) return NextResponse.json({ error: 'Empleado no encontrado' }, { status: 404 });
+
+  const cleanEmail = typeof email === 'string' ? email.trim() : email;
+
   const [updated] = await db
     .update(employees)
-    .set({ name, lastName, nickname, dni, phone, address, canDrive, avatarUrl, subrole, email })
+    .set({ name, lastName, nickname, dni, phone, address, canDrive, avatarUrl, subrole, email: cleanEmail })
     .where(eq(employees.id, id))
     .returning();
 
-  // Si cambia nombre o DNI, resetear contraseña
-  if (name && dni) {
+  // Datos del usuario de acceso que se mantienen alineados con el empleado
+  const userChanges: { passwordHash?: string; subrole?: string; email?: string } = {};
+  if (subrole) userChanges.subrole = subrole;
+  if (cleanEmail && cleanEmail !== previous.email) userChanges.email = cleanEmail;
+
+  // Solo si cambió el nombre o el DNI se reinicia la contraseña (antes se reiniciaba en cualquier edición)
+  if (name && dni && (name !== previous.name || dni !== previous.dni)) {
     const newPassword = `${name.charAt(0).toUpperCase()}${name.slice(1)}${dni}`;
-    const passwordHash = await bcrypt.hash(newPassword, 10);
-    await db.update(users).set({ passwordHash, subrole: subrole ?? 'empleado' }).where(eq(users.employeeId, id));
+    userChanges.passwordHash = await bcrypt.hash(newPassword, 10);
+  }
+  if (Object.keys(userChanges).length > 0) {
+    await db.update(users).set(userChanges).where(eq(users.employeeId, id));
   }
 
   return NextResponse.json(updated);
