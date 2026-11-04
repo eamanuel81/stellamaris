@@ -3,7 +3,7 @@ import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { users, employees } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -16,13 +16,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const email = credentials.email as string;
+        // Los teclados de celular suelen poner mayúscula inicial o un espacio al final
+        const email = (credentials.email as string).trim().toLowerCase();
         const password = credentials.password as string;
 
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, email))
+          .where(sql`lower(${users.email}) = ${email}`)
           .limit(1);
 
         if (!user) return null;

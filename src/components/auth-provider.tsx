@@ -28,9 +28,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role: Role = subrole === 'admin' ? 'admin' : (status === 'authenticated' ? 'employee' : null);
 
   const login = async (email: string, password: string) => {
-    const result = await signIn('credentials', { email, password, redirect: false });
+    let result: Awaited<ReturnType<typeof signIn>> | undefined;
+    try {
+      result = await signIn('credentials', { email: email.trim(), password, redirect: false });
+    } catch {
+      return { error: 'No se pudo conectar con el servidor. Probá de nuevo o desde otra red.' };
+    }
     if (result?.error) {
-      return { error: 'Credenciales incorrectas' };
+      // Solo es "credenciales incorrectas" si el servidor realmente rechazó el email o la contraseña
+      if (result.error === 'CredentialsSignin' || result.code === 'credentials') {
+        return { error: 'Email o contraseña incorrectos' };
+      }
+      return { error: 'No se pudo iniciar sesión por un problema de conexión. Probá de nuevo o desde otra red.' };
     }
     const newSession = await getSession();
     const subrole = (newSession?.user as any)?.subrole as string | undefined;

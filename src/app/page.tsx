@@ -104,6 +104,9 @@ export default function LoginPage() {
                 value={email} 
                 onChange={e => setEmail(e.target.value)}
                 autoComplete="email"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
               />
             </div>
             <div className="space-y-2">
